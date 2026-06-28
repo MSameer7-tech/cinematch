@@ -1,0 +1,183 @@
+# Domain-Driven Design (DDD)
+
+**Project:** CineMatch
+
+**Version:** 1.0
+
+**Status:** Draft
+
+---
+
+## 1. Purpose
+
+This document defines the core business domains, business objects, responsibilities, and relationships within CineMatch.
+
+The purpose of this document is to bridge the gap between the Functional Requirements Specification (FRS) and the Database Design.
+
+This document describes what exists in the business, independent of databases, APIs, or implementation details.
+
+It serves as the primary reference for:
+
+- Database Design
+- API Design
+- Backend Services
+- Frontend Data Models
+- Future Feature Expansion
+
+---
+
+## 2. Core Domains
+
+### Identity
+
+Responsible for authentication, user accounts, guest sessions, onboarding, and account security.
+
+---
+
+### Catalog
+
+Responsible for movies, genres, actors, directors, production companies, languages, keywords, trailers, and metadata.
+
+---
+
+### Discovery
+
+Responsible for searching, browsing, filtering, sorting, trending, and movie exploration.
+
+---
+
+### Personalization
+
+Responsible for ratings, watchlists, likes, dislikes, watched history, user preferences, recommendations, and recommendation scoring.
+
+---
+
+### Analytics
+
+Responsible for viewing statistics, user insights, recommendation performance, and yearly summaries.
+
+---
+
+### Social
+
+Responsible for reviews, comments, custom lists, user follows, and community interactions.
+
+---
+
+### Platform
+
+Responsible for notifications, administration, synchronization jobs, audit logs, and platform settings.
+
+---
+
+# 3. Business Objects
+
+## 3.1 User
+
+### Purpose
+
+Represents a registered CineMatch user who can interact with the platform through authentication, personalization, and movie discovery features.
+
+The User is the central business object of the system.
+
+### Responsibilities
+
+The User is responsible for:
+
+- Authenticating into CineMatch.
+- Managing profile information.
+- Completing onboarding.
+- Rating movies.
+- Managing watchlists.
+- Marking movies as watched.
+- Receiving personalized recommendations.
+- Managing account security.
+- Managing connected authentication providers.
+
+### Owned Data
+
+The User owns the following business data:
+
+- Profile Information
+- Authentication Credentials
+- User Preferences
+- Ratings
+- Watchlists
+- Watch History
+- Active Sessions
+- Notification Preferences
+- Personalized Recommendation Profile
+
+### Domain Events
+
+The User can produce the following business events:
+
+- User Registered
+- Email Verified
+- User Logged In
+- User Logged Out
+- Guest Session Migrated
+- Password Changed
+- Profile Updated
+- Onboarding Completed
+- Account Scheduled for Deletion
+- Account Restored
+- Account Permanently Deleted
+
+These events will later trigger recommendation updates, analytics, notifications, and background jobs.
+
+### Collaborates With
+
+The User interacts with:
+
+- Guest Session
+- OAuth Account
+- User Session
+- Movie
+- Rating
+- Watchlist
+- Watch History
+- User Preferences
+- Recommendation
+- Notification
+
+### Lifecycle
+
+Guest
+↓
+Registered
+↓
+Verified
+↓
+Onboarded
+↓
+Active
+↓
+Inactive
+↓
+Scheduled for Deletion
+↓
+Deleted
+
+### Business Rules
+
+- Every registered user has a unique internal ID.
+- Every email address must be unique.
+- Users authenticate through Email or Google.
+- Guest users can become registered users.
+- User activity must be preserved during guest migration.
+- Users may remain signed in on multiple devices.
+- Password changes invalidate all active sessions except the current session.
+- Account deletion enters a 90-day recovery period before permanent deletion.
+
+### Future Extensions
+
+Future versions may support:
+
+- Premium subscriptions.
+- Public profiles.
+- Friends and followers.
+- Movie clubs.
+- Shared watchlists.
+- Achievement badges.
+- AI-powered taste summaries.
