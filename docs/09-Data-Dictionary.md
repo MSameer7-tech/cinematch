@@ -96,9 +96,6 @@ We won't use all of them immediately, but designing for them now prevents future
 | user_id | UUID | No | — | FK → users.id | ✅ | Owner of this OAuth account |
 | provider | ENUM | No | GOOGLE | Allowed providers | ✅ | Authentication provider |
 | provider_user_id | TEXT | No | — | Unique per provider | ✅ | User ID assigned by the provider |
-| provider_email | TEXT | No | — | — | ❌ | Email returned by the provider |
-| provider_display_name | TEXT | Yes | NULL | — | ❌ | Display name from provider |
-| provider_avatar_url | TEXT | Yes | NULL | Valid URL | ❌ | Avatar from provider |
 | linked_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Link timestamp |
 | last_login_at | TIMESTAMPTZ | Yes | NULL | — | ❌ | Last OAuth authentication |
 
