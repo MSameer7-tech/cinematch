@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { authService } from '../features/auth/services/auth.service';
 import type { 
@@ -14,7 +14,8 @@ export interface AuthContextType {
   user: AppUser | null;
   guest: GuestUser | null;
   authState: AuthState;
-  loading: boolean;
+  isInitializing: boolean;
+  isSubmitting: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
@@ -25,14 +26,15 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({ 
     status: 'LOADING', 
     user: null, 
     guest: null 
   });
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loading = authState.status === 'LOADING';
   const user = authState.user;
   const guest = authState.guest;
 
@@ -43,6 +45,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('Failed to initialize auth:', error);
       setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -60,55 +64,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
-    setAuthState({ status: 'LOADING', user: null, guest: null });
+    setIsSubmitting(true);
     try {
       const result = await authService.login(credentials);
       if (result.success) {
         setAuthState({ status: 'AUTHENTICATED', user: result.data, guest: null });
       } else {
-        await initializeAuth();
         throw new Error(result.error);
       }
-    } catch (error) {
-      await initializeAuth();
-      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const register = async (credentials: RegisterCredentials) => {
-    setAuthState({ status: 'LOADING', user: null, guest: null });
+    setIsSubmitting(true);
     try {
       const result = await authService.register(credentials);
       if (result.success) {
         setAuthState({ status: 'AUTHENTICATED', user: result.data, guest: null });
       } else {
-        await initializeAuth();
         throw new Error(result.error);
       }
-    } catch (error) {
-      await initializeAuth();
-      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const logout = async () => {
-    setAuthState({ status: 'LOADING', user: null, guest: null });
+    setIsSubmitting(true);
     try {
       const result = await authService.logout();
       if (result.success) {
         setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
       } else {
-        await initializeAuth();
         throw new Error(result.error);
       }
-    } catch (error) {
-      await initializeAuth();
-      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const continueAsGuest = async () => {
-    setAuthState({ status: 'LOADING', user: null, guest: null });
+    setIsSubmitting(true);
     try {
       const result = await authService.continueAsGuest();
       if (result.success) {
@@ -117,23 +115,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
         throw new Error(result.error);
       }
-    } catch (error) {
-      setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
-      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const loginWithGoogle = async () => {
-    setAuthState({ status: 'LOADING', user: null, guest: null });
+    setIsSubmitting(true);
     try {
       const result = await authService.loginWithGoogle();
       if (!result.success) {
-        await initializeAuth();
         throw new Error(result.error);
       }
-    } catch (error) {
-      await initializeAuth();
-      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -146,7 +141,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       user,
       guest,
       authState,
-      loading,
+      isInitializing,
+      isSubmitting,
       login,
       loginWithGoogle,
       register,

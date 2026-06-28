@@ -7,11 +7,10 @@ import { GuestButton } from './GuestButton';
 import { Divider } from './Divider';
 
 export const LoginForm: FC = () => {
-  const { login, loginWithGoogle, continueAsGuest } = useAuth();
+  const { login, loginWithGoogle, continueAsGuest, isSubmitting } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -20,37 +19,30 @@ export const LoginForm: FC = () => {
       return;
     }
 
-    setLoading(true);
     setError(null);
 
     try {
       await login({ email, password });
     } catch (err: any) {
       setError(err?.message || 'Failed to sign in. Please check your credentials.');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
     setError(null);
     try {
       await loginWithGoogle();
     } catch (err: any) {
       setError(err?.message || 'Failed to authenticate with Google.');
-      setLoading(false);
     }
   };
 
   const handleGuestLogin = async () => {
-    setLoading(true);
     setError(null);
     try {
       await continueAsGuest();
     } catch (err: any) {
       setError(err?.message || 'Failed to access guest session.');
-      setLoading(false);
     }
   };
 
@@ -81,23 +73,23 @@ export const LoginForm: FC = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          disabled={loading}
+          disabled={isSubmitting}
           required
           className="auth-input"
         />
       </div>
 
-      <div className="form-group" style={{ marginBottom: '24px' }}>
+      <div className="form-group" style={{ marginBottom: '28px' }}>
         <label htmlFor="password" className="form-label">PASSWORD</label>
         <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter your password"
-          disabled={loading}
+          disabled={isSubmitting}
           required
         />
-        <div style={{ textAlign: 'right', marginTop: '8px' }}>
-          <a href="/forgot-password" className="text-link" style={{ fontSize: '13px' }}>
+        <div style={{ textAlign: 'right', marginTop: '10px' }}>
+          <a href="/forgot-password" className="text-link" style={{ fontSize: '13px', fontWeight: 500 }}>
             Forgot password?
           </a>
         </div>
@@ -105,17 +97,17 @@ export const LoginForm: FC = () => {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isSubmitting}
         className="btn-auth btn-primary"
       >
-        {loading ? 'Signing in...' : 'Sign In'}
+        {isSubmitting ? 'Signing in...' : 'Sign In'}
       </button>
 
       <Divider />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <GoogleButton onClick={handleGoogleLogin} disabled={loading} />
-        <GuestButton onClick={handleGuestLogin} disabled={loading} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <GoogleButton onClick={handleGoogleLogin} disabled={isSubmitting} />
+        <GuestButton onClick={handleGuestLogin} disabled={isSubmitting} />
       </div>
     </form>
   );

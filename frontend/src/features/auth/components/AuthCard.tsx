@@ -9,7 +9,7 @@ interface AuthCardProps {
 
 export const AuthCard: React.FC<AuthCardProps> = ({ children, title, subtitle, footer }) => {
   return (
-    <div className="glass-card" style={{ padding: '40px', maxWidth: '440px', margin: '0 auto' }}>
+    <div className="glass-card" style={{ padding: '40px', maxWidth: '500px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
         <div style={{ 
           fontSize: '28px', 

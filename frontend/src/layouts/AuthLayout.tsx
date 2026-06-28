@@ -7,17 +7,25 @@ export const AuthLayout: React.FC = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.1) 0%, rgba(8, 8, 12, 1) 80%)',
+      background: 'radial-gradient(circle at 10% 20%, rgba(124, 58, 237, 0.08) 0%, rgba(6, 6, 10, 1) 85%)',
       padding: '24px 16px',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* Background Cinematic Glows */}
+      <div className="glow-orb" style={{ top: '10%', left: '10%', background: 'var(--primary-color)' }} />
+      <div className="glow-orb" style={{ bottom: '15%', right: '15%', background: 'var(--secondary-color)', animationDelay: '-5s' }} />
+
       <div style={{
         display: 'flex',
         flexDirection: 'row',
         width: '100%',
-        maxWidth: '1000px',
+        maxWidth: '1100px',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '40px',
+        gap: '48px',
+        position: 'relative',
+        zIndex: 1
       }} className="auth-layout-container">
         {/* Left Side Branding */}
         <div style={{

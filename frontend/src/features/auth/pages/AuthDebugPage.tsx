@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 export const AuthDebugPage: FC = () => {
-  const { user, guest, authState, loading, login, logout, continueAsGuest, refreshSession } = useAuth();
+  const { user, guest, authState, isInitializing, isSubmitting, login, logout, continueAsGuest, refreshSession } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +53,10 @@ export const AuthDebugPage: FC = () => {
         <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
           <h2 style={{ fontSize: '18px', margin: '0 0 12px 0' }}>Status & Session</h2>
           <div>
-            <strong>Loading Status:</strong> {loading ? '⏳ Yes (LOADING)' : '✅ No'}
+            <strong>Initializing:</strong> {isInitializing ? '⏳ Yes (INITIALIZING)' : '✅ No'}
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <strong>Submitting:</strong> {isSubmitting ? '⏳ Yes (SUBMITTING)' : '✅ No'}
           </div>
           <div style={{ marginTop: '8px' }}>
             <strong>AuthState Status:</strong> <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>{authState.status}</span>
