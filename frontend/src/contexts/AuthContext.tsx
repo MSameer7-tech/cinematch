@@ -16,6 +16,7 @@ export interface AuthContextType {
   authState: AuthState;
   loading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
   continueAsGuest: () => Promise<void>;
@@ -102,6 +103,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const loginWithGoogle = async () => {
+    setAuthState({ status: 'LOADING', user: null, guest: null });
+    try {
+      await authService.loginWithGoogle();
+    } catch (error) {
+      await initializeAuth();
+      throw error;
+    }
+  };
+
   const refreshSession = async () => {
     await initializeAuth();
   };
@@ -113,6 +124,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       authState,
       loading,
       login,
+      loginWithGoogle,
       register,
       logout,
       continueAsGuest,
