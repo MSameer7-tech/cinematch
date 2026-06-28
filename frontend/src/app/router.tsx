@@ -11,6 +11,7 @@ import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from '../features/auth/pages/VerifyEmailPage';
 import { OnboardingPage } from '../features/auth/pages/OnboardingPage';
+import { AuthDebugPage } from '../features/auth/pages/AuthDebugPage';
 
 export const router = createBrowserRouter([
   {
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: 'auth-debug',
+    element: <AuthDebugPage />,
   },
   {
     path: '*',
