@@ -14,8 +14,18 @@ This document defines every database field used in CinemaMatch. It serves as the
 
 | Column | Type | Nullable | Default | Constraints | Description |
 |--------|------|----------|---------|-------------|-------------|
+| id | UUID | No | auth.users.id | Primary Key, Foreign Key | References the authenticated user in Supabase Auth |
+| display_name | VARCHAR(50) | No | — | Length 2–50 | Public display name shown throughout the application |
+| avatar_url | TEXT | Yes | NULL | Valid URL | User profile image |
+| created_at | TIMESTAMPTZ | No | NOW() | Immutable | Record creation timestamp |
+| updated_at | TIMESTAMPTZ | No | NOW() | Auto-updated | Last profile update timestamp |
 
 ## Notes
+
+- Authentication data is managed by Supabase Auth.
+- Application-specific profile data is stored in `public.users`.
+- `id` is shared with `auth.users` to maintain a one-to-one relationship.
+- Email, password hash, and OAuth metadata are not duplicated.
 
 ---
 
