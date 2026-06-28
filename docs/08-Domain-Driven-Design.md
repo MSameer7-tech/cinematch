@@ -181,3 +181,103 @@ Future versions may support:
 - Shared watchlists.
 - Achievement badges.
 - AI-powered taste summaries.
+
+---
+
+## 3.2 Guest Session
+
+### Purpose
+
+A Guest Session represents a temporary anonymous identity that allows users to access CineMatch without creating an account. It enables personalized recommendations and preserves user activity until the user registers or the session expires.
+
+### Responsibilities
+
+The Guest Session is responsible for:
+
+- Allowing anonymous access to CineMatch.
+- Storing temporary user activity.
+- Maintaining a temporary watchlist.
+- Storing temporary ratings.
+- Generating personalized recommendations.
+- Tracking browsing behavior.
+- Supporting migration to a registered account.
+- Managing guest session lifecycle.
+
+### Owned Data
+
+The Guest Session owns the following business data:
+
+- Watchlist
+- Ratings
+- Likes
+- Dislikes
+- Search History
+- Click History
+- Recommendation Profile
+- Recently Viewed
+- Search Filters
+
+### Collaborates With
+
+The Guest Session interacts with:
+
+- User
+- Movie
+- Rating
+- Watchlist
+- Recommendation Engine
+- Search
+- Recommendation Profile
+
+### Lifecycle
+
+Created
+↓
+Active
+↓
+Inactive
+↓
+Migrated
+↓
+Archived
+↓
+Deleted
+
+A Guest Session expires after 60 consecutive days of inactivity. Any activity resets the inactivity timer.
+
+### Business Rules
+
+- Every Guest Session is identified by a unique UUID.
+- The UUID is stored in a secure browser cookie.
+- A Guest Session can exist on only one browser/device.
+- Guest data is moved, not copied, during migration.
+- A Guest Session can be migrated only once.
+- Expired Guest Sessions are automatically deleted after the retention period.
+
+### Domain Events
+
+- Guest Session Created
+- Movie Rated
+- Movie Added to Watchlist
+- Movie Removed from Watchlist
+- Recommendation Updated
+- Guest Session Migrated
+- Guest Session Expired
+
+### Invariants
+
+- Every Guest Session has exactly one UUID.
+- A migrated Guest Session cannot be migrated again.
+- An expired Guest Session cannot be restored.
+- A Guest Session cannot exist without its browser identifier.
+- A Guest Session cannot belong to multiple users.
+
+### Future Extensions
+
+Future versions may support:
+
+- Temporary cloud backup.
+- QR-code session transfer.
+- Guest-to-guest migration.
+- Cross-device guest synchronization (future research).
+- Automatic guest profile merging.
