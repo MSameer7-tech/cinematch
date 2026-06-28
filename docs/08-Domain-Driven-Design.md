@@ -451,3 +451,95 @@ Future versions may support:
 - Device fingerprinting and trust scoring.
 - WebAuthn / Passkeys authentication.
 - Single Sign-Out across federated services.
+
+---
+
+## 3.5 User Preferences
+
+### Purpose
+
+User Preferences represent the explicit choices made by a registered user to personalize their CineMatch experience. These preferences provide the recommendation engine with an initial understanding of the user's interests before sufficient behavioral data has been collected. These are explicit preferences, not learned behaviors.
+
+### Responsibilities
+
+The User Preferences object is responsible for:
+
+- Storing favorite genres.
+- Storing preferred languages.
+- Storing preferred runtime.
+- Storing favorite actors.
+- Storing favorite directors.
+- Storing content preferences.
+- Storing onboarding selections.
+- Updating recommendation preferences.
+- Supporting preference editing.
+
+### Owned Data
+
+The User Preferences object owns the following business data:
+
+- Favorite Genres
+- Preferred Languages
+- Preferred Runtime
+- Favorite Actors
+- Favorite Directors
+- Preferred Release Years
+- Content Preferences
+- Recommendation Settings
+
+### Collaborates With
+
+The User Preferences object interacts with:
+
+- User
+- Movie
+- Genre
+- Actor
+- Director
+- Recommendation Engine
+
+### Lifecycle
+
+Created
+↓
+Updated
+↓
+Optimized
+↓
+Archived
+↓
+Deleted
+
+### Business Rules
+
+- Every registered user has one User Preferences object.
+- Guest users do not have User Preferences.
+- Preferences can be modified at any time.
+- Recommendation settings affect future recommendations only.
+- Explicit preferences take precedence during cold-start recommendations.
+
+### Domain Events
+
+- Preferences Created
+- Genre Added
+- Genre Removed
+- Language Changed
+- Recommendation Settings Updated
+
+### Invariants
+
+- Every User Preferences object belongs to exactly one User.
+- Preferences cannot exist without a User.
+- A preferred genre must exist in the movie catalog.
+- Runtime preferences must fall within supported limits.
+
+### Future Extensions
+
+Future versions may support:
+
+- Mood-based preferences.
+- Seasonal preferences.
+- Time-of-day preferences.
+- Family profiles.
+- Regional preferences.
+- Privacy controls for recommendation data.
