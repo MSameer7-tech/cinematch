@@ -1,3 +1,4 @@
+import { supabase } from '../../../lib/supabase';
 import type { 
   AppUser, 
   GuestUser, 
@@ -6,6 +7,17 @@ import type {
   RegisterCredentials 
 } from '../types/auth.types';
 
+const mapAuthError = (error: any): Error => {
+  const message = error?.message || '';
+  if (message.toLowerCase().includes('invalid login credentials')) {
+    return new Error('The email or password you entered is incorrect.');
+  }
+  if (message.toLowerCase().includes('email not confirmed')) {
+    return new Error('Please verify your email address before signing in.');
+  }
+  return new Error(message || 'An unexpected error occurred during sign in.');
+};
+
 /**
  * Authentication service stub handling Supabase Auth and database operations.
  */
@@ -13,8 +25,48 @@ export const authService = {
   /**
    * Log in a user with email and password.
    */
-  async login(_credentials: LoginCredentials): Promise<AppUser> {
-    throw new Error('Method login() not implemented.');
+  async login(credentials: LoginCredentials): Promise<AppUser> {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password
+      });
+
+      if (error) {
+        throw mapAuthError(error);
+      }
+
+      if (!data.user) {
+        throw new Error('Sign in succeeded but no user was returned.');
+      }
+
+      // Fetch the public profile from public.users
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError) {
+        throw new Error('Failed to load your user profile.');
+      }
+
+      return {
+        id: profile.id,
+        displayName: profile.display_name,
+        avatarUrl: profile.avatar_url,
+        onboardingCompleted: profile.onboarding_completed,
+        accountStatus: profile.account_status,
+        createdAt: profile.created_at,
+        updatedAt: profile.updated_at,
+        lastSeenAt: profile.last_seen_at,
+        deletionRequestedAt: profile.deletion_requested_at,
+        deletedAt: profile.deleted_at
+      };
+    } catch (err: any) {
+      console.error('Login service failure:', err);
+      throw err;
+    }
   },
 
   /**
