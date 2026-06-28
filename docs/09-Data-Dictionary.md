@@ -167,7 +167,45 @@ Future:
 
 # 5. User Preferences Table
 
-| Column | Type | Nullable | Default | Constraints | Description |
-|--------|------|----------|---------|-------------|-------------|
+| Column | Type | Nullable | Default | Constraints | Indexed | Description |
+|--------|------|----------|---------|-------------|---------|-------------|
+| user_id | UUID | No | — | Primary Key, FK → users.id | ✅ | 1-to-1 link to the owner profile |
+| preferred_max_runtime | INT | Yes | NULL | Must be > 0 | ❌ | Max preferred movie runtime in minutes |
+| preferred_era_start | INT | Yes | NULL | Min year 1888 | ❌ | Preferred release year range start |
+| preferred_era_end | INT | Yes | NULL | Max year 2100 | ❌ | Preferred release year range end |
+| include_mature | BOOLEAN | No | FALSE | — | ❌ | Toggle to include adult/mature content in recommendations |
+| discovery_mode | ENUM | No | SAFE | SAFE / EXPLORE | ❌ | Balance preference between highly safe vs. adventurous suggestions |
+| created_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Preferences creation timestamp |
+| updated_at | TIMESTAMPTZ | No | NOW() | Auto-updated | ❌ | Last preferences modification timestamp |
 
 ## Notes
+
+### Normalization & Scalability
+- **Many-to-Many Preferences:** Storing multiple valued preferences (e.g., Favorite Genres, Preferred Languages, Favorite Actors/Directors) as arrays (`TEXT[]` or `INT[]`) inside this table violates first normal form (1NF) and would severely impact query speed and filtering performance as the platform scales.
+- Therefore, we normalize these settings by mapping them to separate relational join tables (defined below). This keeps the core `user_preferences` table slim, highly performant, and ready for future integrations (e.g., searching users by common favorite directors or linking genres to localized catalog lists).
+
+### Multi-Valued Preference Join Tables
+
+#### A. User Preferred Genres (`user_preferred_genres`)
+- Maps users to their favorite movie genres.
+*   `user_id` (UUID, FK → `users.id`, PK, Indexed: ✅)
+*   `genre_id` (INT, FK → `genres.id`, PK, Indexed: ✅)
+*   `created_at` (TIMESTAMPTZ, Default: `NOW()`)
+
+#### B. User Preferred Languages (`user_preferred_languages`)
+- Maps users to their preferred languages for audio/subtitle preferences.
+*   `user_id` (UUID, FK → `users.id`, PK, Indexed: ✅)
+*   `language_code` (VARCHAR(10), PK, Indexed: ✅) - e.g., 'en', 'es', 'ja'
+*   `created_at` (TIMESTAMPTZ, Default: `NOW()`)
+
+#### C. User Preferred Personnel (`user_preferred_personnel`)
+- Maps users to their favorite actors and directors.
+*   `user_id` (UUID, FK → `users.id`, PK, Indexed: ✅)
+*   `person_id` (INT, FK → `people.id`, PK, Indexed: ✅) - References the TMDb/catalog person record
+*   `role` (ENUM: 'ACTOR', 'DIRECTOR', PK) - Allows distinguishing between a favorite actor or director
+*   `created_at` (TIMESTAMPTZ, Default: `NOW()`)
+
+## Open Questions
+
+- Should we set limit caps on the number of preferred genres/personnel a user can select (e.g., maximum 10 genres or 5 favorite directors) to prevent database bloat?
+- Should the `discovery_mode` enum support a granular range (e.g., an integer scale from 1 to 5) rather than a binary enum, to offer more recommendation precision?
