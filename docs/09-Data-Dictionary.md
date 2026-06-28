@@ -6,6 +6,26 @@ Status: Draft
 
 ---
 
+# Infrastructure Ownership
+
+CineMatch follows a clear separation between infrastructure-managed data and application-managed data.
+
+Supabase is the Single Source of Truth for authentication, authorization, identity management, and session management.
+
+CineMatch stores only business-domain data required by the application.
+
+The following authentication tables are owned entirely by Supabase and must never be modified directly.
+
+- auth.users
+- auth.identities
+- auth.sessions
+- auth.refresh_tokens
+- auth.one_time_tokens
+
+Application tables reference auth.users.id through foreign keys where appropriate.
+
+---
+
 This document defines every database field used in CinemaMatch. It serves as the authoritative reference for PostgreSQL schema design, Supabase implementation, backend models, API contracts, and frontend integration. Every database column must first be documented here before implementation.
 
 ---
@@ -30,6 +50,7 @@ This document defines every database field used in CinemaMatch. It serves as the
 ### Ownership
 - Authentication credentials are managed exclusively by Supabase Auth.
 - The users table stores only application-specific profile information.
+- Authentication data (email, password, verification state, login metadata, provider information) is managed by Supabase Auth. This table stores only CineMatch-specific business profile information.
 
 ### One-to-One Relationship
 - `users.id` references `auth.users.id`.
@@ -126,6 +147,10 @@ We won't use all of them immediately, but designing for them now prevents future
 
 # 3. OAuth Accounts Table
 
+**Status: Deprecated**
+
+Supabase `auth.identities` provides all identity provider management. CineMatch will not maintain a separate `oauth_accounts` table unless future business requirements require application-specific OAuth metadata.
+
 | Column | Type | Nullable | Default | Constraints | Indexed | Description |
 |--------|------|----------|---------|-------------|---------|-------------|
 | id | UUID | No | gen_random_uuid() | Primary Key | ✅ | Internal OAuth record ID |
@@ -164,6 +189,10 @@ Future:
 ---
 
 # 4. User Sessions Table
+
+**Status: Under Review**
+
+Supabase `auth.sessions` already manages authentication sessions. This table will only exist if CineMatch later requires application-specific device metadata that is not provided by Supabase.
 
 | Column | Type | Nullable | Default | Constraints | Indexed | Description |
 |--------|------|----------|---------|-------------|---------|-------------|
@@ -245,3 +274,17 @@ Future:
 
 - Should we set limit caps on the number of preferred genres/personnel a user can select (e.g., maximum 10 genres or 5 favorite directors) to prevent database bloat?
 - Should the `discovery_mode` enum support a granular range (e.g., an integer scale from 1 to 5) rather than a binary enum, to offer more recommendation precision?
+
+---
+
+# Architecture Decision
+
+Authentication infrastructure is delegated entirely to Supabase.
+
+CineMatch stores only business-domain entities.
+
+This follows the Engineering Principles document:
+
+- Single Source of Truth
+- Delegate Core Infrastructure
+- Store Only Application Domain State
