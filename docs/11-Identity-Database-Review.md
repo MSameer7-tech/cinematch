@@ -70,6 +70,16 @@ In Progress
 
 ## 4. User Sessions
 
+### Status
+⏳ Pending
+
+### Reason
+The final design of the User Sessions table is intentionally deferred until Supabase Authentication is configured and evaluated.
+
+Supabase already manages authentication sessions internally. We will first inspect the available metadata, APIs, and lifecycle before deciding which application-level session information CineMatch should store.
+
+This prevents duplication of authentication state and aligns with the project's engineering principles.
+
 ## 5. User Preferences
 
 ## 6. Relationships
