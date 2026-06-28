@@ -62,8 +62,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (credentials: LoginCredentials) => {
     setAuthState({ status: 'LOADING', user: null, guest: null });
     try {
-      const appUser = await authService.login(credentials);
-      setAuthState({ status: 'AUTHENTICATED', user: appUser, guest: null });
+      const result = await authService.login(credentials);
+      if (result.success) {
+        setAuthState({ status: 'AUTHENTICATED', user: result.data, guest: null });
+      } else {
+        await initializeAuth();
+        throw new Error(result.error);
+      }
     } catch (error) {
       await initializeAuth();
       throw error;
@@ -73,8 +78,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (credentials: RegisterCredentials) => {
     setAuthState({ status: 'LOADING', user: null, guest: null });
     try {
-      const appUser = await authService.register(credentials);
-      setAuthState({ status: 'AUTHENTICATED', user: appUser, guest: null });
+      const result = await authService.register(credentials);
+      if (result.success) {
+        setAuthState({ status: 'AUTHENTICATED', user: result.data, guest: null });
+      } else {
+        await initializeAuth();
+        throw new Error(result.error);
+      }
     } catch (error) {
       await initializeAuth();
       throw error;
@@ -84,8 +94,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     setAuthState({ status: 'LOADING', user: null, guest: null });
     try {
-      await authService.logout();
-      setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+      const result = await authService.logout();
+      if (result.success) {
+        setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+      } else {
+        await initializeAuth();
+        throw new Error(result.error);
+      }
     } catch (error) {
       await initializeAuth();
       throw error;
@@ -95,8 +110,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const continueAsGuest = async () => {
     setAuthState({ status: 'LOADING', user: null, guest: null });
     try {
-      const guestUser = await authService.continueAsGuest();
-      setAuthState({ status: 'GUEST', user: null, guest: guestUser });
+      const result = await authService.continueAsGuest();
+      if (result.success) {
+        setAuthState({ status: 'GUEST', user: null, guest: result.data });
+      } else {
+        setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+        throw new Error(result.error);
+      }
     } catch (error) {
       setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
       throw error;
@@ -106,7 +126,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const loginWithGoogle = async () => {
     setAuthState({ status: 'LOADING', user: null, guest: null });
     try {
-      await authService.loginWithGoogle();
+      const result = await authService.loginWithGoogle();
+      if (!result.success) {
+        await initializeAuth();
+        throw new Error(result.error);
+      }
     } catch (error) {
       await initializeAuth();
       throw error;
