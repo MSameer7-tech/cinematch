@@ -89,11 +89,10 @@ We won't use all of them immediately, but designing for them now prevents future
 | Column | Type | Nullable | Default | Constraints | Indexed | Description |
 |--------|------|----------|---------|-------------|---------|-------------|
 | id | UUID | No | gen_random_uuid() | Primary Key | ✅ | Unique guest session identifier |
-| session_token | UUID | No | gen_random_uuid() | Unique | ✅ | Stored securely in browser cookie |
-| recommendation_profile_id | UUID | Yes | NULL | FK (Future) | ❌ | Links to recommendation profile |
+| session_token | CHAR(64) | No | — | Unique | ✅ | SHA-256 hash of the session token; verified against client cookie |
 | created_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Session creation time |
 | last_activity_at | TIMESTAMPTZ | No | NOW() | Auto-updated | ✅ | Last recorded activity |
-| migrated_to_user_id | UUID | Yes | NULL | FK → users.id | ✅ | User account created from this guest |
+| migrated_to_user_id | UUID | Yes | NULL | FK → users.id (ON DELETE SET NULL) | ✅ | User account created from this guest |
 | migrated_at | TIMESTAMPTZ | Yes | NULL | — | ❌ | Migration timestamp |
 
 ## Notes
@@ -108,10 +107,14 @@ We won't use all of them immediately, but designing for them now prevents future
 - Expiration is calculated dynamically from `last_activity_at` (`last_activity_at + 60 days`) and is not stored in the database.
 - Any user activity updates `last_activity_at`.
 
+### Cleanup Policy
+- A scheduled daily background job permanently purges guest sessions (along with their associated temporary data) that have been inactive for more than 60 days.
+
 ### Migration
 - A guest session can only be migrated once.
 - After migration, the session becomes read-only.
 - Archived guest sessions are retained for audit purposes before cleanup.
+- If the migrated user account is deleted, the guest session record is preserved with `migrated_to_user_id` set to `NULL` (due to `ON DELETE SET NULL`).
 
 ## Open Questions
 
