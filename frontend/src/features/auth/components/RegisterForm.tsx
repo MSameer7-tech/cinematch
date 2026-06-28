@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import type { FC, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { PasswordInput } from './PasswordInput';
 import { GoogleButton } from './GoogleButton';
+import { GuestButton } from './GuestButton';
 import { Divider } from './Divider';
 
 export const RegisterForm: FC = () => {
-  const { register, loginWithGoogle } = useAuth();
+  const { register, loginWithGoogle, continueAsGuest, isSubmitting } = useAuth();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -26,26 +28,32 @@ export const RegisterForm: FC = () => {
       return;
     }
 
-    setLoading(true);
     setError(null);
 
     try {
       await register({ email, password, displayName });
+      // Redirect to email verification check screen
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(err?.message || 'Failed to create account. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
     setError(null);
     try {
       await loginWithGoogle();
     } catch (err: any) {
       setError(err?.message || 'Failed to authenticate with Google.');
-      setLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setError(null);
+    try {
+      await continueAsGuest();
+    } catch (err: any) {
+      setError(err?.message || 'Failed to access guest session.');
     }
   };
 
@@ -76,7 +84,7 @@ export const RegisterForm: FC = () => {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="John Doe"
-          disabled={loading}
+          disabled={isSubmitting}
           required
           className="auth-input"
         />
@@ -91,7 +99,7 @@ export const RegisterForm: FC = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          disabled={loading}
+          disabled={isSubmitting}
           required
           className="auth-input"
         />
@@ -103,7 +111,7 @@ export const RegisterForm: FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Create a strong password"
-          disabled={loading}
+          disabled={isSubmitting}
           required
         />
       </div>
@@ -114,7 +122,7 @@ export const RegisterForm: FC = () => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Repeat your password"
-          disabled={loading}
+          disabled={isSubmitting}
           id="confirmPassword"
           name="confirmPassword"
           required
@@ -123,15 +131,18 @@ export const RegisterForm: FC = () => {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isSubmitting}
         className="btn-auth btn-primary"
       >
-        {loading ? 'Creating Account...' : 'Create Account'}
+        {isSubmitting ? 'Creating Account...' : 'Create Account'}
       </button>
 
       <Divider />
 
-      <GoogleButton onClick={handleGoogleLogin} disabled={loading} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <GoogleButton onClick={handleGoogleLogin} disabled={isSubmitting} />
+        <GuestButton onClick={handleGuestLogin} disabled={isSubmitting} />
+      </div>
     </form>
   );
 };

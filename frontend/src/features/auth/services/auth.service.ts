@@ -85,8 +85,65 @@ export const authService = {
   /**
    * Register a new user with email, password, and public display name.
    */
-  async register(_credentials: RegisterCredentials): Promise<ServiceResult<AppUser>> {
-    throw new Error('Method register() not implemented.');
+  async register(credentials: RegisterCredentials): Promise<ServiceResult<AppUser>> {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+          data: {
+            display_name: credentials.displayName
+          }
+        }
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (!data.user) {
+        return { success: false, error: 'Sign up succeeded but no user details were returned.' };
+      }
+
+      const appUser: AppUser = {
+        id: data.user.id,
+        displayName: credentials.displayName,
+        avatarUrl: null,
+        onboardingCompleted: false,
+        accountStatus: 'ACTIVE',
+        createdAt: data.user.created_at,
+        updatedAt: data.user.updated_at || data.user.created_at,
+        lastSeenAt: null,
+        deletionRequestedAt: null,
+        deletedAt: null
+      };
+
+      return { success: true, data: appUser };
+    } catch (err: any) {
+      console.error('Registration service failure:', err);
+      return { success: false, error: err?.message || 'An unexpected error occurred during registration.' };
+    }
+  },
+
+  /**
+   * Resend the email verification link.
+   */
+  async resendVerificationEmail(email: string): Promise<ServiceResult<void>> {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err: any) {
+      console.error('Resend verification failure:', err);
+      return { success: false, error: err?.message || 'Failed to resend verification email.' };
+    }
   },
 
   /**
