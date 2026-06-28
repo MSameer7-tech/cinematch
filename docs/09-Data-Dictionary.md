@@ -22,6 +22,8 @@ This document defines every database field used in CinemaMatch. It serves as the
 | created_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Creation timestamp |
 | updated_at | TIMESTAMPTZ | No | NOW() | Auto-updated | ❌ | Last profile update |
 | last_seen_at | TIMESTAMPTZ | Yes | NULL | — | ✅ | Last overall user activity |
+| deletion_requested_at | TIMESTAMPTZ | Yes | NULL | — | ✅ | Timestamp when the user requested permanent account deletion |
+| deleted_at | TIMESTAMPTZ | Yes | NULL | — | ✅ | Timestamp when the account was permanently deleted |
 
 ## Notes
 
@@ -41,6 +43,37 @@ Allowed values:
 - `DELETED`
 
 We won't use all of them immediately, but designing for them now prevents future migrations.
+
+### Account Deletion
+- Users can request permanent account deletion.
+- The request timestamp is stored in `deletion_requested_at`.
+- Accounts remain recoverable for 90 days.
+- After the retention period, a background cleanup job permanently deletes the account and records `deleted_at`.
+
+### User Activity Tracking (`last_seen_at`)
+- Represents the user's most recent authenticated activity across all active sessions.
+- **Updates on:**
+  - Successful login
+  - Authenticated API requests
+  - Rating a movie
+  - Adding/removing watchlist items
+  - Reviews
+  - Search actions
+- **Does not update on:**
+  - Static asset requests
+  - Background polling
+  - Health checks
+
+### Profile Updates
+- `updated_at` changes only when profile information is modified.
+- Authentication activity does not modify `updated_at`.
+- Session activity does not modify `updated_at`.
+- `last_seen_at` is tracked independently.
+
+### Avatar Management
+- During the first OAuth sign-in, the provider avatar is copied into `users.avatar_url`.
+- After account creation, the CineMatch profile owns this value.
+- Future provider avatar changes do not overwrite the user's chosen avatar automatically.
 
 ## Open Questions
 
