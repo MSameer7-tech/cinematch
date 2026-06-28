@@ -60,7 +60,6 @@ We won't use all of them immediately, but designing for them now prevents future
 | recommendation_profile_id | UUID | Yes | NULL | FK (Future) | ❌ | Links to recommendation profile |
 | created_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Session creation time |
 | last_activity_at | TIMESTAMPTZ | No | NOW() | Auto-updated | ✅ | Last recorded activity |
-| expires_at | TIMESTAMPTZ | No | Calculated | Must be after last activity | ✅ | Session expiration timestamp |
 | migrated_to_user_id | UUID | Yes | NULL | FK → users.id | ✅ | User account created from this guest |
 | migrated_at | TIMESTAMPTZ | Yes | NULL | — | ❌ | Migration timestamp |
 
@@ -73,8 +72,8 @@ We won't use all of them immediately, but designing for them now prevents future
 
 ### Expiration
 - Sessions expire after 60 consecutive days of inactivity.
+- Expiration is calculated dynamically from `last_activity_at` (`last_activity_at + 60 days`) and is not stored in the database.
 - Any user activity updates `last_activity_at`.
-- `expires_at` is recalculated after each activity.
 
 ### Migration
 - A guest session can only be migrated once.
