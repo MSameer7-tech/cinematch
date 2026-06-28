@@ -194,7 +194,7 @@ export const authService = {
       const { data: guestSession, error } = await supabase
         .from('guest_sessions')
         .insert({
-          session_token: hashedToken
+          guest_token_hash: hashedToken
         })
         .select('*')
         .single();
@@ -208,7 +208,7 @@ export const authService = {
 
       const guestUser: GuestUser = {
         id: guestSession.id,
-        sessionToken: guestSession.session_token,
+        sessionToken: guestSession.guest_token_hash,
         createdAt: guestSession.created_at,
         lastActivityAt: guestSession.last_activity_at,
         migratedToUserId: guestSession.migrated_to_user_id,
@@ -292,7 +292,7 @@ export const authService = {
       const { data: guestSession, error } = await supabase
         .from('guest_sessions')
         .select('*')
-        .eq('session_token', hashedToken)
+        .eq('guest_token_hash', hashedToken)
         .single();
 
       if (error || !guestSession) {
@@ -318,7 +318,7 @@ export const authService = {
 
       const guestUser: GuestUser = {
         id: guestSession.id,
-        sessionToken: guestSession.session_token,
+        sessionToken: guestSession.guest_token_hash,
         createdAt: guestSession.created_at,
         lastActivityAt: now,
         migratedToUserId: guestSession.migrated_to_user_id,
