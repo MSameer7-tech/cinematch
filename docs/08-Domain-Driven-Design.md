@@ -363,3 +363,91 @@ Future versions may support:
 - Microsoft Login
 - Discord Login
 - Multi-provider authentication
+
+---
+
+## 3.4 User Session
+
+### Purpose
+
+Represents an active, authenticated connection between a registered User and the CineMatch platform. It tracks session details, device context, and expiration to ensure secure, concurrent usage across multiple client applications.
+
+### Responsibilities
+
+The User Session is responsible for:
+
+- Managing user authentication state.
+- Validating session activity.
+- Tracking device and location context.
+- Supporting session revocation.
+- Handling idle session timeouts.
+- Recording session history and duration.
+
+### Owned Data
+
+The User Session owns the following business data:
+
+- Session ID (UUID)
+- User ID
+- Auth Provider (Email / Google)
+- Device Info (User Agent, OS, Device Type)
+- IP Address
+- Approximate Location (City/Country)
+- Created Timestamp
+- Last Active Timestamp
+- Expiry Timestamp
+- Revocation Status
+- Revocation Reason
+
+### Collaborates With
+
+The User Session interacts with:
+
+- User
+- OAuth Account
+- Authentication Service
+
+### Lifecycle
+
+Created
+↓
+Active
+↓
+Idle
+↓
+Expired
+↓
+Revoked
+↓
+Archived
+
+### Business Rules
+
+- A session is identified by a secure, cryptographically random session token.
+- Users may have multiple concurrent active sessions.
+- Sessions automatically expire after a configurable idle time (e.g., 30 days).
+- Modifying a user's password immediately invalidates all active sessions except the current one.
+- The session token must be transmitted via secure, HTTP-only, SameSite cookies or bearer headers.
+
+### Domain Events
+
+- User Session Started
+- User Session Active
+- User Session Expired
+- User Session Revoked
+- User Session Terminated
+
+### Invariants
+
+- Every User Session must be linked to exactly one registered User.
+- A session cannot be active if its expiry timestamp has passed.
+- A revoked session cannot be transitioned back to active.
+
+### Future Extensions
+
+Future versions may support:
+
+- Geolocation anomaly detection (e.g., signing in from two distant countries).
+- Device fingerprinting and trust scoring.
+- WebAuthn / Passkeys authentication.
+- Single Sign-Out across federated services.
