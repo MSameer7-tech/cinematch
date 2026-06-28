@@ -249,7 +249,7 @@ A Guest Session expires after 60 consecutive days of inactivity. Any activity re
 
 - Every Guest Session is identified by a unique UUID.
 - The UUID is stored in a secure browser cookie.
-- A Guest Session can exist on only one browser/device.
+- A Guest Session is identified by a secure browser cookie and is intended to be used from a single browser instance. Copying or sharing the cookie is unsupported and may invalidate the session.
 - Guest data is moved, not copied, during migration.
 - A Guest Session can be migrated only once.
 - Expired Guest Sessions are automatically deleted after the retention period.
