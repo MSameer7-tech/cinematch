@@ -131,35 +131,36 @@ Future:
 
 | Column | Type | Nullable | Default | Constraints | Indexed | Description |
 |--------|------|----------|---------|-------------|---------|-------------|
-| id | UUID | No | gen_random_uuid() | Primary Key | ✅ | Unique session record ID (can map to Supabase session ID) |
+| id | UUID | No | gen_random_uuid() | Primary Key | ✅ | Internal UUID representing this session record |
 | user_id | UUID | No | — | FK → users.id | ✅ | Owner of this session |
-| device_name | TEXT | Yes | NULL | — | ❌ | User-defined or detected name of the device |
-| device_type | VARCHAR(20) | Yes | NULL | Allowed types only | ❌ | Type of device (e.g., MOBILE, DESKTOP, TABLET) |
-| browser | VARCHAR(50) | Yes | NULL | — | ❌ | Detected browser name |
-| operating_system | VARCHAR(50) | Yes | NULL | — | ❌ | Detected operating system |
-| ip_address | INET | Yes | NULL | — | ❌ | IP address of the client connection |
-| last_activity_at | TIMESTAMPTZ | No | NOW() | — | ✅ | Last recorded user activity |
-| created_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Session creation timestamp |
+| device_label | TEXT | Yes | NULL | — | ❌ | User-friendly device name (e.g., 'Dad's Laptop') |
+| device_type | VARCHAR(20) | Yes | NULL | MOBILE / DESKTOP / TABLET | ❌ | Categorized hardware format |
+| user_agent | TEXT | Yes | NULL | — | ❌ | Raw User-Agent string from browser/client |
+| last_ip_address | INET | Yes | NULL | — | ❌ | IP address of the most recent connection |
+| trusted | BOOLEAN | No | FALSE | — | ❌ | True if the device has completed full verification |
+| last_activity_at | TIMESTAMPTZ | No | NOW() | — | ✅ | Timestamp of the last user action in CineMatch |
+| created_at | TIMESTAMPTZ | No | NOW() | Immutable | ❌ | Session metadata record creation timestamp |
 | revoked_at | TIMESTAMPTZ | Yes | NULL | Must be after created_at | ✅ | Revocation timestamp (NULL means active) |
 
 ## Notes
 
-### Ownership
-- Supabase Auth manages core authentication states, tokens, and verification.
-- The `user_sessions` table stores application-level device metadata and activity tracking.
-- Session revocation status is maintained here, allowing users to inspect and revoke active devices.
+### Ownership & Separation of Concerns
+- **Core Authentication:** Handled exclusively by Supabase Auth (tokens, credentials, verification, actual login session).
+- **Application Session Metadata:** The `user_sessions` table tracks application-level metadata (device naming, device trust state, security audits, active device list) rather than replacing or duplicating Supabase's authentication state.
+- Decoupling `id` (using `gen_random_uuid()`) ensures our application schema is independent of Supabase's internal session ID formats.
 
 ### Expiration
-- Following **Principle 5 (Dynamic over Static)**, we do not store an `expires_at` column. Expiration is calculated at runtime (`last_activity_at + 30 days` of inactivity).
-- A session is active if `revoked_at` is `NULL` AND `last_activity_at` is within the active limit.
+- Following **Principle 5 (Dynamic over Static)**, we calculate expiration dynamically (`last_activity_at + 90 days`). We do not store a static `expires_at` column.
+- The inactivity timeout is set to **90 days** to accommodate devices that are accessed less frequently (e.g., home desktops or secondary laptops) without forcing premature logouts.
 
-### Security
-- If a user changes their password, all sessions except the current active one must have their `revoked_at` set to `NOW()`.
+### Security & Privacy
+- `last_ip_address` is retained strictly for security audit purposes (e.g., detecting impossible travel anomalies between logins) and must never be used for recommendations.
+- Retaining session records via `revoked_at` instead of hard deleting allows CineMatch to maintain security logs and let users inspect their active/past device history.
 
 ## Open Questions
 
 - Should we automatically update `last_activity_at` on every single request, or throttle updates (e.g., maximum once per hour) to reduce write load?
-- Should we automatically log the approximate physical location (e.g., country/city) based on the `ip_address`?
+- Should we automatically log the approximate physical location (e.g., country/city) based on the `last_ip_address`?
 - Should an administrator be able to revoke sessions, or is this feature restricted to the session owner?
 
 ---
