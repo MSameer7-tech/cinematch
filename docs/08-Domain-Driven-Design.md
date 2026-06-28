@@ -281,3 +281,85 @@ Future versions may support:
 - Guest-to-guest migration.
 - Cross-device guest synchronization (future research).
 - Automatic guest profile merging.
+
+---
+
+## 3.3 OAuth Account
+
+### Purpose
+
+Represents an external authentication provider linked to a CineMatch user. It supports Google Sign-In today and is designed to support other providers like Apple, GitHub, and Microsoft in the future, keeping provider-specific information separate from the User object.
+
+### Responsibilities
+
+The OAuth Account is responsible for:
+
+- Authenticating using OAuth providers.
+- Linking external accounts.
+- Unlinking external accounts.
+- Storing provider identity.
+- Verify linked providers.
+- Record authentication history.
+
+### Owned Data
+
+The OAuth Account owns the following business data:
+
+- Provider Name
+- Provider User ID
+- Provider Email
+- Provider Display Name
+- Provider Avatar URL
+- Linked Date
+- Last Authentication Time
+- Verification Status
+
+### Collaborates With
+
+The OAuth Account interacts with:
+
+- User
+- User Session
+- Authentication Service
+
+### Lifecycle
+
+Linked
+↓
+Active
+↓
+Re-authenticated
+↓
+Unlinked
+
+### Business Rules
+
+- One provider account can only belong to one CineMatch user.
+- Multiple providers may be linked to a single user in future versions.
+- Provider email must match the authenticated identity.
+- Google accounts don't require additional email verification.
+- Re-authentication is required before unlinking the last authentication provider.
+
+### Domain Events
+
+- OAuth Account Linked
+- OAuth Login Successful
+- OAuth Login Failed
+- OAuth Account Unlinked
+- Provider Re-authenticated
+
+### Invariants
+
+- Every OAuth Account belongs to exactly one User.
+- A provider account cannot be linked to multiple users.
+- Provider identity cannot change without verification.
+
+### Future Extensions
+
+Future versions may support:
+
+- Apple Sign-In
+- GitHub Login
+- Microsoft Login
+- Discord Login
+- Multi-provider authentication
