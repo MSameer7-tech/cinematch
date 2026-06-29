@@ -16,7 +16,7 @@ export const SectionHeader: FC<SectionHeaderProps> = ({
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '20px' }}>
       <div>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, fontFamily: 'var(--font-heading)', color: '#fff', margin: 0 }}>
+        <h2 style={{ fontSize: '22px', fontWeight: 700, fontFamily: 'var(--font-heading)', color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>
           {title}
         </h2>
         {subtitle && (

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
 export const UserMenu: FC = () => {
@@ -83,6 +83,11 @@ export const UserMenu: FC = () => {
             <button onClick={() => handleItemClick('/settings')} className="dropdown-item">
               <Settings size={16} />
               <span>Settings</span>
+            </button>
+
+            <button onClick={() => handleItemClick('/help')} className="dropdown-item">
+              <HelpCircle size={16} />
+              <span>Help</span>
             </button>
 
             <button onClick={handleLogout} className="dropdown-item danger" style={{ borderTop: '1px solid var(--border-color)', borderRadius: 0, marginTop: '4px', paddingTop: '12px' }}>
