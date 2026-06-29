@@ -27,7 +27,7 @@ export const PublicRoute: FC = () => {
     );
   }
 
-  if (authState.status === 'AUTHENTICATED') {
+  if (authState.status === 'AUTHENTICATED' || authState.status === 'GUEST') {
     return <Navigate to="/" replace />;
   }
 
