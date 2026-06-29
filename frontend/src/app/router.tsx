@@ -5,6 +5,7 @@ import { ProtectedRoute } from '../routes/ProtectedRoute';
 import { PublicRoute } from '../routes/PublicRoute';
 import { GuestRoute } from '../routes/GuestRoute';
 
+// Auth Pages
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import { RegisterPage } from '../features/auth/pages/RegisterPage';
 import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
@@ -12,6 +13,16 @@ import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from '../features/auth/pages/VerifyEmailPage';
 import { OnboardingPage } from '../features/auth/pages/OnboardingPage';
 import { AuthDebugPage } from '../features/auth/pages/AuthDebugPage';
+
+// Feature Pages
+import { HomePage } from '../features/home/pages/HomePage';
+import { DiscoverPage } from '../features/discover/pages/DiscoverPage';
+import { TrendingPage } from '../features/trending/pages/TrendingPage';
+import { WatchlistPage } from '../features/watchlist/pages/WatchlistPage';
+import { FavoritesPage } from '../features/favorites/pages/FavoritesPage';
+import { RecommendationsPage } from '../features/recommendations/pages/RecommendationsPage';
+import { ProfilePage } from '../features/profile/pages/ProfilePage';
+import { SettingsPage } from '../features/settings/pages/SettingsPage';
 
 export const router = createBrowserRouter([
   {
@@ -24,7 +35,27 @@ export const router = createBrowserRouter([
         children: [
           {
             path: '',
-            element: <div>Home Dashboard (Guest / Authenticated User)</div>,
+            element: <HomePage />,
+          },
+          {
+            path: 'discover',
+            element: <DiscoverPage />,
+          },
+          {
+            path: 'trending',
+            element: <TrendingPage />,
+          },
+          {
+            path: 'watchlist',
+            element: <WatchlistPage />,
+          },
+          {
+            path: 'favorites',
+            element: <FavoritesPage />,
+          },
+          {
+            path: 'recommendations',
+            element: <RecommendationsPage />,
           },
         ],
       },
@@ -33,16 +64,12 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           {
-            path: 'movies',
-            element: <div>Movies Page (Authenticated Only)</div>,
-          },
-          {
             path: 'profile',
-            element: <div>Profile Page (Authenticated Only)</div>,
+            element: <ProfilePage />,
           },
           {
-            path: 'watchlist',
-            element: <div>Watchlist Page (Authenticated Only)</div>,
+            path: 'settings',
+            element: <SettingsPage />,
           },
           {
             path: 'onboarding',
