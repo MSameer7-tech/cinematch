@@ -339,10 +339,6 @@ body {
   --sidebar-width: 80px;
 }
 
-.app-layout.sidebar-collapsed .sidebar {
-  padding: 32px 12px 24px 12px;
-}
-
 .app-layout.sidebar-collapsed .sidebar-section-label {
   opacity: 0;
   height: 0;
@@ -351,20 +347,9 @@ body {
   overflow: hidden;
 }
 
-.app-layout.sidebar-collapsed .sidebar-link {
-  justify-content: center;
-  padding: 12px;
-  gap: 0;
-}
-
+/* Disable horizontal translates on hover when collapsed to look clean */
 .app-layout.sidebar-collapsed .sidebar-link:hover {
   transform: none;
-}
-
-.app-layout.sidebar-collapsed .btn-logout {
-  justify-content: center;
-  padding: 12px;
-  gap: 0;
 }
 
 .app-layout.sidebar-collapsed .btn-logout:hover {
@@ -462,8 +447,9 @@ body {
 }
 
 .sidebar-icon {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
   color: var(--text-secondary);
   transition: all 200ms ease;
 }
