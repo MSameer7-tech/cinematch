@@ -225,15 +225,41 @@ export const authService = {
   /**
    * Send a password reset link to the user's email.
    */
-  async forgotPassword(_email: string): Promise<ServiceResult<void>> {
-    throw new Error('Method forgotPassword() not implemented.');
+  async forgotPassword(email: string): Promise<ServiceResult<void>> {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err: any) {
+      console.error('Forgot password service failure:', err);
+      return { success: false, error: err?.message || 'Failed to send password reset email.' };
+    }
   },
 
   /**
    * Complete password reset with a new password.
    */
-  async resetPassword(_password: string): Promise<ServiceResult<void>> {
-    throw new Error('Method resetPassword() not implemented.');
+  async resetPassword(password: string): Promise<ServiceResult<void>> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err: any) {
+      console.error('Reset password service failure:', err);
+      return { success: false, error: err?.message || 'Failed to update password.' };
+    }
   },
 
   /**
