@@ -5,15 +5,18 @@ import { AppShell } from '../components/layout/AppShell';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopNavbar } from '../components/layout/TopNavbar';
 
+import { useState } from 'react';
+
 export const MainLayout: FC = () => {
   const location = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <AppShell>
-      <div className="app-layout">
+      <div className={`app-layout ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
         <TopNavbar />
         <div className="layout-body">
-          <Sidebar />
+          <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(!isCollapsed)} />
           <main className="content-container">
             <AnimatePresence mode="wait">
               <motion.div

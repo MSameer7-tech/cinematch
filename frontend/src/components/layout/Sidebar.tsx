@@ -12,7 +12,9 @@ import {
   Settings, 
   LogOut,
   HelpCircle,
-  Clapperboard
+  Clapperboard,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 
@@ -53,7 +55,12 @@ const sections: Section[] = [
   }
 ];
 
-export const Sidebar: FC = () => {
+interface SidebarProps {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+}
+
+export const Sidebar: FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -69,23 +76,57 @@ export const Sidebar: FC = () => {
   );
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" style={{ position: 'fixed' }}>
+      {/* Edge Toggle Collapse Button */}
+      <button
+        onClick={onToggleCollapse}
+        style={{
+          position: 'absolute',
+          right: '-12px',
+          top: '32px',
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--bg-sidebar)',
+          border: '1px solid var(--border-color)',
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--primary-color)';
+          e.currentTarget.style.color = '#fff';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--bg-sidebar)';
+          e.currentTarget.style.color = 'var(--text-secondary)';
+        }}
+      >
+        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </button>
+
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {/* Sidebar Header Logo */}
-        <div className="sidebar-header">
-          <div className="sidebar-logo-container">
-            <div className="sidebar-logo">
+        <div className="sidebar-header" style={{ padding: isCollapsed ? '0' : '0 14px', display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
+          <div className="sidebar-logo-container" style={{ alignItems: isCollapsed ? 'center' : 'flex-start' }}>
+            <div className="sidebar-logo" style={{ gap: isCollapsed ? '0' : '10px' }}>
               <Clapperboard size={22} style={{ color: 'var(--primary-color)' }} />
-              <span>CineMatch</span>
+              {!isCollapsed && <span>CineMatch</span>}
             </div>
-            <span className="sidebar-subtitle">AI-Powered Cinema</span>
+            {!isCollapsed && <span className="sidebar-subtitle">AI-Powered Cinema</span>}
           </div>
         </div>
 
         {/* Navigation Sections */}
         {sections.map((section, index) => (
           <div key={section.title}>
-            <div className="sidebar-section-label">{section.title}</div>
+            {!isCollapsed && <div className="sidebar-section-label">{section.title}</div>}
+            {isCollapsed && index > 0 && subtleDivider}
             <div className="sidebar-nav">
               {section.items.map((item) => (
                 <NavLink
@@ -94,11 +135,12 @@ export const Sidebar: FC = () => {
                   className={({ isActive }) => 
                     `sidebar-link ${isActive ? 'active' : ''}`
                   }
+                  title={isCollapsed ? item.label : undefined}
                 >
                   {({ isActive }) => (
                     <>
                       <item.icon className="sidebar-icon" />
-                      <span style={{ position: 'relative', zIndex: 2 }}>{item.label}</span>
+                      {!isCollapsed && <span style={{ position: 'relative', zIndex: 2 }}>{item.label}</span>}
                       
                       {/* Active Indicator Sliding Overlay */}
                       {isActive && (
@@ -128,12 +170,8 @@ export const Sidebar: FC = () => {
                 </NavLink>
               ))}
             </div>
-            {/* Render a subtle divider between sections */}
-            {index < sections.length - 1 && subtleDivider}
           </div>
         ))}
-
-        {/* Upgrade to Pro hidden for now */}
       </div>
 
       {/* Footer / Logout */}
@@ -146,11 +184,12 @@ export const Sidebar: FC = () => {
               `sidebar-link ${isActive ? 'active' : ''}`
             }
             style={{ marginBottom: '4px' }}
+            title={isCollapsed ? "Help" : undefined}
           >
             {({ isActive }) => (
               <>
                 <HelpCircle className="sidebar-icon" />
-                <span style={{ position: 'relative', zIndex: 2 }}>Help</span>
+                {!isCollapsed && <span style={{ position: 'relative', zIndex: 2 }}>Help</span>}
                 {isActive && (
                   <motion.div
                     layoutId="activeNavIndicator"
@@ -176,9 +215,9 @@ export const Sidebar: FC = () => {
             )}
           </NavLink>
 
-          <button onClick={handleLogout} className="btn-logout">
+          <button onClick={handleLogout} className="btn-logout" title={isCollapsed ? "Logout" : undefined}>
             <LogOut className="sidebar-icon" />
-            <span>Logout</span>
+            {!isCollapsed && <span>Logout</span>}
           </button>
         </div>
       </div>

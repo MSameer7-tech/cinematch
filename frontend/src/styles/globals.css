@@ -312,6 +312,7 @@ body {
   min-height: 100vh;
   background-color: var(--bg-primary);
   overflow-y: auto;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================================== */
@@ -331,6 +332,43 @@ body {
   justify-content: space-between;
   padding: 32px 18px 24px 18px;
   z-index: 40;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-layout.sidebar-collapsed {
+  --sidebar-width: 80px;
+}
+
+.app-layout.sidebar-collapsed .sidebar {
+  padding: 32px 12px 24px 12px;
+}
+
+.app-layout.sidebar-collapsed .sidebar-section-label {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.app-layout.sidebar-collapsed .sidebar-link {
+  justify-content: center;
+  padding: 12px;
+  gap: 0;
+}
+
+.app-layout.sidebar-collapsed .sidebar-link:hover {
+  transform: none;
+}
+
+.app-layout.sidebar-collapsed .btn-logout {
+  justify-content: center;
+  padding: 12px;
+  gap: 0;
+}
+
+.app-layout.sidebar-collapsed .btn-logout:hover {
+  transform: none;
 }
 
 .sidebar-header {
@@ -487,6 +525,7 @@ body {
   justify-content: space-between;
   padding: 0 40px;
   z-index: 50;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========================================== */
