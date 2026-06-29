@@ -7,12 +7,14 @@ import { TopNavbar } from '../components/layout/TopNavbar';
 export const MainLayout: FC = () => {
   return (
     <AppShell>
-      <TopNavbar />
-      <div style={{ display: 'flex' }}>
-        <Sidebar />
-        <main style={{ flex: 1 }}>
-          <Outlet />
-        </main>
+      <div className="app-layout">
+        <TopNavbar />
+        <div className="layout-body">
+          <Sidebar />
+          <main className="content-container">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </AppShell>
   );
