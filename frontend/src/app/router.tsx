@@ -17,10 +17,12 @@ import { AuthDebugPage } from '../features/auth/pages/AuthDebugPage';
 // Feature Pages
 import { HomePage } from '../features/home/pages/HomePage';
 import { DiscoverPage } from '../features/discover/pages/DiscoverPage';
-import { TrendingPage } from '../features/trending/pages/TrendingPage';
+
 import { WatchlistPage } from '../features/watchlist/pages/WatchlistPage';
 import { FavoritesPage } from '../features/favorites/pages/FavoritesPage';
 import { RecommendationsPage } from '../features/recommendations/pages/RecommendationsPage';
+
+import { MovieDetailsPage } from '../features/movies/pages/MovieDetailsPage';
 import { ProfilePage } from '../features/profile/pages/ProfilePage';
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
 
@@ -42,8 +44,8 @@ export const router = createBrowserRouter([
             element: <DiscoverPage />,
           },
           {
-            path: 'trending',
-            element: <TrendingPage />,
+            path: 'movie/:id',
+            element: <MovieDetailsPage />,
           },
           {
             path: 'watchlist',

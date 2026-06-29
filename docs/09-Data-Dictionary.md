@@ -245,3 +245,27 @@ Future:
 
 - Should we set limit caps on the number of preferred genres/personnel a user can select (e.g., maximum 10 genres or 5 favorite directors) to prevent database bloat?
 - Should the `discovery_mode` enum support a granular range (e.g., an integer scale from 1 to 5) rather than a binary enum, to offer more recommendation precision?
+
+---
+
+# 6. Watchlists Table
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary Key |
+| user_id | UUID | FK → public.users |
+| movie_id | INTEGER | TMDB Movie ID |
+| created_at | TIMESTAMPTZ | Added timestamp |
+
+## Indexes
+- `user_id`
+- `movie_id`
+- `created_at`
+
+## Constraints
+- `UNIQUE(user_id, movie_id)`
+
+## Notes
+- Stores only TMDB IDs.
+- Movie metadata is fetched dynamically from TMDB.
+- Deleting a user cascades watchlist deletion.

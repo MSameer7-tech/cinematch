@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { 
   House, 
   Compass, 
-  Flame, 
   Bookmark, 
   Heart, 
   Sparkles, 
@@ -34,16 +33,15 @@ const sections: Section[] = [
     title: 'Discover',
     items: [
       { path: '/', label: 'Home', icon: House },
-      { path: '/discover', label: 'Discover', icon: Compass },
-      { path: '/trending', label: 'Trending', icon: Flame },
+      { path: '/discover', label: 'Explore', icon: Compass },
+      { path: '/recommendations', label: 'AI Picks', icon: Sparkles },
     ]
   },
   {
-    title: 'Your Library',
+    title: 'Library',
     items: [
       { path: '/watchlist', label: 'Watchlist', icon: Bookmark },
       { path: '/favorites', label: 'Favorites', icon: Heart },
-      { path: '/recommendations', label: 'AI Picks', icon: Sparkles },
     ]
   },
   {
