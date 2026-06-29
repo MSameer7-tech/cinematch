@@ -78,3 +78,6 @@ BEGIN
     END IF;
 END
 $$;
+
+-- Grant permissions to public roles
+GRANT ALL ON public.users TO anon, authenticated, service_role;

@@ -11,3 +11,6 @@ CREATE TABLE IF NOT EXISTS public.guest_sessions (
 CREATE INDEX IF NOT EXISTS idx_guest_sessions_hash ON public.guest_sessions(guest_token_hash);
 CREATE INDEX IF NOT EXISTS idx_guest_sessions_last_activity ON public.guest_sessions(last_activity_at);
 CREATE INDEX IF NOT EXISTS idx_guest_sessions_migrated_user ON public.guest_sessions(migrated_to_user_id);
+
+-- Grant permissions to public roles
+GRANT ALL ON public.guest_sessions TO anon, authenticated, service_role;
