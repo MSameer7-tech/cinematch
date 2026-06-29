@@ -1,17 +1,20 @@
 import type { FC } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bell, Film } from 'lucide-react';
+import { Bell, Clapperboard, Menu } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 
 export const TopNavbar: FC = () => {
-  const navigate = useNavigate();
-
   return (
     <header className="top-navbar">
-      <div onClick={() => navigate('/')} className="brand-logo">
-        <Film size={22} style={{ color: 'var(--primary-color)' }} />
-        <span>CineMatch</span>
+      {/* Mobile Menu & Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button className="icon-btn-nav mobile-menu-btn" aria-label="Open Menu" style={{ display: 'none' }}>
+          <Menu size={20} />
+        </button>
+        <div className="mobile-brand-logo">
+          <Clapperboard size={20} style={{ color: 'var(--primary-color)' }} />
+          <span>CineMatch</span>
+        </div>
       </div>
 
       <SearchBar />
