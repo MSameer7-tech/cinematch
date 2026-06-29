@@ -754,3 +754,36 @@ body {
     display: none;
   }
 }
+
+/* ========================================== */
+/* Shimmer Loading Skeleton                   */
+/* ========================================== */
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #18181f 25%,
+    #22222a 37%,
+    #18181f 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer-anim 1.4s ease infinite;
+}
+
+@keyframes shimmer-anim {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.carousel-scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.carousel-scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
