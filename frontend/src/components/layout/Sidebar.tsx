@@ -83,7 +83,7 @@ export const Sidebar: FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => 
         style={{
           position: 'absolute',
           right: '-12px',
-          top: '32px',
+          top: '96px',
           width: '24px',
           height: '24px',
           borderRadius: '50%',

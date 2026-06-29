@@ -331,7 +331,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   padding: 32px 18px 24px 18px;
-  z-index: 40;
+  z-index: 60; /* Sits above navbar to ensure toggle button is clickable */
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
