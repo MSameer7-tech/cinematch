@@ -52,30 +52,8 @@ export const authService = {
         return { success: false, error: 'Sign in succeeded but no user was returned.' };
       }
 
-      const { data: profile, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileError) {
-        return { success: false, error: 'Failed to load your user profile.' };
-      }
-
-      const appUser: AppUser = {
-        id: profile.id,
-        displayName: profile.display_name,
-        avatarUrl: profile.avatar_url,
-        onboardingCompleted: profile.onboarding_completed,
-        accountStatus: profile.account_status,
-        createdAt: profile.created_at,
-        updatedAt: profile.updated_at,
-        lastSeenAt: profile.last_seen_at,
-        deletionRequestedAt: profile.deletion_requested_at,
-        deletedAt: profile.deleted_at
-      };
-
-      return { success: true, data: appUser };
+      // Delegate profile fetching/creation to getCurrentUser
+      return await this.getCurrentUser();
     } catch (err: any) {
       console.error('Login service failure:', err);
       return { success: false, error: err?.message || 'An unexpected error occurred during login.' };
@@ -272,13 +250,39 @@ export const authService = {
         return { success: false, error: 'No active session found.' };
       }
 
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
 
-      if (profileError) {
+      // If user profile does not exist in public.users, create it on-demand (fallback for OAuth/signup sync issues)
+      if (profileError && (profileError.code === 'PGRST116' || profileError.message.includes('JSON object'))) {
+        const displayName = supabaseUser.user_metadata?.display_name || 
+                            supabaseUser.user_metadata?.full_name || 
+                            supabaseUser.email?.split('@')[0] || 
+                            'User';
+        const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
+
+        const { data: newProfile, error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: supabaseUser.id,
+            display_name: displayName,
+            avatar_url: avatarUrl,
+            onboarding_completed: false,
+            account_status: 'ACTIVE'
+          })
+          .select('*')
+          .single();
+
+        if (insertError) {
+          console.error('Failed to create fallback user profile:', insertError);
+          return { success: false, error: 'Failed to create your user profile.' };
+        }
+        profile = newProfile;
+      } else if (profileError) {
+        console.error('Failed to query user profile:', profileError);
         return { success: false, error: 'Failed to load user profile.' };
       }
 
@@ -297,6 +301,7 @@ export const authService = {
 
       return { success: true, data: appUser };
     } catch (err: any) {
+      console.error('getCurrentUser unexpected error:', err);
       return { success: false, error: err?.message || 'Failed to fetch user profile.' };
     }
   },
