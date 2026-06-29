@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FC, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthCard } from '../components/AuthCard';
@@ -11,10 +11,29 @@ export const ResetPasswordPage: FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isLinkInvalid, setIsLinkInvalid] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if the URL hash contains Supabase redirect error messages (like otp_expired)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const errorCode = hashParams.get('error_code');
+    const errorDesc = hashParams.get('error_description');
+
+    if (errorCode || errorDesc) {
+      setIsLinkInvalid(true);
+      if (errorCode === 'otp_expired') {
+        setError('Your password reset link has expired. Please request a new one.');
+      } else {
+        setError(errorDesc?.replace(/\+/g, ' ') || 'Invalid reset link.');
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isLinkInvalid) return;
+
     if (!password || !confirmPassword) {
       setError('Please fill in all fields.');
       return;
@@ -55,7 +74,7 @@ export const ResetPasswordPage: FC = () => {
   return (
     <AuthCard 
       title="Reset Password" 
-      subtitle="Enter your new password below"
+      subtitle={isLinkInvalid ? "Reset Link Expired" : "Enter your new password below"}
       footer={footer}
     >
       {success ? (
@@ -88,7 +107,7 @@ export const ResetPasswordPage: FC = () => {
           </button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+        <div style={{ width: '100%' }}>
           {error && (
             <div style={{
               backgroundColor: 'rgba(239, 68, 68, 0.12)',
@@ -105,38 +124,52 @@ export const ResetPasswordPage: FC = () => {
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">NEW PASSWORD</label>
-            <PasswordInput
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter new password"
-              disabled={loading}
-              required
-            />
-          </div>
+          {isLinkInvalid ? (
+            <div style={{ textAlign: 'center', padding: '10px 0' }}>
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="btn-auth btn-primary"
+              >
+                Request New Reset Link
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">NEW PASSWORD</label>
+                <PasswordInput
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  disabled={loading}
+                  required
+                />
+              </div>
 
-          <div className="form-group" style={{ marginBottom: '28px' }}>
-            <label htmlFor="confirmPassword" className="form-label">CONFIRM PASSWORD</label>
-            <PasswordInput
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-              disabled={loading}
-              id="confirmPassword"
-              name="confirmPassword"
-              required
-            />
-          </div>
+              <div className="form-group" style={{ marginBottom: '28px' }}>
+                <label htmlFor="confirmPassword" className="form-label">CONFIRM PASSWORD</label>
+                <PasswordInput
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  disabled={loading}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  required
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-auth btn-primary"
-          >
-            {loading ? 'Updating password...' : 'Update Password'}
-          </button>
-        </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-auth btn-primary"
+              >
+                {loading ? 'Updating password...' : 'Update Password'}
+              </button>
+            </form>
+          )}
+        </div>
       )}
     </AuthCard>
   );
