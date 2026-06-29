@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { FC } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Play, Bookmark, Heart, Info } from 'lucide-react';
+import { Star, Play, Bookmark, Heart, Info, Sparkles } from 'lucide-react';
 import { LoadingSkeleton } from './LoadingSkeleton';
 
 interface MovieCardProps {
@@ -10,7 +10,7 @@ interface MovieCardProps {
   imageUrl?: string;
   releaseYear?: number;
   genres?: string[];
-  runtime?: string; // e.g. "124m"
+  runtime?: string;
   isLoading?: boolean;
   onClick?: () => void;
 }
@@ -27,10 +27,17 @@ export const MovieCard: FC<MovieCardProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Generate a deterministic Match % based on title length for mock variety
+  const matchPercentage = useMemo(() => {
+    if (!title) return 85;
+    const base = 80 + (title.length % 20);
+    return Math.min(base, 99);
+  }, [title]);
+
   if (isLoading) {
     return (
-      <div style={{ width: '100%', minWidth: '180px', maxWidth: '230px' }}>
-        <LoadingSkeleton height="300px" borderRadius="var(--radius-card)" style={{ marginBottom: '12px' }} />
+      <div style={{ width: '100%', minWidth: '190px', maxWidth: '230px' }}>
+        <LoadingSkeleton style={{ aspectRatio: '2/3', marginBottom: '12px' }} borderRadius="16px" />
         <LoadingSkeleton height="20px" width="80%" borderRadius="4px" style={{ marginBottom: '6px' }} />
         <LoadingSkeleton height="16px" width="60%" borderRadius="4px" />
       </div>
@@ -41,39 +48,39 @@ export const MovieCard: FC<MovieCardProps> = ({
 
   return (
     <motion.div
-      whileHover={{ scale: 1.05, y: -8 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      whileHover={{ scale: 1.05 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}
       style={{
         width: '100%',
-        minWidth: '180px',
+        minWidth: '190px',
         maxWidth: '230px',
         cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* Poster Image Container */}
+      {/* 2:3 Aspect Ratio Card Container */}
       <div
         style={{
           width: '100%',
-          height: '300px',
-          borderRadius: 'var(--radius-card)',
+          aspectRatio: '2/3',
+          borderRadius: '16px',
           overflow: 'hidden',
           position: 'relative',
-          border: '1px solid var(--border-color)',
+          border: '1px solid rgba(255, 255, 255, 0.04)',
           background: fallbackBackground,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.45)',
+          boxShadow: isHovered 
+            ? '0 12px 30px rgba(168, 85, 247, 0.2), 0 4px 15px rgba(0, 0, 0, 0.5)' 
+            : '0 4px 15px rgba(0, 0, 0, 0.4)',
           marginBottom: '12px',
-          transition: 'border-color 0.2s ease',
+          transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.4)')}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-color)')}
       >
         {imageUrl ? (
           <img
@@ -91,7 +98,7 @@ export const MovieCard: FC<MovieCardProps> = ({
           </div>
         )}
 
-        {/* Rating overlay badge */}
+        {/* Rating Badge (Always visible on top right) */}
         {rating !== undefined && (
           <div
             style={{
@@ -100,23 +107,23 @@ export const MovieCard: FC<MovieCardProps> = ({
               right: '12px',
               backgroundColor: 'rgba(9, 9, 11, 0.85)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '10px',
-              padding: '6px 10px',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '8px',
+              padding: '4px 8px',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
               zIndex: 5,
             }}
           >
-            <Star size={12} fill="var(--warning-color)" color="var(--warning-color)" />
-            <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-number)', color: '#fff' }}>
+            <Star size={11} fill="var(--warning-color)" color="var(--warning-color)" />
+            <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-number)', color: '#fff' }}>
               {rating.toFixed(1)}
             </span>
           </div>
         )}
 
-        {/* Apple TV Style Actions Overlay on Hover */}
+        {/* Apple TV Hover Overlay - bottom-to-top gradient fade with metadata and actions */}
         <AnimatePresence>
           {isHovered && (
             <motion.div
@@ -127,22 +134,36 @@ export const MovieCard: FC<MovieCardProps> = ({
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(to top, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0.4) 60%, rgba(9, 9, 11, 0.1) 100%)',
+                background: 'linear-gradient(to top, rgba(9, 9, 11, 0.98) 0%, rgba(9, 9, 11, 0.6) 50%, rgba(9, 9, 11, 0.1) 100%)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-end',
-                alignItems: 'center',
-                padding: '20px',
+                padding: '16px',
                 zIndex: 8,
               }}
             >
-              {/* Overlay Quick Buttons Grid */}
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              {/* Match % + Year Metadata Overlay */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Sparkles size={11} style={{ color: 'var(--primary-color)' }} />
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--primary-color)', fontFamily: 'var(--font-number)' }}>
+                    {matchPercentage}% MATCH
+                  </span>
+                </div>
+                {releaseYear && (
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600, fontFamily: 'var(--font-number)' }}>
+                    {releaseYear}
+                  </span>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', width: '100%' }}>
                 <button
                   onClick={(e) => { e.stopPropagation(); }}
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
                     backgroundColor: 'var(--primary-color)',
                     color: '#fff',
@@ -151,20 +172,20 @@ export const MovieCard: FC<MovieCardProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(168, 85, 247, 0.4)',
+                    boxShadow: '0 4px 10px rgba(168, 85, 247, 0.3)',
                     transition: 'transform 0.2s ease',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.15)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
                   onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                 >
-                  <Play size={16} fill="#fff" style={{ marginLeft: '2px' }} />
+                  <Play size={14} fill="#fff" style={{ marginLeft: '1px' }} />
                 </button>
 
                 <button
                   onClick={(e) => { e.stopPropagation(); }}
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '50%',
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -176,7 +197,7 @@ export const MovieCard: FC<MovieCardProps> = ({
                     transition: 'all 0.2s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.15)';
+                    e.currentTarget.style.transform = 'scale(1.1)';
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                   }}
                   onMouseLeave={(e) => {
@@ -184,14 +205,14 @@ export const MovieCard: FC<MovieCardProps> = ({
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
                   }}
                 >
-                  <Bookmark size={14} />
+                  <Bookmark size={13} />
                 </button>
 
                 <button
                   onClick={(e) => { e.stopPropagation(); }}
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '50%',
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -203,7 +224,7 @@ export const MovieCard: FC<MovieCardProps> = ({
                     transition: 'all 0.2s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.15)';
+                    e.currentTarget.style.transform = 'scale(1.1)';
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                   }}
                   onMouseLeave={(e) => {
@@ -211,14 +232,14 @@ export const MovieCard: FC<MovieCardProps> = ({
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
                   }}
                 >
-                  <Heart size={14} />
+                  <Heart size={13} />
                 </button>
 
                 <button
                   onClick={(e) => { e.stopPropagation(); }}
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '50%',
                     backgroundColor: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -230,7 +251,7 @@ export const MovieCard: FC<MovieCardProps> = ({
                     transition: 'all 0.2s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.15)';
+                    e.currentTarget.style.transform = 'scale(1.1)';
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                   }}
                   onMouseLeave={(e) => {
@@ -238,7 +259,7 @@ export const MovieCard: FC<MovieCardProps> = ({
                     e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
                   }}
                 >
-                  <Info size={14} />
+                  <Info size={13} />
                 </button>
               </div>
             </motion.div>
@@ -246,7 +267,7 @@ export const MovieCard: FC<MovieCardProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Details metadata info */}
+      {/* Details text below the card */}
       <div style={{ padding: '0 4px' }}>
         <h3
           style={{
@@ -257,15 +278,13 @@ export const MovieCard: FC<MovieCardProps> = ({
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            transition: 'color 0.2s ease',
           }}
-          className="movie-card-title"
         >
           {title}
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           {releaseYear && (
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500, fontFamily: 'var(--font-number)' }}>
               {releaseYear}
             </span>
           )}
@@ -280,7 +299,7 @@ export const MovieCard: FC<MovieCardProps> = ({
           {runtime && (
             <>
               <span style={{ width: '3px', height: '3px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.2)' }} />
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500, fontFamily: 'var(--font-number)' }}>
                 {runtime}
               </span>
             </>

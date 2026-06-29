@@ -526,18 +526,20 @@ body {
   padding: 0 18px 0 48px;
   font-family: var(--font-sans);
   font-size: 15px; /* Larger text size */
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08); /* glass edge border */
   color: var(--text-primary);
   border-radius: 99px;
   outline: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-input:focus {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25);
 }
 
 .search-icon {
