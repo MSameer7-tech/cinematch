@@ -1,0 +1,23 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Environment Variables
+.env
+
+# Data Files (Local datasets/databases)
+data/*
+!data/.gitkeep
+
+# Serialized Model Files
+models/*
+!models/.gitkeep
+
+# OS specific files
+.DS_Store
