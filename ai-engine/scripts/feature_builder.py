@@ -82,15 +82,25 @@ def main():
     df["director_features"] = df["director"].apply(clean_single_tag)
     df["overview_features"] = df["overview"].apply(clean_overview)
     
+    # Calculate metadata score (0 to 5)
+    def calc_metadata_score(row):
+        score = 0
+        if str(row["genre_names"]).strip() != "":
+            score += 1
+        if str(row["keywords"]).strip() != "":
+            score += 1
+        if str(row["cast"]).strip() != "":
+            score += 1
+        if str(row["director"]).strip() != "":
+            score += 1
+        if str(row["overview"]).strip() != "":
+            score += 1
+        return score
+        
+    df["metadata_score"] = df.apply(calc_metadata_score, axis=1)
+    
     # Step 2: Combine columns into content_features
     logger.info("Compiling combined content_features column...")
-    feature_columns = [
-        df["genre_features"],
-        df["keyword_features"],
-        df["cast_features"],
-        df["director_features"],
-        df["overview_features"]
-    ]
     
     # Concatenate features with single space, filtering out empty strings
     df["content_features"] = df.apply(
@@ -132,6 +142,7 @@ def main():
         print(f"Director Features: '{sample_row['director_features']}'")
         print(f"Cast Features: '{sample_row['cast_features']}'")
         print(f"Content Features (Snippet): '{sample_row['content_features'][:150]}...'")
+        print(f"Metadata Score: {sample_row['metadata_score']}")
         print("=================================================")
 
 if __name__ == "__main__":
