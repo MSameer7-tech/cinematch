@@ -1156,14 +1156,16 @@ export const DiscoverPage: FC = () => {
           )}
         </div>
 
-        {/* Right Column: Sticky Movie Inspector Panel (Enlarged 440px on desktop) */}
+        {/* Right Column: Fixed Movie Inspector Panel (Enlarged 440px on desktop) */}
         {selectedMovie && (
-          <aside className="discover-inspector-panel custom-scrollbar">
-            <MovieInspector
-              movie={selectedMovie}
-              onPlayTrailer={handlePlayTrailer}
-              onSelectMovie={(m) => setSelectedMovieId(m.id)}
-            />
+          <aside className="discover-inspector-wrapper">
+            <div className="discover-inspector-panel custom-scrollbar">
+              <MovieInspector
+                movie={selectedMovie}
+                onPlayTrailer={handlePlayTrailer}
+                onSelectMovie={(m) => setSelectedMovieId(m.id)}
+              />
+            </div>
           </aside>
         )}
       </div>

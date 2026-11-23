@@ -918,13 +918,19 @@ body {
   }
 }
 
+.discover-inspector-wrapper {
+  width: clamp(380px, 25vw, 440px);
+  flex-shrink: 0;
+  position: relative;
+}
+
 .discover-inspector-panel {
   width: clamp(380px, 25vw, 440px);
-  position: sticky;
+  position: fixed;
   top: calc(var(--navbar-height) + 24px + 64px);
-  margin-top: 64px;
-  height: calc(100vh - var(--navbar-height) - 112px);
-  max-height: calc(100vh - var(--navbar-height) - 112px);
+  right: calc(var(--content-padding) + 24px);
+  height: calc(100vh - (var(--navbar-height) + 24px + 64px) - 24px);
+  max-height: calc(100vh - (var(--navbar-height) + 24px + 64px) - 24px);
   overflow: hidden;
   flex-shrink: 0;
   display: flex;
@@ -955,12 +961,17 @@ body {
     flex-direction: column;
   }
   
+  .discover-inspector-wrapper {
+    width: 100%;
+    margin-top: 28px;
+  }
+
   .discover-inspector-panel {
     width: 100%;
     position: static;
     height: auto;
     max-height: none;
-    margin-top: 28px;
+    margin-top: 0;
   }
 }
 
