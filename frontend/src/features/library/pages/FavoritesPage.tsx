@@ -307,41 +307,7 @@ export const FavoritesPage: FC = () => {
           </div>
         </div>
 
-        {/* Right Search Input */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="watchlist-search-box">
-            <Search 
-              size={15} 
-              style={{ position: 'absolute', left: '12px', color: '#64748b', pointerEvents: 'none' }} 
-            />
-            <input
-              type="text"
-              className="watchlist-search-input"
-              placeholder="Search favorites..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '2px',
-                }}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
+
       </div>
 
       {/* Main Content Area */}
