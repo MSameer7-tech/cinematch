@@ -117,9 +117,9 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       style={{
         position: 'relative',
         width: '100%',
-        height: '82vh',
-        minHeight: '620px',
-        maxHeight: '880px',
+        height: '68vh',
+        minHeight: '500px',
+        maxHeight: '660px',
         overflow: 'hidden',
         backgroundColor: '#07070D',
       }}
@@ -130,49 +130,51 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       <AnimatePresence mode="wait">
         <motion.div 
           key={currentMovie.id}
-          initial={{ opacity: 0, scale: 1.02 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
           style={{
             position: 'absolute',
             inset: 0,
             overflow: 'hidden',
           }}
         >
-          {/* Top Glass Underlay: Uses top parts/colors of the movie poster directly under the top glass bar */}
+          {/* Unified High-Resolution Full-Bleed Backdrop */}
           <div
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 'calc(var(--navbar-height, 72px) + 2px)',
-              backgroundImage: `url(${getBackdropUrl(currentMovie.backdropPath)})`,
+              inset: 0,
+              backgroundImage: `url(${getBackdropUrl(currentMovie.backdropPath || (currentMovie as any).backdrop_path, 'original')})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center top',
+              backgroundPosition: 'center 20%',
             }}
           />
 
-          {/* Main Movie Poster: Positioned cleanly below the top bar so artwork and heads are never cropped */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 'var(--navbar-height, 72px)',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundImage: `url(${getBackdropUrl(currentMovie.backdropPath)})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center top',
-            }}
-          />
-
-          {/* Multi-stage Gradient Shadows */}
+          {/* 1. Left-to-Right Horizontal Vignette: protects text legibility, leaves characters clear on right */}
           <div style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to top, rgba(7, 7, 13, 1) 0%, rgba(7, 7, 13, 0.7) 18%, rgba(7, 7, 13, 0) 50%)',
+            background: 'linear-gradient(to right, rgba(7, 7, 13, 0.98) 0%, rgba(7, 7, 13, 0.8) 35%, rgba(7, 7, 13, 0.25) 65%, transparent 100%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* 2. Top-to-Bottom Subtle Shade: under transparent top navbar */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '110px',
+            background: 'linear-gradient(to bottom, rgba(7, 7, 13, 0.85) 0%, rgba(7, 7, 13, 0.25) 60%, transparent 100%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* 3. Bottom-to-Top Fade: seamlessly merges hero into the movie rows below */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to top, #07070D 0%, rgba(7, 7, 13, 0.85) 8%, rgba(7, 7, 13, 0.2) 24%, transparent 40%)',
             pointerEvents: 'none',
           }} />
         </motion.div>
@@ -181,14 +183,14 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       {/* Main Content Hero Box */}
       <div style={{
         position: 'absolute',
-        bottom: '50px',
+        bottom: '36px',
         left: 'calc(var(--sidebar-width, 76px) + 36px)',
         width: '46%',
-        minWidth: '420px',
-        maxWidth: '680px',
+        minWidth: '380px',
+        maxWidth: '640px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '22px',
+        gap: '18px',
         zIndex: 20,
       }}>
         <AnimatePresence mode="wait">
@@ -198,7 +200,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
           >
             {/* Formatted TMDB Movie Title Logo or Clamped Fallback Text */}
             {logoPath && !logoError ? (
@@ -206,9 +208,9 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                 style={{ 
                   display: 'flex', 
                   alignItems: 'flex-start',
-                  maxHeight: '110px', 
-                  maxWidth: 'min(400px, 80vw)', 
-                  marginBottom: '4px' 
+                  maxHeight: '95px', 
+                  maxWidth: 'min(380px, 75vw)', 
+                  marginBottom: '2px' 
                 }}
               >
                 <img
@@ -217,7 +219,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                   alt={currentMovie.title}
                   onError={() => setLogoError(true)}
                   style={{
-                    maxHeight: '100px',
+                    maxHeight: '90px',
                     maxWidth: '100%',
                     width: 'auto',
                     height: 'auto',
@@ -233,11 +235,11 @@ export const HeroBanner: FC<HeroBannerProps> = ({
             ) : (
               <h1 
                 style={{ 
-                  fontSize: 'clamp(32px, 3.8vw, 52px)', 
+                  fontSize: 'clamp(28px, 3.4vw, 46px)', 
                   fontWeight: 900, 
                   margin: 0,
                   lineHeight: 1.1,
-                  letterSpacing: '-1.2px',
+                  letterSpacing: '-1px',
                   color: '#ffffff',
                   textTransform: 'uppercase',
                   fontFamily: 'var(--font-heading)',
@@ -256,8 +258,8 @@ export const HeroBanner: FC<HeroBannerProps> = ({
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '14px', 
-              fontSize: '14px', 
+              gap: '12px', 
+              fontSize: '13.5px', 
               fontWeight: 500,
               color: 'rgba(255, 255, 255, 0.85)'
             }}>
@@ -303,7 +305,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
             <p 
               style={{ 
                 fontSize: '14px', 
-                lineHeight: 1.65, 
+                lineHeight: 1.6, 
                 color: 'rgba(255, 255, 255, 0.75)',
                 margin: 0,
                 display: '-webkit-box',
@@ -316,8 +318,8 @@ export const HeroBanner: FC<HeroBannerProps> = ({
               {currentMovie.overview}
             </p>
             
-            {/* Action Buttons: 1. Watch Trailer • 2. Add to Watchlist • 3. Rate the Movie */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '6px' }}>
+            {/* Action Buttons: 1. Watch Trailer • 2. Add to Watchlist • 3. Rate the Movie • 4. More Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '4px' }}>
               {/* 1. Watch Trailer Primary Pill Button */}
               <button
                 onClick={() => {
@@ -331,9 +333,9 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                   backgroundColor: '#7C3AED',
                   color: '#ffffff',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
-                  padding: '12px 28px',
+                  padding: '11px 26px',
                   borderRadius: '99px',
-                  fontSize: '15px',
+                  fontSize: '14.5px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)',
@@ -348,7 +350,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                   e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                <Play size={18} fill="currentColor" />
+                <Play size={17} fill="currentColor" />
                 <span>Watch Trailer</span>
               </button>
 
@@ -358,8 +360,8 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                 title={inWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
                 aria-label="Add to Watchlist"
                 style={{
-                  width: '46px',
-                  height: '46px',
+                  width: '44px',
+                  height: '44px',
                   borderRadius: '50%',
                   backgroundColor: inWatchlist ? 'rgba(124, 58, 237, 0.25)' : 'rgba(255, 255, 255, 0.08)',
                   backdropFilter: 'blur(16px)',
@@ -382,7 +384,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                   e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                {inWatchlist ? <Check size={20} strokeWidth={2.5} /> : <Plus size={20} strokeWidth={2.5} />}
+                {inWatchlist ? <Check size={19} strokeWidth={2.5} /> : <Plus size={19} strokeWidth={2.5} />}
               </button>
 
               {/* 3. Rate the Movie Frosted Glass Button */}
@@ -391,8 +393,8 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                 title={currentRating ? `Your Rating: ${currentRating}/10 (Click to edit)` : "Rate this Movie"}
                 aria-label="Rate this Movie"
                 style={{
-                  width: '46px',
-                  height: '46px',
+                  width: '44px',
+                  height: '44px',
                   borderRadius: '50%',
                   backgroundColor: currentRating ? 'rgba(245, 197, 24, 0.15)' : 'rgba(255, 255, 255, 0.08)',
                   backdropFilter: 'blur(16px)',
@@ -415,30 +417,145 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                   e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                <Star size={20} fill={currentRating ? "#F5C518" : "none"} strokeWidth={currentRating ? 1 : 2} />
+                <Star size={19} fill={currentRating ? "#F5C518" : "none"} strokeWidth={currentRating ? 1 : 2} />
+              </button>
+
+              {/* 4. More Info Frosted Glass Pill Button */}
+              <button
+                onClick={() => {
+                  if (currentMovie) window.location.href = `/movie/${currentMovie.id}`;
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  padding: '11px 20px',
+                  borderRadius: '99px',
+                  fontSize: '13.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.16)';
+                  e.currentTarget.style.transform = 'scale(1.03)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <span>More Info</span>
               </button>
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Segmented Slider Strip (Reference Image Bottom-Right Control) */}
+      {/* Floating Left / Right Navigation Arrows */}
+      {items.length > 1 && (
+        <>
+          <button
+            onClick={handlePrev}
+            aria-label="Previous slide"
+            style={{
+              position: 'absolute',
+              left: 'calc(var(--sidebar-width, 76px) + 16px)',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(7, 7, 13, 0.55)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.14)',
+              color: 'rgba(255, 255, 255, 0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              zIndex: 30,
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(124, 58, 237, 0.5)';
+              e.currentTarget.style.color = '#fff';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(7, 7, 13, 0.55)';
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            }}
+          >
+            <ChevronLeft size={22} />
+          </button>
+
+          <button
+            onClick={handleNext}
+            aria-label="Next slide"
+            style={{
+              position: 'absolute',
+              right: '24px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(7, 7, 13, 0.55)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255, 255, 255, 0.14)',
+              color: 'rgba(255, 255, 255, 0.85)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              zIndex: 30,
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(124, 58, 237, 0.5)';
+              e.currentTarget.style.color = '#fff';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(7, 7, 13, 0.55)';
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            }}
+          >
+            <ChevronRight size={22} />
+          </button>
+        </>
+      )}
+
+      {/* Segmented Slider Strip (Bottom-Right Capsule) */}
       {items.length > 1 && (
         <div style={{
           position: 'absolute',
-          bottom: '48px',
-          right: '52px',
+          bottom: '32px',
+          right: '48px',
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          backgroundColor: 'rgba(15, 15, 25, 0.65)',
+          backgroundColor: 'rgba(15, 15, 25, 0.75)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.14)',
+          border: '1px solid rgba(255, 255, 255, 0.16)',
           borderRadius: '99px',
           padding: '6px 14px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-          zIndex: 25,
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+          zIndex: 35,
         }}>
           {/* Prev Arrow Button */}
           <button

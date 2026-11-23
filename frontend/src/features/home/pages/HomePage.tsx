@@ -26,13 +26,17 @@ export const HomePage: FC = () => {
     // 1. Prioritize taste-profile recommended hero movies from backend
     if (backendHeroMovies && backendHeroMovies.length > 0) {
       for (const m of backendHeroMovies) {
-        if (m && isMovieReleased(m) && !seen.has(m.id)) {
+        const hasBackdrop = Boolean(m && (m.backdropPath || (m as any).backdrop_path));
+        if (m && isMovieReleased(m) && hasBackdrop && !seen.has(m.id)) {
           seen.add(m.id);
           list.push(m as any);
         }
         if (list.length >= 8) break;
       }
-    } else if (hero && isMovieReleased(hero)) {
+    }
+    
+    // Also include primary hero movie if valid and not yet in list
+    if (hero && isMovieReleased(hero) && (hero.backdropPath || (hero as any).backdrop_path) && !seen.has(hero.id)) {
       list.push(hero as any);
       seen.add(hero.id);
     }
@@ -40,7 +44,8 @@ export const HomePage: FC = () => {
     // 2. Add high quality backdrop movies from sections to fill up to 8
     for (const section of sections) {
       for (const m of section.movies) {
-        if (m && isMovieReleased(m) && m.backdropPath && !seen.has(m.id)) {
+        const hasBackdrop = Boolean(m && (m.backdropPath || (m as any).backdrop_path));
+        if (m && isMovieReleased(m) && hasBackdrop && !seen.has(m.id)) {
           seen.add(m.id);
           list.push(m as any);
         }
