@@ -904,15 +904,16 @@ body {
 }
 
 .discover-inspector-panel {
-  width: 440px;
+  width: clamp(380px, 25vw, 440px);
   position: sticky;
-  top: 86px;
-  max-height: calc(100vh - 105px);
-  overflow-y: auto;
+  top: calc(var(--navbar-height) + 16px);
+  height: calc(100vh - var(--navbar-height) - 36px);
+  max-height: calc(100vh - var(--navbar-height) - 36px);
+  overflow: hidden;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  z-index: 20;
 }
 
 @media (max-width: 1150px) {
@@ -923,6 +924,7 @@ body {
   .discover-inspector-panel {
     width: 100%;
     position: static;
+    height: auto;
     max-height: none;
     margin-top: 28px;
   }

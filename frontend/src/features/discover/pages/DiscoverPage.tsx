@@ -277,11 +277,13 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
         backdropFilter: 'blur(28px)',
         WebkitBackdropFilter: 'blur(28px)',
         border: '1.5px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '26px',
+        borderRadius: '24px',
         overflow: 'hidden',
         boxShadow: '0 30px 70px -15px rgba(0, 0, 0, 0.85)',
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
+        width: '100%',
       }}
     >
       {/* Backdrop Header with Vignette Gradient & Centered Stylized Title */}
@@ -289,7 +291,8 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
         style={{
           position: 'relative',
           width: '100%',
-          height: '230px',
+          height: 'clamp(110px, 16vh, 180px)',
+          flexShrink: 0,
           backgroundImage: `url(${getBackdropUrl(movie.backdropPath || movie.posterPath, 'w780')})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center 20%',
@@ -297,7 +300,7 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-end',
-          padding: '24px 20px',
+          padding: 'clamp(10px, 1.4vh, 18px) 16px',
           textAlign: 'center',
         }}
       >
@@ -314,10 +317,10 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
         <div style={{ position: 'relative', zIndex: 2, maxWidth: '100%' }}>
           <h2
             style={{
-              fontSize: '22px',
+              fontSize: 'clamp(16px, 2vh, 20px)',
               fontWeight: 800,
               textTransform: 'uppercase',
-              letterSpacing: '2.5px',
+              letterSpacing: '2px',
               color: '#ffffff',
               margin: 0,
               textShadow: '0 3px 16px rgba(0, 0, 0, 0.9)',
@@ -334,9 +337,9 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
           {details?.tagline && (
             <p
               style={{
-                fontSize: '12px',
+                fontSize: 'clamp(10.5px, 1.2vh, 12px)',
                 color: 'rgba(255, 255, 255, 0.75)',
-                margin: '6px 0 0 0',
+                margin: '4px 0 0 0',
                 fontStyle: 'italic',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -349,30 +352,41 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
         </div>
       </div>
 
-      {/* Main Body Details */}
-      <div style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
-        {/* Metadata Row: Year, Runtime, Rating Badge, Language */}
+      {/* Main Body Details: flex-1 and justify-between for responsive scaling */}
+      <div
+        style={{
+          padding: 'clamp(10px, 1.5vh, 18px) clamp(14px, 1.6vw, 22px)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: 'clamp(6px, 1vh, 12px)',
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+        }}
+      >
+        {/* Metadata Row: Year, Runtime, Rating Badge */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingBottom: '18px',
+            paddingBottom: 'clamp(5px, 0.8vh, 8px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
           {yearDisplay && (
-            <span style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff' }}>
+            <span style={{ fontSize: 'clamp(13px, 1.4vh, 15px)', fontWeight: 700, color: '#ffffff' }}>
               {yearDisplay}
             </span>
           )}
 
           {runtimeDisplay ? (
-            <span style={{ fontSize: '14px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)' }}>
+            <span style={{ fontSize: 'clamp(12px, 1.3vh, 13.5px)', fontWeight: 500, color: 'rgba(255, 255, 255, 0.8)' }}>
               {runtimeDisplay}
             </span>
           ) : isDetailsLoading ? (
-            <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.3)' }}>...</span>
+            <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.3)' }}>...</span>
           ) : null}
 
           {/* Rating Badge */}
@@ -380,23 +394,23 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '5px',
               backgroundColor: 'rgba(245, 197, 24, 0.15)',
               border: '1px solid rgba(245, 197, 24, 0.35)',
-              padding: '4px 10px',
-              borderRadius: '8px',
+              padding: '3px 8px',
+              borderRadius: '7px',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: 800, color: '#f5c518' }}>
+            <span style={{ fontSize: 'clamp(12px, 1.4vh, 13.5px)', fontWeight: 800, color: '#f5c518' }}>
               {ratingFormatted}
             </span>
             <span
               style={{
-                fontSize: '10px',
+                fontSize: '9.5px',
                 fontWeight: 900,
                 backgroundColor: '#f5c518',
                 color: '#000000',
-                padding: '1px 4px',
+                padding: '1px 3px',
                 borderRadius: '3px',
                 letterSpacing: '0.5px',
               }}
@@ -410,12 +424,12 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
         <div>
           <p
             style={{
-              fontSize: '13.5px',
-              lineHeight: 1.65,
+              fontSize: 'clamp(11.5px, 1.3vh, 13px)',
+              lineHeight: 1.45,
               color: 'rgba(255, 255, 255, 0.72)',
               margin: 0,
               display: '-webkit-box',
-              WebkitLineClamp: 4,
+              WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
             }}
@@ -429,26 +443,26 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
           <div>
             <div
               style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                letterSpacing: '1.2px',
+                letterSpacing: '1px',
                 color: 'rgba(255, 255, 255, 0.45)',
-                marginBottom: '10px',
+                marginBottom: '5px',
               }}
             >
               GENRES
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {genresList.slice(0, 4).map((genre) => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {genresList.slice(0, 3).map((genre) => (
                 <span
                   key={genre}
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.06)',
                     border: '1px solid rgba(255, 255, 255, 0.12)',
                     borderRadius: '20px',
-                    padding: '5px 14px',
-                    fontSize: '12.5px',
+                    padding: 'clamp(2.5px, 0.5vh, 4.5px) clamp(8px, 1vw, 12px)',
+                    fontSize: 'clamp(11px, 1.2vh, 12px)',
                     fontWeight: 500,
                     color: 'rgba(255, 255, 255, 0.9)',
                   }}
@@ -465,26 +479,26 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
           <div>
             <div
               style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                letterSpacing: '1.2px',
+                letterSpacing: '1px',
                 color: 'rgba(255, 255, 255, 0.45)',
-                marginBottom: '10px',
+                marginBottom: '5px',
               }}
             >
               CAST
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {topCast.map((actor) => (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {topCast.slice(0, 3).map((actor) => (
                 <span
                   key={actor}
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.06)',
                     border: '1px solid rgba(255, 255, 255, 0.12)',
                     borderRadius: '20px',
-                    padding: '5px 14px',
-                    fontSize: '12.5px',
+                    padding: 'clamp(2.5px, 0.5vh, 4.5px) clamp(8px, 1vw, 12px)',
+                    fontSize: 'clamp(11px, 1.2vh, 12px)',
                     fontWeight: 500,
                     color: 'rgba(255, 255, 255, 0.9)',
                   }}
@@ -501,24 +515,24 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
           <div>
             <div
               style={{
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 700,
                 textTransform: 'uppercase',
-                letterSpacing: '1.2px',
+                letterSpacing: '1px',
                 color: 'rgba(255, 255, 255, 0.45)',
-                marginBottom: '10px',
+                marginBottom: '5px',
               }}
             >
               DIRECTOR
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               <span
                 style={{
                   backgroundColor: 'rgba(168, 85, 247, 0.12)',
                   border: '1px solid rgba(168, 85, 247, 0.3)',
                   borderRadius: '20px',
-                  padding: '5px 14px',
-                  fontSize: '12.5px',
+                  padding: 'clamp(2.5px, 0.5vh, 4.5px) clamp(8px, 1vw, 12px)',
+                  fontSize: 'clamp(11px, 1.2vh, 12px)',
                   fontWeight: 600,
                   color: '#e9d5ff',
                 }}
@@ -535,21 +549,20 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: '18px',
+            paddingTop: 'clamp(8px, 1vh, 12px)',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            marginTop: '4px',
           }}
         >
           {/* Quick Icon Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Clapperboard / Trailer Button */}
             <button
               onClick={() => onPlayTrailer(movie)}
               title="Watch Trailer"
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
+                width: 'clamp(34px, 4vh, 38px)',
+                height: 'clamp(34px, 4vh, 38px)',
+                borderRadius: '10px',
                 backgroundColor: 'rgba(255, 255, 255, 0.06)',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
                 display: 'flex',
@@ -570,7 +583,7 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
               }}
             >
-              <Clapperboard size={18} />
+              <Clapperboard size={16} />
             </button>
 
             {/* Watchlist Bookmark Button */}
@@ -578,9 +591,9 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
               onClick={() => toggleWatchlist.mutate({ movieId: movie.id, isWatchlisted })}
               title={isWatchlisted ? 'Remove from Watchlist' : 'Add to Watchlist'}
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
+                width: 'clamp(34px, 4vh, 38px)',
+                height: 'clamp(34px, 4vh, 38px)',
+                borderRadius: '10px',
                 backgroundColor: isWatchlisted ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.06)',
                 border: isWatchlisted ? '1px solid rgba(168, 85, 247, 0.55)' : '1px solid rgba(255, 255, 255, 0.12)',
                 display: 'flex',
@@ -603,7 +616,7 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 }
               }}
             >
-              <Bookmark size={18} fill={isWatchlisted ? '#c084fc' : 'none'} />
+              <Bookmark size={16} fill={isWatchlisted ? '#c084fc' : 'none'} />
             </button>
 
             {/* Favorite Heart Button */}
@@ -611,9 +624,9 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
               onClick={() => toggleFavorite.mutate({ movieId: movie.id, isFavorited })}
               title={isFavorited ? 'Remove from Favorites' : 'Add to Favorites'}
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
+                width: 'clamp(34px, 4vh, 38px)',
+                height: 'clamp(34px, 4vh, 38px)',
+                borderRadius: '10px',
                 backgroundColor: isFavorited ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255, 255, 255, 0.06)',
                 border: isFavorited ? '1px solid rgba(239, 68, 68, 0.55)' : '1px solid rgba(255, 255, 255, 0.12)',
                 display: 'flex',
@@ -636,7 +649,7 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 }
               }}
             >
-              <Heart size={18} fill={isFavorited ? '#ef4444' : 'none'} />
+              <Heart size={16} fill={isFavorited ? '#ef4444' : 'none'} />
             </button>
 
             {/* View Details Link */}
@@ -644,9 +657,9 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
               onClick={() => navigate(`/movie/${movie.id}`)}
               title="Full Movie Details"
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
+                width: 'clamp(34px, 4vh, 38px)',
+                height: 'clamp(34px, 4vh, 38px)',
+                borderRadius: '10px',
                 backgroundColor: 'rgba(255, 255, 255, 0.06)',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
                 display: 'flex',
@@ -665,7 +678,7 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
               }}
             >
-              <ExternalLink size={17} />
+              <ExternalLink size={15} />
             </button>
           </div>
 
@@ -675,13 +688,13 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 22px',
+              gap: '6px',
+              padding: 'clamp(6px, 0.9vh, 9px) clamp(14px, 1.4vw, 20px)',
               borderRadius: '24px',
               background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
               color: '#ffffff',
               border: 'none',
-              fontSize: '14px',
+              fontSize: 'clamp(12.5px, 1.4vh, 13.5px)',
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: '0 4px 18px rgba(168, 85, 247, 0.45)',
@@ -696,134 +709,54 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
               e.currentTarget.style.boxShadow = '0 4px 18px rgba(168, 85, 247, 0.45)';
             }}
           >
-            <Play size={16} fill="#ffffff" />
+            <Play size={15} fill="#ffffff" />
             <span>Show</span>
           </button>
         </div>
-
-        {/* MORE LIKE THIS (Covers blank space on the right bottom) */}
-        {similarMovies.length > 0 && (
-          <div style={{ paddingTop: '8px' }}>
-            <div
-              style={{
-                fontSize: '12px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '1.2px',
-                color: 'rgba(255, 255, 255, 0.45)',
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Sparkles size={13} color="#c084fc" />
-              <span>More Like This</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-              {similarMovies.map((sim) => (
-                <div
-                  key={sim.id}
-                  onClick={() => onSelectMovie && onSelectMovie(sim)}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                    borderRadius: '12px',
-                    padding: '5px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.14)';
-                    e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.4)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <div
-                    style={{
-                      aspectRatio: '2/3',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      backgroundColor: '#111',
-                    }}
-                  >
-                    <img
-                      src={getPosterUrl(sim.posterPath, 'w185')}
-                      alt={sim.title}
-                      loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '11.5px',
-                      fontWeight: 600,
-                      color: 'rgba(255, 255, 255, 0.85)',
-                      textAlign: 'center',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {sim.title}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Film Specifications & Overview Details (Fills out bottom gracefully) */}
         <div style={{
           backgroundColor: 'rgba(255, 255, 255, 0.03)',
           border: '1px solid rgba(255, 255, 255, 0.06)',
-          borderRadius: '14px',
-          padding: '14px 16px',
+          borderRadius: '12px',
+          padding: 'clamp(8px, 1vh, 12px) clamp(10px, 1.2vw, 14px)',
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '12px',
-          fontSize: '12px'
+          gap: 'clamp(5px, 0.8vh, 8px)',
+          fontSize: '11.5px',
         }}>
           <div>
-            <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+            <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '1px' }}>
               Status
             </span>
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
+            <span style={{ color: '#ffffff', fontWeight: 600, fontSize: 'clamp(11px, 1.25vh, 12px)' }}>
               {details?.status || 'Released'}
             </span>
           </div>
           <div>
-            <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+            <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '1px' }}>
               Original Language
             </span>
-            <span style={{ color: '#ffffff', fontWeight: 600, textTransform: 'uppercase' }}>
+            <span style={{ color: '#ffffff', fontWeight: 600, textTransform: 'uppercase', fontSize: 'clamp(11px, 1.25vh, 12px)' }}>
               {details?.originalLanguage || 'en'}
             </span>
           </div>
           {details?.budget && details.budget > 0 ? (
             <div>
-              <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+              <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '1px' }}>
                 Budget
               </span>
-              <span style={{ color: '#ffffff', fontWeight: 600 }}>
+              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: 'clamp(11px, 1.25vh, 12px)' }}>
                 ${(details.budget / 1_000_000).toFixed(0)}M
               </span>
             </div>
           ) : null}
           {movie.voteCount && movie.voteCount > 0 ? (
             <div>
-              <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '10.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+              <span style={{ color: 'rgba(255, 255, 255, 0.4)', display: 'block', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '1px' }}>
                 Total Votes
               </span>
-              <span style={{ color: '#ffffff', fontWeight: 600 }}>
+              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: 'clamp(11px, 1.25vh, 12px)' }}>
                 {movie.voteCount.toLocaleString()}
               </span>
             </div>
@@ -960,50 +893,46 @@ export const DiscoverPage: FC = () => {
       style={{
         width: '100%',
         minHeight: '100vh',
-        padding: '28px 40px 80px',
+        padding: '24px 36px 80px',
         boxSizing: 'border-box',
       }}
     >
-      {/* Top Filter Bar: Format, Category, Genre (Bigger & Elevated) */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          marginBottom: '32px',
-          flexWrap: 'wrap',
-        }}
-      >
-        {/* Dropdown 1: Type */}
-        <FilterDropdown
-          value={mediaType}
-          options={TYPE_OPTIONS}
-          onChange={(val) => setMediaType(val)}
-        />
-
-        {/* Dropdown 2: Category / Sort */}
-        <FilterDropdown
-          value={category}
-          options={CATEGORY_OPTIONS}
-          onChange={(val) => setCategory(val)}
-        />
-
-        {/* Dropdown 3: Genre */}
-        <FilterDropdown
-          value={selectedGenreId}
-          options={GENRE_OPTIONS.map((g) => ({ id: g.id, label: g.label }))}
-          onChange={(val) => setSelectedGenreId(val)}
-        />
-
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', fontWeight: 500 }}>
-          <span>{filteredMovies.length} titles</span>
-        </div>
-      </div>
-
-      {/* Main Two-Column Layout: Grid on Left, Sticky Inspector on Right */}
+      {/* Main Two-Column Layout: Grid & Filters on Left, Sticky Inspector on Right */}
       <div className="discover-page-layout">
-        {/* Left Column: Movie Poster Grid (5 Columns) */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Left Column: Filter Bar + Movie Poster Grid (5 Columns) */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* Top Filter Bar: Format, Category, Genre */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '26px',
+              flexWrap: 'wrap',
+            }}
+          >
+            {/* Dropdown 1: Type */}
+            <FilterDropdown
+              value={mediaType}
+              options={TYPE_OPTIONS}
+              onChange={(val) => setMediaType(val)}
+            />
+
+            {/* Dropdown 2: Category / Sort */}
+            <FilterDropdown
+              value={category}
+              options={CATEGORY_OPTIONS}
+              onChange={(val) => setCategory(val)}
+            />
+
+            {/* Dropdown 3: Genre */}
+            <FilterDropdown
+              value={selectedGenreId}
+              options={GENRE_OPTIONS.map((g) => ({ id: g.id, label: g.label }))}
+              onChange={(val) => setSelectedGenreId(val)}
+            />
+          </div>
+
           {isLoading && filteredMovies.length === 0 ? (
             <div className="discover-movie-grid">
               {Array.from({ length: 15 }).map((_, idx) => (
