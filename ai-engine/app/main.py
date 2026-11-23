@@ -351,6 +351,16 @@ class AIChatRequest(BaseModel):
     user_id: str
     message: str
 
+class SaveConversationRequest(BaseModel):
+    user_id: str
+    id: str
+    title: Optional[str] = None
+    messages: list = []
+
+class RenameConversationRequest(BaseModel):
+    user_id: str
+    title: str
+
 @app.post("/api/ai/chat")
 @limiter.limit("20/minute")
 async def chat_with_ai(req: AIChatRequest, request: Request):
@@ -364,6 +374,75 @@ async def chat_with_ai(req: AIChatRequest, request: Request):
     except Exception as e:
         import traceback
         traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/ai/conversations")
+async def list_ai_conversations(user_id: str = "guest"):
+    try:
+        from app.ai.services.conversation_store import conversation_store
+        return conversation_store.list_conversations(user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/ai/conversations/{conversation_id}")
+async def get_ai_conversation(conversation_id: str, user_id: str = "guest"):
+    try:
+        from app.ai.services.conversation_store import conversation_store
+        conv = conversation_store.get_conversation(user_id, conversation_id)
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        return conv
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/ai/conversations")
+async def save_ai_conversation(req: SaveConversationRequest):
+    try:
+        from app.ai.services.conversation_store import conversation_store
+        conv_data = {
+            "id": req.id,
+            "title": req.title,
+            "messages": req.messages
+        }
+        return conversation_store.save_conversation(req.user_id, conv_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.patch("/api/ai/conversations/{conversation_id}")
+async def rename_ai_conversation(conversation_id: str, req: RenameConversationRequest):
+    try:
+        from app.ai.services.conversation_store import conversation_store
+        updated = conversation_store.rename_conversation(req.user_id, conversation_id, req.title)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/ai/conversations/{conversation_id}")
+async def delete_ai_conversation(conversation_id: str, user_id: str = "guest"):
+    try:
+        from app.ai.services.conversation_store import conversation_store
+        deleted = conversation_store.delete_conversation(user_id, conversation_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        return {"status": "success", "id": conversation_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/ai/conversations")
+async def clear_ai_conversations(user_id: str = "guest"):
+    try:
+        from app.ai.services.conversation_store import conversation_store
+        conversation_store.clear_all(user_id)
+        return {"status": "success"}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/users/{user_id}/taste-profile")

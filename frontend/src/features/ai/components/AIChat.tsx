@@ -9,7 +9,11 @@ import {
   Play, 
   Bookmark, 
   Check, 
-  Info 
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Trash2,
+  Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,6 +21,7 @@ import { useAIChat } from '../hooks/useAIChat';
 import { useWatchlist, useToggleWatchlist } from '../../library/hooks/useWatchlist';
 import { TrailerModal } from '../../movies/components/details/TrailerModal';
 import { getPosterUrl } from '../../movies/utils/image';
+import { ChatHistorySidebar } from './ChatHistorySidebar';
 
 import './AIChat.css';
 
@@ -35,17 +40,31 @@ const REFERENCE_SUGGESTION_PILLS = [
 export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
   const navigate = useNavigate();
   const { 
+    conversations,
+    activeConversationId,
+    activeConversationTitle,
+    isConversationsLoading,
     messages, 
     isTyping, 
-    sendMessage 
+    sendMessage,
+    createNewChat,
+    selectConversation,
+    renameConversation,
+    deleteConversation,
+    clearAllConversations
   } = useAIChat(userId);
 
   const { data: watchlist } = useWatchlist();
   const toggleWatchlistMutation = useToggleWatchlist();
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    return typeof window !== 'undefined' ? window.innerWidth >= 1024 : true;
+  });
   const [input, setInput] = useState('');
   const [trailerMovie, setTrailerMovie] = useState<{ id: number; title: string } | null>(null);
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
+  const [isRenamingCurrent, setIsRenamingCurrent] = useState(false);
+  const [renameInputValue, setRenameInputValue] = useState('');
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,239 +119,345 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
     );
   };
 
+  const handleStartRenameCurrent = () => {
+    setRenameInputValue(activeConversationTitle);
+    setIsRenamingCurrent(true);
+  };
+
+  const handleSaveRenameCurrent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (renameInputValue.trim()) {
+      renameConversation(activeConversationId, renameInputValue.trim());
+      toast.success('Conversation renamed');
+    }
+    setIsRenamingCurrent(false);
+  };
+
   return (
     <div className="ai-chat-wrapper">
-      {/* Main Chat Scroll Area */}
-      <div className="ai-chat-scroll custom-scrollbar">
-        <div className="ai-chat-content-container">
-          {/* Centered Hero Section when no messages */}
-          {messages.length === 0 ? (
-            <div className="ai-hero-center-wrapper">
-              <div className="ai-hero-section">
-                <div className="ai-hero-logo">
-                  <img src="/logo.png" alt="CineMatch" className="ai-hero-brand-logo" />
+      {/* 1. Left Chat History Drawer / Sidebar */}
+      <ChatHistorySidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        conversations={conversations}
+        activeConversationId={activeConversationId}
+        onSelectConversation={(id) => {
+          selectConversation(id);
+          if (window.innerWidth < 868) {
+            setIsSidebarOpen(false);
+          }
+        }}
+        onNewChat={() => {
+          createNewChat();
+          if (window.innerWidth < 868) {
+            setIsSidebarOpen(false);
+          }
+        }}
+        onRenameConversation={(id, title) => {
+          renameConversation(id, title);
+          toast.success('Conversation renamed');
+        }}
+        onDeleteConversation={(id) => {
+          deleteConversation(id);
+          toast.success('Conversation deleted');
+        }}
+        onClearAll={() => {
+          clearAllConversations();
+          toast.success('All conversations cleared');
+        }}
+        isLoading={isConversationsLoading}
+      />
+
+      {/* 2. Main Chat View Column */}
+      <div className="ai-chat-main-area">
+        {/* Top Sub-Header: Sidebar Toggle, New Chat, Active Title, Quick Actions */}
+        <header className="ai-chat-top-header">
+          <div className="ai-header-left">
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              className="ai-header-toggle-btn"
+              title={isSidebarOpen ? "Hide chat history" : "Show chat history"}
+              aria-label="Toggle chat history"
+            >
+              {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+              {!isSidebarOpen && conversations.length > 0 && (
+                <span className="ai-header-badge">{conversations.length}</span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={createNewChat}
+              className="ai-header-new-btn"
+              title="Start a new conversation"
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              <span>New Chat</span>
+            </button>
+
+            <div className="ai-header-title-box">
+              {isRenamingCurrent ? (
+                <form onSubmit={handleSaveRenameCurrent} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={renameInputValue}
+                    onChange={(e) => setRenameInputValue(e.target.value)}
+                    className="ai-convo-edit-input"
+                    onBlur={() => setIsRenamingCurrent(false)}
+                    style={{ height: '28px', fontSize: '13px', width: '220px' }}
+                  />
+                  <button type="submit" className="ai-convo-action-btn check">
+                    <Check size={14} />
+                  </button>
+                </form>
+              ) : (
+                <div 
+                  onClick={handleStartRenameCurrent} 
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+                  title="Click to rename"
+                >
+                  <span className="ai-header-active-title">
+                    {activeConversationTitle}
+                  </span>
+                  <Pencil size={12} style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
                 </div>
+              )}
+            </div>
+          </div>
 
-                <h1 className="ai-hero-title">
-                  Chat with <span className="ai-hero-title-highlight">CineMatch</span>
-                </h1>
+          <div className="ai-header-right">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  deleteConversation(activeConversationId);
+                  toast.success('Conversation deleted');
+                }}
+                className="ai-header-delete-btn"
+                title="Delete this conversation"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
+        </header>
 
-                <p className="ai-hero-subtitle">
-                  Tell me what you're in the mood for — a genre, vibe, or even a movie you love. I'll find the perfect match for you.
-                </p>
+        {/* Main Chat Scroll Area */}
+        <div className="ai-chat-scroll custom-scrollbar">
+          <div className="ai-chat-content-container">
+            {/* Centered Hero Section when no messages */}
+            {messages.length === 0 ? (
+              <div className="ai-hero-center-wrapper">
+                <div className="ai-hero-section">
+                  <div className="ai-hero-logo">
+                    <img src="/logo.png" alt="CineMatch" className="ai-hero-brand-logo" />
+                  </div>
 
-                {/* Bigger Suggestion Pills without Emojis */}
-                <div className="ai-suggestion-pills">
-                  {REFERENCE_SUGGESTION_PILLS.map((pill, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className="ai-prompt-pill"
-                      onClick={() => handlePillClick(pill.query)}
-                    >
-                      {pill.label}
-                    </button>
-                  ))}
+                  <h1 className="ai-hero-title">
+                    Chat with <span className="ai-hero-title-highlight">CineMatch</span>
+                  </h1>
+
+                  <p className="ai-hero-subtitle">
+                    Tell me what you're in the mood for — a genre, vibe, or even a movie you love. I'll find the perfect match for you.
+                  </p>
+
+                  {/* Bigger Suggestion Pills without Emojis */}
+                  <div className="ai-suggestion-pills">
+                    {REFERENCE_SUGGESTION_PILLS.map((pill, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className="ai-prompt-pill"
+                        onClick={() => handlePillClick(pill.query)}
+                      >
+                        {pill.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            // Conversation Messages when chat is active
-            <>
-              {messages.map((msg) => {
-                const isUser = msg.role === 'user';
+            ) : (
+              // Conversation Messages when chat is active
+              <>
+                {messages.map((msg) => {
+                  const isUser = msg.role === 'user';
 
-                if (isUser) {
+                  if (isUser) {
+                    return (
+                      <div key={msg.id} className="ai-message-row user">
+                        <div className="ai-user-bubble">
+                          {msg.content}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Assistant message
+                  const currentFeedback = feedbackState[msg.id];
+
                   return (
-                    <div key={msg.id} className="ai-message-row user">
-                      <div className="ai-user-bubble">
-                        {msg.content}
-                      </div>
-                    </div>
-                  );
-                }
-
-                // Assistant message
-                const currentFeedback = feedbackState[msg.id];
-
-                return (
-                  <div key={msg.id} className="ai-message-row assistant">
-                    {/* Assistant CineMatch Favicon Avatar */}
-                    <div className="ai-avatar-icon">
-                      <img src="/logo.png" alt="CineMatch" className="ai-avatar-logo" />
-                    </div>
-
-                    <div className="ai-assistant-content">
-                      {/* Response Text */}
-                      <div className="ai-assistant-text">
-                        {msg.content}
+                    <div key={msg.id} className="ai-message-row assistant">
+                      {/* Assistant CineMatch Favicon Avatar */}
+                      <div className="ai-avatar-icon">
+                        <img src="/logo.png" alt="CineMatch" className="ai-avatar-logo" />
                       </div>
 
-                      {/* Movie Recommendation Cards Grid */}
-                      {msg.movies && msg.movies.length > 0 && (
-                        <div className="ai-movie-cards-grid">
-                          {msg.movies.slice(0, 4).map((rec, idx) => {
-                            const movie = rec.movie;
-                            const posterSrc = getPosterUrl(movie.posterPath, 'w500');
-                            const isWatchlisted = watchlist?.some(w => w.media_id === movie.id);
-                            const genresStr = movie.genres?.slice(0, 2).map(g => g.name).join(' • ') || 'Film';
+                      <div className="ai-assistant-content">
+                        {/* Response Text */}
+                        <div className="ai-assistant-text">
+                          {msg.content}
+                        </div>
 
-                            return (
-                              <div
-                                key={movie.id || idx}
-                                className="ai-movie-card"
-                                onClick={() => navigate(`/movie/${movie.id}`)}
-                              >
-                                <img
-                                  src={posterSrc}
-                                  alt={movie.title}
-                                  className="ai-movie-card-poster"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    (e.currentTarget as HTMLImageElement).src =
-                                      'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
-                                  }}
-                                />
+                        {/* Movie Recommendation Cards Grid */}
+                        {msg.movies && msg.movies.length > 0 && (
+                          <div className="ai-movie-cards-grid">
+                            {msg.movies.slice(0, 4).map((rec, idx) => {
+                              const movie = rec.movie;
+                              const posterSrc = getPosterUrl(movie.posterPath, 'w500');
+                              const isWatchlisted = watchlist?.some(w => w.media_id === movie.id);
+                              const genresStr = movie.genres?.slice(0, 2).map(g => g.name).join(' • ') || 'Film';
 
-                                <div className="ai-movie-card-gradient" />
-
-                                {/* Info on Card */}
-                                <div className="ai-movie-card-info">
-                                  <h4 className="ai-movie-card-title" title={movie.title}>
-                                    {movie.title}
-                                  </h4>
-                                  {movie.voteAverage > 0 && (
-                                    <div className="ai-movie-card-rating">
-                                      <span>★</span>
-                                      <span>{movie.voteAverage.toFixed(1)}</span>
-                                    </div>
-                                  )}
-                                  <div className="ai-movie-card-genre">
-                                    {genresStr}
-                                  </div>
-                                </div>
-
-                                {/* Hover Action Dock */}
-                                <div className="ai-movie-card-dock">
-                                  <button
-                                    type="button"
-                                    className="ai-card-play-btn"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setTrailerMovie({ id: movie.id, title: movie.title });
+                              return (
+                                <div
+                                  key={movie.id || idx}
+                                  className="ai-movie-card"
+                                  onClick={() => navigate(`/movie/${movie.id}`)}
+                                >
+                                  <img
+                                    src={posterSrc}
+                                    alt={movie.title}
+                                    className="ai-movie-card-poster"
+                                    loading="lazy"
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLImageElement).src =
+                                        'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
                                     }}
-                                  >
-                                    <Play size={13} fill="currentColor" />
-                                    Show
-                                  </button>
+                                  />
 
-                                  <div className="ai-card-dock-row">
+                                  <div className="ai-movie-card-gradient" />
+
+                                  {/* Info on Card */}
+                                  <div className="ai-movie-card-info">
+                                    <div className="ai-movie-card-title" title={movie.title}>
+                                      {movie.title}
+                                    </div>
+                                    <div className="ai-movie-card-meta">
+                                      <span className="ai-movie-card-rating">
+                                        ★ {movie.voteAverage?.toFixed(1) || 'N/A'}
+                                      </span>
+                                      <span className="ai-movie-card-genres">{genresStr}</span>
+                                    </div>
+                                  </div>
+
+                                  {/* Hover Actions */}
+                                  <div className="ai-movie-card-actions">
                                     <button
                                       type="button"
-                                      className="ai-card-icon-btn"
-                                      title={isWatchlisted ? "In Watchlist" : "Add to Watchlist"}
+                                      className="ai-movie-action-btn"
+                                      title={isWatchlisted ? 'Remove from Watchlist' : 'Add to Watchlist'}
                                       onClick={(e) => handleToggleWatchlist(e, movie.id, movie.title)}
                                     >
                                       {isWatchlisted ? <Check size={14} color="#a855f7" /> : <Bookmark size={14} />}
                                     </button>
-
                                     <button
                                       type="button"
-                                      className="ai-card-icon-btn"
-                                      title="View Details"
+                                      className="ai-movie-action-btn"
+                                      title="Watch Trailer"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/movie/${movie.id}`);
+                                        setTrailerMovie({ id: movie.id, title: movie.title });
                                       }}
                                     >
-                                      <Info size={14} />
+                                      <Play size={14} fill="currentColor" />
                                     </button>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                              );
+                            })}
+                          </div>
+                        )}
 
-                      {/* Feedback Action Bar (Copy, Thumbs Up, Thumbs Down) */}
-                      <div className="ai-feedback-bar">
-                        <button
-                          type="button"
-                          className="ai-feedback-btn"
-                          title="Copy response"
-                          onClick={() => handleCopy(msg.content)}
-                        >
-                          <Copy size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className={`ai-feedback-btn ${currentFeedback === 'up' ? 'active' : ''}`}
-                          title="Good recommendation"
-                          onClick={() => handleFeedback(msg.id, 'up')}
-                        >
-                          <ThumbsUp size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className={`ai-feedback-btn ${currentFeedback === 'down' ? 'active' : ''}`}
-                          title="Poor recommendation"
-                          onClick={() => handleFeedback(msg.id, 'down')}
-                        >
-                          <ThumbsDown size={14} />
-                        </button>
+                        {/* Assistant Action Bar: Copy, Thumbs Up, Thumbs Down */}
+                        <div className="ai-assistant-actions">
+                          <button
+                            type="button"
+                            className="ai-action-btn"
+                            title="Copy message"
+                            onClick={() => handleCopy(msg.content)}
+                          >
+                            <Copy size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`ai-action-btn ${currentFeedback === 'up' ? 'active' : ''}`}
+                            title="Good response"
+                            onClick={() => handleFeedback(msg.id, 'up')}
+                          >
+                            <ThumbsUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className={`ai-action-btn ${currentFeedback === 'down' ? 'active' : ''}`}
+                            title="Poor response"
+                            onClick={() => handleFeedback(msg.id, 'down')}
+                          >
+                            <ThumbsDown size={14} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
 
-              {/* Typing Indicator */}
-              {isTyping && (
-                <div className="ai-message-row assistant">
-                  <div className="ai-avatar-icon">
-                    <img src="/logo.png" alt="CineMatch" className="ai-avatar-logo" />
+                {/* Animated Typing Indicator while thinking */}
+                {isTyping && (
+                  <div className="ai-message-row assistant">
+                    <div className="ai-avatar-icon">
+                      <img src="/logo.png" alt="CineMatch" className="ai-avatar-logo" />
+                    </div>
+                    <div className="ai-typing-indicator">
+                      <span className="ai-typing-dot" />
+                      <span className="ai-typing-dot" />
+                      <span className="ai-typing-dot" />
+                    </div>
                   </div>
-                  <div className="ai-typing-indicator">
-                    <div className="ai-typing-dot" />
-                    <div className="ai-typing-dot" />
-                    <div className="ai-typing-dot" />
-                  </div>
-                </div>
-              )}
+                )}
 
-              <div ref={endRef} />
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Floating Big Bottom Input Bar */}
-      <div className="ai-input-fixed-dock">
-        <form className="ai-input-pill-form" onSubmit={handleSend}>
-          <div className="ai-input-lead-icon">
-            <AtSign size={22} />
+                <div ref={endRef} />
+              </>
+            )}
           </div>
+        </div>
 
-          <input
-            ref={inputRef}
-            type="text"
-            className="ai-input-field"
-            placeholder="Ask for recommendations..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isTyping}
-          />
+        {/* Floating Big Bottom Input Bar */}
+        <div className="ai-input-fixed-dock">
+          <form className="ai-input-pill-form" onSubmit={handleSend}>
+            <div className="ai-input-lead-icon">
+              <AtSign size={22} />
+            </div>
 
-          <button
-            type="submit"
-            className="ai-send-btn"
-            disabled={!input.trim() || isTyping}
-            title="Send Message"
-          >
-            <Send size={19} />
-          </button>
-        </form>
+            <input
+              ref={inputRef}
+              type="text"
+              className="ai-input-field"
+              placeholder="Ask for recommendations..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isTyping}
+            />
+
+            <button
+              type="submit"
+              className="ai-send-btn"
+              disabled={!input.trim() || isTyping}
+              title="Send Message"
+            >
+              <Send size={19} />
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Trailer Modal */}

@@ -8,6 +8,23 @@ export interface ChatMessage {
   isLoading?: boolean;
 }
 
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  message_count: number;
+  last_message?: string;
+}
+
+export interface ConversationDetail {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface AIChatRequest {
   conversation_id: string;
   user_id: string;
