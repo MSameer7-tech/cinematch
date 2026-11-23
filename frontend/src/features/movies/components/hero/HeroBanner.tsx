@@ -7,8 +7,7 @@ import {
   Plus, 
   Check, 
   Star, 
-  Pause,
-  Sparkles 
+  Pause 
 } from 'lucide-react';
 import type { Movie } from '../../types/movie.types';
 import { getBackdropUrl, getLogoUrl } from '../../utils/image';
@@ -201,32 +200,6 @@ export const HeroBanner: FC<HeroBannerProps> = ({
             transition={{ duration: 0.45, ease: 'easeOut' }}
             style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
           >
-            {/* Personalized Taste Profile Recommendation Tag */}
-            {((currentMovie as any).persona_badge || ((currentMovie as any).reasons && (currentMovie as any).reasons[0])) && (
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '5px 12px',
-                borderRadius: '20px',
-                backgroundColor: 'rgba(168, 85, 247, 0.22)',
-                border: '1px solid rgba(168, 85, 247, 0.45)',
-                color: '#e9d5ff',
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '0.2px',
-                width: 'fit-content',
-                backdropFilter: 'blur(8px)',
-                boxShadow: '0 2px 10px rgba(168, 85, 247, 0.25)',
-                marginBottom: '2px'
-              }}>
-                <Sparkles size={13} color="#c084fc" />
-                <span>
-                  {(currentMovie as any).persona_badge || (currentMovie as any).reasons[0]}
-                </span>
-              </div>
-            )}
-
             {/* Formatted TMDB Movie Title Logo or Clamped Fallback Text */}
             {logoPath && !logoError ? (
               <div 
