@@ -1,21 +1,45 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Film, 
+  Send, 
+  AtSign, 
+  Copy, 
+  ThumbsUp, 
+  ThumbsDown, 
+  Play, 
+  Bookmark, 
+  Check, 
+  Info, 
+  Sparkles, 
+  FileText, 
+  RefreshCw, 
+  X, 
+  UserCheck 
+} from 'lucide-react';
+import { toast } from 'sonner';
+
 import { useAIChat } from '../hooks/useAIChat';
-import { ChatBubble } from './ChatBubble';
-import { ChatInput } from './ChatInput';
-import { Bot, Sparkles, FileText, RefreshCw, X, UserCheck } from 'lucide-react';
+import { useWatchlist, useToggleWatchlist } from '../../library/hooks/useWatchlist';
+import { TrailerModal } from '../../movies/components/details/TrailerModal';
+import { getPosterUrl } from '../../movies/utils/image';
+import { IMAGE_SIZES } from '../../movies/constants/images';
+
+import './AIChat.css';
 
 interface AIChatProps {
   userId: string;
 }
 
-const SUGGESTION_CHIPS = [
-  { label: '✨ What is my taste profile?', query: 'What is my movie taste profile and persona archetype?' },
-  { label: '🎬 Recommend movies based on my taste', query: 'Recommend some movies that match my taste profile' },
-  { label: '🍿 Top genres & favorite directors', query: 'What are my top genres and favorite directors based on my history?' },
-  { label: '🔮 Suggest something out of my comfort zone', query: 'Surprise me with a critically acclaimed movie slightly outside my typical genres' },
+const REFERENCE_SUGGESTION_PILLS = [
+  { emoji: '🎬', label: 'Thriller movies', query: 'Suggest some gripping, high-suspense thriller movies with great twists' },
+  { emoji: '💖', label: 'Feel-good picks', query: 'Recommend some heartwarming feel-good movies that will lift my mood' },
+  { emoji: '✨', label: 'Movies like Interstellar', query: 'Recommend movies like Interstellar with cosmic scale, mystery, and emotion' },
+  { emoji: '😃', label: 'Something spooky', query: 'Suggest something spooky and eerie for tonight with great atmosphere' },
 ];
 
 export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
+  const navigate = useNavigate();
   const { 
     messages, 
     isTyping, 
@@ -24,272 +48,366 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
     sendMessage 
   } = useAIChat(userId);
 
-  const endRef = useRef<HTMLDivElement>(null);
+  const { data: watchlist } = useWatchlist();
+  const toggleWatchlistMutation = useToggleWatchlist();
+
+  const [input, setInput] = useState('');
   const [showTasteModal, setShowTasteModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [trailerMovie, setTrailerMovie] = useState<{ id: number; title: string } | null>(null);
+  const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
 
+  const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll on new messages or typing
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const handleRefresh = async () => {
+  const handleSend = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (input.trim() && !isTyping) {
+      sendMessage(input.trim());
+      setInput('');
+    }
+  };
+
+  const handlePillClick = (query: string) => {
+    if (!isTyping) {
+      sendMessage(query);
+    }
+  };
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
+  };
+
+  const handleFeedback = (msgId: string, type: 'up' | 'down') => {
+    setFeedbackState(prev => {
+      const current = prev[msgId];
+      if (current === type) {
+        const copy = { ...prev };
+        delete copy[msgId];
+        return copy;
+      }
+      return { ...prev, [msgId]: type };
+    });
+    toast.success(type === 'up' ? 'Thanks for the feedback!' : 'Feedback noted. Refining suggestions!');
+  };
+
+  const handleToggleWatchlist = (e: React.MouseEvent, movieId: number, title: string) => {
+    e.stopPropagation();
+    const isWatchlisted = watchlist?.some(w => w.media_id === movieId) ?? false;
+    toggleWatchlistMutation.mutate(
+      { movieId, isWatchlisted },
+      {
+        onSuccess: () => {
+          toast.success(isWatchlisted ? `Removed "${title}" from watchlist` : `Added "${title}" to watchlist`);
+        }
+      }
+    );
+  };
+
+  const handleRefreshTaste = async () => {
     setIsRefreshing(true);
     await refreshTasteProfile();
     setIsRefreshing(false);
+    toast.success('Taste profile refreshed!');
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-default)', position: 'relative' }}>
-      {/* Top Taste Profile Bar */}
+    <div className="ai-chat-wrapper">
+      {/* Background Film Reel Silhouette Watermarks */}
+      <svg className="ai-watermark-left" viewBox="0 0 100 100" fill="currentColor">
+        <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="6" fill="none" />
+        <circle cx="50" cy="50" r="14" stroke="currentColor" strokeWidth="4" fill="none" />
+        <circle cx="50" cy="20" r="8" fill="currentColor" />
+        <circle cx="50" cy="80" r="8" fill="currentColor" />
+        <circle cx="20" cy="50" r="8" fill="currentColor" />
+        <circle cx="80" cy="50" r="8" fill="currentColor" />
+        <circle cx="29" cy="29" r="7" fill="currentColor" />
+        <circle cx="71" cy="71" r="7" fill="currentColor" />
+        <circle cx="29" cy="71" r="7" fill="currentColor" />
+        <circle cx="71" cy="29" r="7" fill="currentColor" />
+      </svg>
+
+      <svg className="ai-watermark-right" viewBox="0 0 100 100" fill="currentColor">
+        <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="6" fill="none" />
+        <circle cx="50" cy="50" r="14" stroke="currentColor" strokeWidth="4" fill="none" />
+        <circle cx="50" cy="20" r="8" fill="currentColor" />
+        <circle cx="50" cy="80" r="8" fill="currentColor" />
+        <circle cx="20" cy="50" r="8" fill="currentColor" />
+        <circle cx="80" cy="50" r="8" fill="currentColor" />
+      </svg>
+
+      {/* Top Subtle Taste Bar (Unobtrusive) */}
       {tasteProfile && (
-        <div style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 20,
-          backdropFilter: 'blur(16px)',
-          backgroundColor: 'rgba(11, 14, 23, 0.75)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          padding: '10px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(99, 102, 241, 0.25))',
-              border: '1px solid rgba(168, 85, 247, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#c084fc',
-              flexShrink: 0
-            }}>
-              <Sparkles size={16} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#f3f4f6', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                  {tasteProfile.persona_title || 'Film Explorer'}
-                </span>
-                <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', backgroundColor: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-                  {tasteProfile.critic_style || 'Taste Engine Active'}
-                </span>
-              </div>
-              <span style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                {tasteProfile.top_genres?.slice(0, 3).map(g => `${g.name} (${g.percentage}%)`).join(' • ') || 'Personalized movie intelligence'}
-              </span>
-            </div>
+        <div className="ai-taste-strip">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="ai-taste-strip-badge">
+              <Sparkles size={13} />
+              {tasteProfile.persona_title || 'Film Explorer'}
+            </span>
+            <span style={{ color: '#94a3b8', fontSize: '11px' }}>
+              {tasteProfile.critic_style || 'Taste Engine Active'}
+            </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
+              type="button"
+              className="ai-taste-strip-btn"
               onClick={() => setShowTasteModal(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '12px',
-                fontWeight: 500,
-                padding: '6px 12px',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                color: '#e5e7eb',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
             >
-              <FileText size={14} color="#c084fc" />
+              <FileText size={13} style={{ color: '#c084fc' }} />
               <span>Taste Document</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Main Chat Area */}
-      <div 
-        className="custom-scrollbar"
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          padding: '24px',
-          paddingTop: tasteProfile ? '20px' : '60px'
-        }}
-      >
-        {messages.length === 0 ? (
-          <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', maxWidth: '680px', margin: '0 auto' }}>
-            <div style={{
-              width: '72px',
-              height: '72px',
-              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2))',
-              border: '1px solid rgba(168, 85, 247, 0.3)',
-              borderRadius: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '20px',
-              color: 'var(--primary-color)',
-              boxShadow: '0 8px 32px rgba(168, 85, 247, 0.15)'
-            }}>
-              <Bot size={36} />
+      {/* Main Chat Scroll Area */}
+      <div className="ai-chat-scroll custom-scrollbar">
+        <div className="ai-chat-content-container">
+          {/* Center Hero Section (Matching Reference Image) */}
+          <div className="ai-hero-section">
+            <div className="ai-hero-logo">
+              <div className="ai-hero-logo-glow" />
+              <Film size={30} strokeWidth={2.2} />
             </div>
 
-            <h2 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px', letterSpacing: '-0.02em' }}>
-              CineMatch Taste AI
-            </h2>
+            <h1 className="ai-hero-title">
+              Chat with <span className="ai-hero-title-highlight">CineMatch</span>
+            </h1>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.6, maxWidth: '480px', marginBottom: '28px' }}>
-              Powered by your personal <strong style={{ color: '#c084fc' }}>Detail Engine Taste Profile</strong>. Ask for personalized picks, explore your cinematic persona, or find movies matching your unique mood.
+            <p className="ai-hero-subtitle">
+              Tell me what you're in the mood for — a genre, vibe, or even a movie you love. I'll find the perfect match for you.
             </p>
 
-            {tasteProfile && (
-              <div style={{
-                width: '100%',
-                backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '16px',
-                padding: '16px',
-                marginBottom: '28px',
-                textAlign: 'left'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <UserCheck size={16} color="#a855f7" />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#f3f4f6' }}>
-                    Active Persona: {tasteProfile.persona_title}
-                  </span>
-                </div>
-                <p style={{ fontSize: '12px', color: '#9ca3af', lineHeight: 1.5, margin: 0 }}>
-                  {tasteProfile.summary}
-                </p>
-              </div>
-            )}
-
-            {/* Quick Suggestions Grid */}
-            <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
-              {SUGGESTION_CHIPS.map((chip, idx) => (
+            {/* Quick Suggestion Pills from Reference */}
+            <div className="ai-suggestion-pills">
+              {REFERENCE_SUGGESTION_PILLS.map((pill, idx) => (
                 <button
                   key={idx}
-                  onClick={() => sendMessage(chip.query)}
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '12px',
-                    padding: '12px 16px',
-                    color: '#e5e7eb',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.3)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
+                  type="button"
+                  className="ai-prompt-pill"
+                  onClick={() => handlePillClick(pill.query)}
                 >
-                  <span>{chip.label}</span>
-                  <span style={{ color: '#a855f7', opacity: 0.8, fontSize: '14px' }}>→</span>
+                  <span>{pill.emoji}</span>
+                  <span>{pill.label}</span>
                 </button>
               ))}
             </div>
           </div>
-        ) : (
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            {messages.map(msg => (
-              <ChatBubble key={msg.id} message={msg} />
-            ))}
-            {isTyping && (
-              <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%', 
-                  backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)',
-                  color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  <Bot size={20} className="animate-pulse" />
+
+          {/* Conversation Messages */}
+          {messages.map((msg) => {
+            const isUser = msg.role === 'user';
+
+            if (isUser) {
+              return (
+                <div key={msg.id} className="ai-message-row user">
+                  <div className="ai-user-bubble">
+                    {msg.content}
+                  </div>
                 </div>
-                <div style={{
-                  backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)',
-                  padding: '16px', borderRadius: '16px', borderTopLeftRadius: 0,
-                  display: 'flex', gap: '4px', alignItems: 'center'
-                }}>
-                  <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--primary-color)', borderRadius: '50%', animation: 'bounce 1s infinite 0ms' }} />
-                  <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--primary-color)', borderRadius: '50%', animation: 'bounce 1s infinite 150ms' }} />
-                  <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--primary-color)', borderRadius: '50%', animation: 'bounce 1s infinite 300ms' }} />
+              );
+            }
+
+            // Assistant message
+            const currentFeedback = feedbackState[msg.id];
+
+            return (
+              <div key={msg.id} className="ai-message-row assistant">
+                {/* Assistant Film Reel Icon Avatar */}
+                <div className="ai-avatar-icon">
+                  <Film size={18} />
+                </div>
+
+                <div className="ai-assistant-content">
+                  {/* Response Text */}
+                  <div className="ai-assistant-text">
+                    {msg.content}
+                  </div>
+
+                  {/* Movie Recommendation Cards Grid (Matching Reference) */}
+                  {msg.movies && msg.movies.length > 0 && (
+                    <div className="ai-movie-cards-grid">
+                      {msg.movies.slice(0, 4).map((rec, idx) => {
+                        const movie = rec.movie;
+                        const posterSrc = getPosterUrl(movie.posterPath, 'w500');
+                        const isWatchlisted = watchlist?.some(w => w.media_id === movie.id);
+                        const genresStr = movie.genres?.slice(0, 2).map(g => g.name).join(' • ') || 'Film';
+
+                        return (
+                          <div
+                            key={movie.id || idx}
+                            className="ai-movie-card"
+                            onClick={() => navigate(`/movie/${movie.id}`)}
+                          >
+                            <img
+                              src={posterSrc}
+                              alt={movie.title}
+                              className="ai-movie-card-poster"
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src =
+                                  'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80';
+                              }}
+                            />
+
+                            <div className="ai-movie-card-gradient" />
+
+                            {/* Info on Card */}
+                            <div className="ai-movie-card-info">
+                              <h4 className="ai-movie-card-title" title={movie.title}>
+                                {movie.title}
+                              </h4>
+                              {movie.voteAverage > 0 && (
+                                <div className="ai-movie-card-rating">
+                                  <span>★</span>
+                                  <span>{movie.voteAverage.toFixed(1)}</span>
+                                </div>
+                              )}
+                              <div className="ai-movie-card-genre">
+                                {genresStr}
+                              </div>
+                            </div>
+
+                            {/* Hover Action Dock */}
+                            <div className="ai-movie-card-dock">
+                              <button
+                                type="button"
+                                className="ai-card-play-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTrailerMovie({ id: movie.id, title: movie.title });
+                                }}
+                              >
+                                <Play size={13} fill="currentColor" />
+                                Show
+                              </button>
+
+                              <div className="ai-card-dock-row">
+                                <button
+                                  type="button"
+                                  className="ai-card-icon-btn"
+                                  title={isWatchlisted ? "In Watchlist" : "Add to Watchlist"}
+                                  onClick={(e) => handleToggleWatchlist(e, movie.id, movie.title)}
+                                >
+                                  {isWatchlisted ? <Check size={14} color="#a855f7" /> : <Bookmark size={14} />}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="ai-card-icon-btn"
+                                  title="View Details"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/movie/${movie.id}`);
+                                  }}
+                                >
+                                  <Info size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Feedback Action Bar (Copy, Thumbs Up, Thumbs Down) */}
+                  <div className="ai-feedback-bar">
+                    <button
+                      type="button"
+                      className="ai-feedback-btn"
+                      title="Copy response"
+                      onClick={() => handleCopy(msg.content)}
+                    >
+                      <Copy size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className={`ai-feedback-btn ${currentFeedback === 'up' ? 'active' : ''}`}
+                      title="Good recommendation"
+                      onClick={() => handleFeedback(msg.id, 'up')}
+                    >
+                      <ThumbsUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className={`ai-feedback-btn ${currentFeedback === 'down' ? 'active' : ''}`}
+                      title="Poor recommendation"
+                      onClick={() => handleFeedback(msg.id, 'down')}
+                    >
+                      <ThumbsDown size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            )}
-            <div ref={endRef} />
+            );
+          })}
+
+          {/* Typing Indicator */}
+          {isTyping && (
+            <div className="ai-message-row assistant">
+              <div className="ai-avatar-icon">
+                <Film size={18} />
+              </div>
+              <div className="ai-typing-indicator">
+                <div className="ai-typing-dot" />
+                <div className="ai-typing-dot" />
+                <div className="ai-typing-dot" />
+              </div>
+            </div>
+          )}
+
+          <div ref={endRef} />
+        </div>
+      </div>
+
+      {/* Floating Bottom Input Bar (Matching Reference) */}
+      <div className="ai-input-fixed-dock">
+        <form className="ai-input-pill-form" onSubmit={handleSend}>
+          <div className="ai-input-lead-icon">
+            <AtSign size={18} />
           </div>
-        )}
+
+          <input
+            ref={inputRef}
+            type="text"
+            className="ai-input-field"
+            placeholder="Ask for recommendations..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={isTyping}
+          />
+
+          <button
+            type="submit"
+            className="ai-send-btn"
+            disabled={!input.trim() || isTyping}
+            title="Send Message"
+          >
+            <Send size={16} />
+          </button>
+        </form>
       </div>
 
-      {/* Suggestion Chips Bar when conversation is ongoing */}
-      {messages.length > 0 && (
-        <div style={{
-          padding: '0 24px',
-          display: 'flex',
-          gap: '8px',
-          overflowX: 'auto',
-          maxWidth: '800px',
-          margin: '0 auto',
-          width: '100%',
-          scrollbarWidth: 'none'
-        }}>
-          {SUGGESTION_CHIPS.slice(0, 3).map((chip, idx) => (
-            <button
-              key={idx}
-              onClick={() => sendMessage(chip.query)}
-              disabled={isTyping}
-              style={{
-                whiteSpace: 'nowrap',
-                fontSize: '12px',
-                padding: '6px 12px',
-                borderRadius: '16px',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#d1d5db',
-                cursor: isTyping ? 'not-allowed' : 'pointer',
-                transition: 'all 0.15s'
-              }}
-              onMouseEnter={(e) => {
-                if (!isTyping) e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                if (!isTyping) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-              }}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
+      {/* Trailer Modal */}
+      {trailerMovie && (
+        <TrailerModal
+          isOpen={!!trailerMovie}
+          onClose={() => setTrailerMovie(null)}
+          movieId={trailerMovie.id}
+          movieTitle={trailerMovie.title}
+        />
       )}
-      
-      {/* Input Field */}
-      <div style={{ 
-        padding: '16px 24px 24px', 
-        background: 'linear-gradient(to top, var(--bg-default) 60%, transparent)'
-      }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <ChatInput onSend={sendMessage} disabled={isTyping} />
-        </div>
-      </div>
 
-      {/* Taste Profile Document Modal */}
+      {/* Taste Profile Modal */}
       {showTasteModal && tasteProfile && (
         <div style={{
           position: 'fixed',
@@ -299,189 +417,153 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 100,
+          zIndex: 50,
           padding: '20px'
         }}>
           <div style={{
-            backgroundColor: '#111522',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            backgroundColor: '#131422',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
             borderRadius: '20px',
-            maxWidth: '720px',
+            maxWidth: '680px',
             width: '100%',
             maxHeight: '85vh',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
-            overflow: 'hidden'
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.7)'
           }}>
-            {/* Modal Header */}
             <div style={{
-              padding: '20px 24px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1), transparent)'
+              padding: '18px 24px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  backgroundColor: 'rgba(168, 85, 247, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#c084fc'
-                }}>
-                  <FileText size={20} />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#f3f4f6', margin: 0 }}>
-                    User Taste Profile Document
-                  </h3>
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>
-                    Generated by Cinematch Detail Engine
-                  </span>
-                </div>
-              </div>
-
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <button
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  title="Recalculate taste profile"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    color: '#e5e7eb',
-                    cursor: isRefreshing ? 'wait' : 'pointer'
-                  }}
-                >
-                  <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
-                  <span>{isRefreshing ? 'Rebuilding...' : 'Refresh Profile'}</span>
-                </button>
-                <button
-                  onClick={() => setShowTasteModal(false)}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-                    color: '#9ca3af',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <X size={18} />
-                </button>
+                <Sparkles size={18} color="#c084fc" />
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#fff' }}>
+                  Detail Engine Taste Document
+                </h3>
               </div>
+              <button
+                type="button"
+                onClick={() => setShowTasteModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#9ca3af',
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            {/* Modal Body */}
-            <div 
-              className="custom-scrollbar"
-              style={{
-                padding: '24px',
-                overflowY: 'auto',
-                flex: 1,
-                fontSize: '14px',
-                lineHeight: 1.6,
-                color: '#d1d5db'
-              }}
-            >
-              {/* Quick Persona Card */}
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }} className="custom-scrollbar">
               <div style={{
-                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.1))',
-                border: '1px solid rgba(168, 85, 247, 0.3)',
-                borderRadius: '16px',
-                padding: '18px',
+                backgroundColor: 'rgba(168, 85, 247, 0.08)',
+                border: '1px solid rgba(168, 85, 247, 0.25)',
+                borderRadius: '14px',
+                padding: '16px',
                 marginBottom: '20px'
               }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c084fc', fontWeight: 700, marginBottom: '4px' }}>
-                  Cinematic Persona
-                </div>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: '#f3f4f6', marginBottom: '8px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#f3f4f6', marginBottom: '4px' }}>
                   {tasteProfile.persona_title}
                 </div>
-                <p style={{ fontSize: '13px', color: '#e5e7eb', margin: 0, lineHeight: 1.5 }}>
+                <div style={{ fontSize: '13px', color: '#c084fc', marginBottom: '8px' }}>
+                  {tasteProfile.critic_style}
+                </div>
+                <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0, lineHeight: 1.5 }}>
                   {tasteProfile.summary}
                 </p>
+              </div>
 
-                <div style={{ display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                  <div>
-                    <span style={{ fontSize: '11px', color: '#9ca3af', display: 'block' }}>Average Rating</span>
-                    <strong style={{ fontSize: '15px', color: '#f3f4f6' }}>{tasteProfile.average_rating > 0 ? `${tasteProfile.average_rating.toFixed(1)}/10` : 'None'}</strong>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '11px', color: '#9ca3af', display: 'block' }}>Ratings</span>
-                    <strong style={{ fontSize: '15px', color: '#f3f4f6' }}>{tasteProfile.total_ratings}</strong>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '11px', color: '#9ca3af', display: 'block' }}>Favorites</span>
-                    <strong style={{ fontSize: '15px', color: '#f3f4f6' }}>{tasteProfile.total_favorites}</strong>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '11px', color: '#9ca3af', display: 'block' }}>Watchlist</span>
-                    <strong style={{ fontSize: '15px', color: '#f3f4f6' }}>{tasteProfile.total_watchlist}</strong>
+              {tasteProfile.top_genres && tasteProfile.top_genres.length > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+                    Top Genre Distribution
+                  </h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {tasteProfile.top_genres.map((g, idx) => (
+                      <span key={idx} style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        fontSize: '12px',
+                        color: '#e2e8f0'
+                      }}>
+                        {g.name} ({g.percentage}%)
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Formatted Markdown Taste Document View */}
-              <div style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '12px',
-                padding: '18px',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-                fontFamily: 'monospace',
-                fontSize: '12.5px',
-                whiteSpace: 'pre-wrap',
-                color: '#e2e8f0',
-                lineHeight: 1.6
-              }}>
-                {tasteProfile.taste_document_text}
-              </div>
+              {tasteProfile.taste_document_text && (
+                <div>
+                  <h4 style={{ fontSize: '13px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                    Taste Profile Raw Dossier
+                  </h4>
+                  <div style={{
+                    padding: '14px',
+                    borderRadius: '10px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    fontSize: '12.5px',
+                    color: '#94a3b8',
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {tasteProfile.taste_document_text}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Modal Footer */}
             <div style={{
-              padding: '16px 24px',
+              padding: '14px 24px',
               borderTop: '1px solid rgba(255, 255, 255, 0.08)',
               display: 'flex',
-              justifyContent: 'flex-end',
-              backgroundColor: 'rgba(0, 0, 0, 0.2)'
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}>
               <button
-                onClick={() => {
-                  setShowTasteModal(false);
-                  sendMessage('Analyze my taste profile and explain why my persona was chosen.');
-                }}
+                type="button"
+                onClick={handleRefreshTaste}
+                disabled={isRefreshing}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: 'var(--primary-color)',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   color: '#fff',
+                  fontSize: '12px',
+                  cursor: isRefreshing ? 'wait' : 'pointer'
+                }}
+              >
+                <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+                <span>Refresh Profile</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowTasteModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--primary-color)',
                   border: 'none',
-                  borderRadius: '10px',
-                  padding: '10px 18px',
+                  color: '#fff',
                   fontSize: '13px',
                   fontWeight: 600,
                   cursor: 'pointer'
                 }}
               >
-                <Sparkles size={16} />
-                <span>Discuss Profile with AI</span>
+                Close
               </button>
             </div>
           </div>
