@@ -925,10 +925,10 @@ body {
 .discover-inspector-panel {
   width: clamp(360px, 24vw, 430px);
   position: fixed;
-  top: calc(var(--navbar-height) + 92px);
+  top: calc(var(--navbar-height) + 66px);
   right: 36px;
-  height: calc(100vh - var(--navbar-height) - 108px);
-  max-height: calc(100vh - var(--navbar-height) - 108px);
+  height: calc(100vh - var(--navbar-height) - 82px);
+  max-height: calc(100vh - var(--navbar-height) - 82px);
   overflow: hidden;
   z-index: 25;
 }

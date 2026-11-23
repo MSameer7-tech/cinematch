@@ -878,7 +878,8 @@ export const DiscoverPage: FC = () => {
       style={{
         width: '100%',
         minHeight: '100vh',
-        padding: '24px 36px 80px',
+        padding: '0 24px 60px',
+        marginTop: '-10px',
         boxSizing: 'border-box',
       }}
     >
@@ -891,8 +892,8 @@ export const DiscoverPage: FC = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '16px',
-              marginBottom: '26px',
+              gap: '14px',
+              marginBottom: '20px',
               flexWrap: 'wrap',
             }}
           >
