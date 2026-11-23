@@ -579,37 +579,6 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
           >
             {/* Quick Icon Actions (Larger & More Tactile) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {/* Clapperboard / Trailer Button */}
-              <button
-                onClick={() => onPlayTrailer(movie)}
-                title="Watch Trailer"
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '10px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.07)',
-                  border: '1px solid rgba(255, 255, 255, 0.14)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'rgba(255, 255, 255, 0.85)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.2)';
-                  e.currentTarget.style.color = '#c084fc';
-                  e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.07)';
-                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.14)';
-                }}
-              >
-                <Clapperboard size={18} />
-              </button>
-
               {/* Watchlist Bookmark Button */}
               <button
                 onClick={() => toggleWatchlist.mutate({ movieId: movie.id, isWatchlisted })}
