@@ -933,6 +933,24 @@ body {
   z-index: 25;
 }
 
+.discover-inspector-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.discover-inspector-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.discover-inspector-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.discover-inspector-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
 @media (max-width: 1150px) {
   .discover-page-layout {
     flex-direction: column-reverse;
