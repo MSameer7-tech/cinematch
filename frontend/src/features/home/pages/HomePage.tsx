@@ -1,4 +1,5 @@
-import { type FC, useEffect, useMemo } from 'react';
+import { type FC, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HeroBanner } from '../../movies/components/hero/HeroBanner';
 import { MovieCarousel } from '../../movies/components/carousel/MovieCarousel';
 import { useAuth } from '../../auth/hooks/useAuth';
@@ -87,21 +88,23 @@ export const HomePage: FC = () => {
     );
   }
 
-  const handleMovieShown = (id: number, position: number, sectionId: string) => {
+  const navigate = useNavigate();
+
+  const handleMovieShown = useCallback((id: number, position: number, sectionId: string) => {
     if (user?.id) {
       // Track card shown event with section and position for CTR calculations (Phase 10)
       trackEvent(user.id, 'shown', id, undefined, sectionId, position);
     }
-  };
+  }, [user?.id, trackEvent]);
 
-  const handleMovieClick = (id: number, position: number, sectionId: string) => {
+  const handleMovieClick = useCallback((id: number, position: number, sectionId: string) => {
     if (user?.id) {
       // Track card clicked event with section type and card index position
       trackEvent(user.id, 'clicked', id, undefined, sectionId, position);
     }
-    // Redirect to detail page
-    window.location.href = `/movie/${id}`;
-  };
+    // Client-side smooth navigation
+    navigate(`/movie/${id}`);
+  }, [user?.id, trackEvent, navigate]);
 
   return (
     <div className="home-page" style={{ paddingBottom: '60px' }}>

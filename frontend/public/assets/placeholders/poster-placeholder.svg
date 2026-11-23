@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="750" viewBox="0 0 500 750" fill="none">
+  <rect width="500" height="750" fill="#0d0d18"/>
+  <rect x="1" y="1" width="498" height="748" rx="15" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+  <circle cx="250" cy="340" r="54" fill="rgba(168,85,247,0.1)"/>
+  <path d="M250 310V370M220 340H280" stroke="rgba(168,85,247,0.4)" stroke-width="3" stroke-linecap="round"/>
+  <rect x="226" y="322" width="48" height="36" rx="6" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" fill="none"/>
+  <polygon points="245,333 245,347 258,340" fill="rgba(255,255,255,0.4)"/>
+  <text x="250" y="430" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" letter-spacing="1">CINEMATCH</text>
+</svg>

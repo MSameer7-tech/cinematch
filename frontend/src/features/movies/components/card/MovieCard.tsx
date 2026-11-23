@@ -75,27 +75,13 @@ export const MovieCard: FC<MovieCardProps> = ({ movie, onClick }) => {
     setIsTrailerOpen(true);
   };
 
+  const posterPath = movie.posterPath || (movie as any).poster_path;
+  const movieTitle = movie.title || (movie as any).original_title || 'Untitled';
+
   return (
     <>
-      <motion.div
+      <div
         className="movie-card-container"
-        style={{
-          position: 'relative',
-          width: '100%',
-          minWidth: '0',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          cursor: 'pointer',
-        }}
-        whileHover="hover"
-        initial="initial"
-        variants={{
-          hover: {
-            scale: 1.03,
-            transition: { duration: 0.22, ease: 'easeOut' },
-          },
-        }}
         onClick={() => onClick?.(movie.id)}
       >
         {/* Poster Image Box */}
@@ -144,22 +130,7 @@ export const MovieCard: FC<MovieCardProps> = ({ movie, onClick }) => {
           )}
 
           {/* Action Icons at Top-Right on Hover Only */}
-          <motion.div
-            variants={{
-              initial: { opacity: 0, y: -4 },
-              hover: { opacity: 1, y: 0 },
-            }}
-            transition={{ duration: 0.18 }}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              zIndex: 20,
-            }}
-          >
+          <div className="movie-card-actions">
             {/* Add to Watchlist Button */}
             <button
               onClick={handleToggleWatchlist}
@@ -243,52 +214,33 @@ export const MovieCard: FC<MovieCardProps> = ({ movie, onClick }) => {
             >
               <Star size={15} fill={userRating ? '#F5C518' : 'none'} strokeWidth={userRating ? 1 : 2} />
             </button>
-          </motion.div>
+          </div>
 
           {/* Poster Image */}
           <img
-            src={getPosterUrl(movie.posterPath)}
-            alt={movie.title}
+            src={getPosterUrl(posterPath)}
+            alt={movieTitle}
             loading="lazy"
+            onError={(e) => {
+              const target = e.currentTarget;
+              if (!target.src.includes('poster-placeholder.svg')) {
+                target.src = '/assets/placeholders/poster-placeholder.svg';
+              }
+            }}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
               display: 'block',
+              backgroundColor: 'rgba(255, 255, 255, 0.02)',
             }}
           />
 
           {/* Dark Overlay on Hover for Contrast */}
-          <motion.div
-            variants={{
-              initial: { opacity: 0 },
-              hover: { opacity: 1 },
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundColor: 'rgba(7, 7, 13, 0.35)',
-              pointerEvents: 'none',
-            }}
-          />
+          <div className="movie-card-overlay" />
 
           {/* Centered Circular Glass Play Button Overlay (Visible on Hover Only, No Glow) */}
-          <motion.div
-            variants={{
-              initial: { opacity: 0, scale: 0.85 },
-              hover: { opacity: 1, scale: 1 },
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 15,
-            }}
-          >
+          <div className="movie-card-play-overlay">
             <button
               onClick={handlePlayTrailer}
               title="Watch Trailer"
@@ -321,7 +273,7 @@ export const MovieCard: FC<MovieCardProps> = ({ movie, onClick }) => {
             >
               <Play size={20} fill="currentColor" style={{ marginLeft: '3px' }} />
             </button>
-          </motion.div>
+          </div>
         </div>
 
         {/* Clean Movie Title Underneath */}
@@ -337,12 +289,12 @@ export const MovieCard: FC<MovieCardProps> = ({ movie, onClick }) => {
               textOverflow: 'ellipsis',
               letterSpacing: '0.2px',
             }}
-            title={movie.title}
+            title={movieTitle}
           >
-            {movie.title}
+            {movieTitle}
           </h4>
         </div>
-      </motion.div>
+      </div>
 
       {/* Embedded Trailer Modal */}
       <TrailerModal

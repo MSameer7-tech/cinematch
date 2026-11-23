@@ -1,4 +1,4 @@
-import { type FC, useRef, useState, useEffect } from 'react';
+import { type FC, useRef, useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MovieCard } from '../card/MovieCard';
@@ -21,33 +21,44 @@ interface MovieCarouselProps {
   onMovieShown?: (id: number, position: number, sectionId: string) => void;
 }
 
+// Global session deduplication for 'shown' impression events to avoid network flooding
+const trackedMovieShownSet = new Set<string>();
+
 const TrackableMovieCard: FC<{
   movie: MovieDetails & { score?: number; reasons?: string[] };
   position: number;
   sectionId: string;
   onShown?: (id: number, position: number, sectionId: string) => void;
   onClick?: (id: number, position: number, sectionId: string) => void;
-}> = ({ movie, position, sectionId, onShown, onClick }) => {
+  rootRef?: React.RefObject<HTMLDivElement | null>;
+}> = ({ movie, position, sectionId, onShown, onClick, rootRef }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const hasTrackedShown = useRef(false);
+  const onShownRef = useRef(onShown);
+  onShownRef.current = onShown;
 
   useEffect(() => {
-    if (!onShown || hasTrackedShown.current) return;
+    const trackingKey = `${sectionId}-${movie.id}`;
+    if (!onShownRef.current || trackedMovieShownSet.has(trackingKey)) return;
 
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        onShown(movie.id, position, sectionId);
-        hasTrackedShown.current = true;
+      if (entries[0]?.isIntersecting) {
+        if (!trackedMovieShownSet.has(trackingKey)) {
+          trackedMovieShownSet.add(trackingKey);
+          onShownRef.current?.(movie.id, position, sectionId);
+        }
         observer.disconnect();
       }
-    }, { threshold: 0.2 });
+    }, { 
+      root: rootRef?.current || null,
+      threshold: 0.25 
+    });
 
     if (cardRef.current) {
       observer.observe(cardRef.current);
     }
 
     return () => observer.disconnect();
-  }, [movie.id, position, sectionId, onShown]);
+  }, [movie.id, position, sectionId, rootRef]);
 
   return (
     <div ref={cardRef} style={{ width: '100%', minWidth: 0 }}>
@@ -59,17 +70,25 @@ const TrackableMovieCard: FC<{
   );
 };
 
-const SentinelCard: FC<{ onVisible: () => void }> = ({ onVisible }) => {
+const SentinelCard: FC<{ 
+  onVisible: () => void;
+  rootRef: React.RefObject<HTMLDivElement | null>;
+}> = ({ onVisible, rootRef }) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const onVisibleRef = useRef(onVisible);
+  onVisibleRef.current = onVisible;
 
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        onVisible();
+      if (entries[0]?.isIntersecting) {
+        onVisibleRef.current();
       }
     }, { 
-      root: null, // viewport
-      rootMargin: '0px 300px 0px 300px', // trigger 300px before reaching edge (prefetching)
+      root, // Observe horizontal scroll container ONLY, not vertical viewport
+      rootMargin: '0px 200px 0px 0px',
       threshold: 0.1 
     });
 
@@ -78,9 +97,9 @@ const SentinelCard: FC<{ onVisible: () => void }> = ({ onVisible }) => {
     }
 
     return () => observer.disconnect();
-  }, [onVisible]);
+  }, [rootRef]);
 
-  return <div ref={sentinelRef} style={{ width: '1px', flex: '0 0 1px' }} />;
+  return <div ref={sentinelRef} style={{ width: '1px', flex: '0 0 1px', minWidth: '1px' }} />;
 };
 
 export const MovieCarousel: FC<MovieCarouselProps> = ({ 
@@ -126,6 +145,12 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
     user?.id || '', 
     isPaginationEnabled ? initialPageData : undefined
   );
+
+  const handleFetchNextPage = useCallback(() => {
+    if (!isFetchingNextPage && !isError) {
+      fetchNextPage();
+    }
+  }, [isFetchingNextPage, isError, fetchNextPage]);
 
   // Flatten and client-side deduplicate movie lists before rendering (Deduplication optimization)
   const rawList = isPaginationEnabled && data
@@ -279,6 +304,7 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
               position={index + 1}
               sectionId={sectionId}
               onShown={onMovieShown}
+              rootRef={scrollContainerRef}
               onClick={(id, pos, sId) => {
                 if (onMovieClick) {
                   onMovieClick(id, pos, sId);
@@ -292,11 +318,10 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
 
         {/* IntersectionObserver Sentinel for Infinite Scroll (Phase 8) */}
         {isPaginationEnabled && hasNextPage && (
-          <SentinelCard onVisible={() => {
-            if (!isFetchingNextPage && !isError) {
-              fetchNextPage();
-            }
-          }} />
+          <SentinelCard 
+            rootRef={scrollContainerRef}
+            onVisible={handleFetchNextPage} 
+          />
         )}
 
         {/* Skeletons loader */}

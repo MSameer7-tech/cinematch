@@ -10,7 +10,9 @@ export const getPosterUrl = (
   size: string = IMAGE_SIZES.POSTER.LARGE
 ): string => {
   if (!path) return PLACEHOLDERS.POSTER;
-  return `${env.TMDB_IMAGE_URL}/${size}${path}`;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${env.TMDB_IMAGE_URL}/${size}${cleanPath}`;
 };
 
 export const getBackdropUrl = (
@@ -18,7 +20,9 @@ export const getBackdropUrl = (
   size: string = IMAGE_SIZES.BACKDROP.LARGE
 ): string => {
   if (!path) return PLACEHOLDERS.BACKDROP;
-  return `${env.TMDB_IMAGE_URL}/${size}${path}`;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${env.TMDB_IMAGE_URL}/${size}${cleanPath}`;
 };
 
 export const getProfileUrl = (
