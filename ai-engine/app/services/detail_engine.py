@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+import math
 import logging
 from collections import Counter
 from typing import Dict, Any, List, Optional
@@ -14,6 +15,28 @@ from app.content.repositories.user_repository import UserRepository
 from app.content.repositories.movie_repository import MovieRepository
 
 logger = logging.getLogger(__name__)
+
+TMDB_GENRE_MAP = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Science Fiction",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western"
+}
 
 class TasteProfileDocument(BaseModel):
     user_id: str
@@ -44,24 +67,43 @@ class DetailEngine:
     def _resolve_movie(self, movie_id: int) -> dict:
         """Resolve movie attributes from local parquet, raw json, or TMDB live."""
         m = self.movie_repo.get_movie_by_id(movie_id)
-        if m and m.get("title"):
+        if m and m.get("title") and str(m.get("title")) != "nan":
             genres = []
-            if m.get("genre_names"):
-                genres = [g.strip() for g in str(m["genre_names"]).split(",") if g.strip()]
+            raw_genres = m.get("genre_names")
+            if raw_genres is not None and str(raw_genres) != "nan":
+                genres = [g.strip() for g in str(raw_genres).split(",") if g.strip() and g.strip().lower() != "nan"]
             
             cast_list = []
-            if m.get("cast"):
-                cast_list = [c.strip() for c in str(m["cast"]).split(",") if c.strip()][:5]
+            raw_cast = m.get("cast")
+            if raw_cast is not None and str(raw_cast) != "nan":
+                cast_list = [c.strip() for c in str(raw_cast).split(",") if c.strip() and c.strip().lower() != "nan"][:5]
                 
+            raw_dir = m.get("director")
+            director_str = str(raw_dir).strip() if (raw_dir is not None and str(raw_dir) != "nan") else ""
+
+            raw_overview = m.get("overview")
+            overview_str = str(raw_overview).strip() if (raw_overview is not None and str(raw_overview) != "nan") else ""
+
+            raw_year = m.get("release_year")
+            year_str = str(raw_year).strip() if (raw_year is not None and str(raw_year) != "nan") else ""
+
+            raw_vote = m.get("vote_average")
+            try:
+                vote_avg = float(raw_vote) if (raw_vote is not None and str(raw_vote) != "nan") else 0.0
+                if math.isnan(vote_avg):
+                    vote_avg = 0.0
+            except Exception:
+                vote_avg = 0.0
+
             return {
                 "id": movie_id,
-                "title": m.get("title", ""),
+                "title": str(m.get("title") or ""),
                 "genres": genres,
-                "director": m.get("director") or "",
+                "director": director_str,
                 "cast": cast_list,
-                "release_year": str(m.get("release_year") or ""),
-                "vote_average": float(m.get("vote_average") or 0.0),
-                "overview": m.get("overview") or "",
+                "release_year": year_str,
+                "vote_average": vote_avg,
+                "overview": overview_str,
             }
 
         # Check local raw json
@@ -76,15 +118,22 @@ class DetailEngine:
                     genres = [g.get("name") for g in data.get("genres", []) if isinstance(g, dict) and g.get("name")]
                     rdate = data.get("release_date", "")
                     year = rdate[:4] if rdate else ""
+                    raw_vote = data.get("vote_average")
+                    try:
+                        vote_avg = float(raw_vote) if (raw_vote is not None and str(raw_vote) != "nan") else 0.0
+                        if math.isnan(vote_avg):
+                            vote_avg = 0.0
+                    except Exception:
+                        vote_avg = 0.0
                     return {
                         "id": movie_id,
-                        "title": data.get("title", ""),
+                        "title": str(data.get("title") or ""),
                         "genres": genres,
                         "director": "",
                         "cast": [],
                         "release_year": year,
-                        "vote_average": float(data.get("vote_average") or 0.0),
-                        "overview": data.get("overview") or "",
+                        "vote_average": vote_avg,
+                        "overview": str(data.get("overview") or ""),
                     }
             except Exception:
                 pass
@@ -97,15 +146,22 @@ class DetailEngine:
                 genres = [g.get("name") for g in data.get("genres", []) if isinstance(g, dict) and g.get("name")]
                 rdate = data.get("release_date", "")
                 year = rdate[:4] if rdate else ""
+                raw_vote = data.get("vote_average")
+                try:
+                    vote_avg = float(raw_vote) if (raw_vote is not None and str(raw_vote) != "nan") else 0.0
+                    if math.isnan(vote_avg):
+                        vote_avg = 0.0
+                except Exception:
+                    vote_avg = 0.0
                 return {
                     "id": movie_id,
-                    "title": data.get("title", ""),
+                    "title": str(data.get("title") or ""),
                     "genres": genres,
                     "director": "",
                     "cast": [],
                     "release_year": year,
-                    "vote_average": float(data.get("vote_average") or 0.0),
-                    "overview": data.get("overview") or "",
+                    "vote_average": vote_avg,
+                    "overview": str(data.get("overview") or ""),
                 }
         except Exception:
             pass
@@ -200,15 +256,31 @@ class DetailEngine:
         watchlist_raw = self.user_repo.get_user_watchlist(user_id)
         preferences_raw = self.user_repo.get_user_preferences(user_id)
 
+        genre_weights = Counter()
+        director_counter = Counter()
+        actor_counter = Counter()
+
+        # 0. Process Explicit Preferences (from Onboarding or Settings)
+        if preferences_raw and isinstance(preferences_raw, dict):
+            pref_genres = preferences_raw.get("preferred_genres") or preferences_raw.get("genres") or []
+            if isinstance(pref_genres, list):
+                for g in pref_genres:
+                    g_name = TMDB_GENRE_MAP.get(g) if isinstance(g, int) else (str(g).strip() if str(g) != "nan" else "")
+                    if g_name:
+                        genre_weights[g_name] += 4.5
+            
+            disliked = preferences_raw.get("disliked_genres") or []
+            if isinstance(disliked, list):
+                for g in disliked:
+                    g_name = TMDB_GENRE_MAP.get(g) if isinstance(g, int) else (str(g).strip() if str(g) != "nan" else "")
+                    if g_name:
+                        genre_weights[g_name] -= 5.0
+
         # 1. Process Ratings
         rated_movies = []
         rating_scores = []
         high_rated_movies = []
         low_rated_movies = []
-
-        genre_weights = Counter()
-        director_counter = Counter()
-        actor_counter = Counter()
 
         for r in ratings_raw:
             mid = r.get("media_id") or r.get("movie_id")
@@ -424,97 +496,129 @@ class DetailEngine:
             del self._cache[user_id]
 
     def rank_hero_candidates(self, user_id: str, candidate_movies: List[Dict[str, Any]], limit: int = 8) -> List[Dict[str, Any]]:
-        """
-        Ranks candidate movies for the Hero Banner poster using the user's taste profile.
-        Prioritizes:
-        1. User top genre affinity match (weights based on % affinity)
-        2. Favorite directors & actors match
-        3. Thematic tag resonance
-        4. High vote average / cinematic quality
-        5. Penalizes avoid/disliked genres
-        """
+        """Ranks candidate movies for Hero carousel according to taste document & persona."""
         if not candidate_movies:
             return []
 
-        doc = self.get_taste_document(user_id) if user_id and user_id != "anonymous" else None
-        
-        # Build lookup weights for quick scoring
-        genre_weights = {}
-        if doc and doc.top_genres:
-            for g in doc.top_genres:
-                genre_weights[g["name"].lower()] = g["percentage"] / 100.0
+        try:
+            doc = self.get_taste_document(user_id) if (user_id and user_id not in ["anonymous", "guest"]) else None
+        except Exception as e:
+            logger.warning(f"DetailEngine failed to load taste doc for user {user_id}: {e}")
+            doc = None
 
-        avoid_set = set(g.lower() for g in doc.avoid_genres) if doc else set()
-        fav_directors = set(d.lower() for d in doc.favorite_directors) if doc else set()
-        fav_actors = set(a.lower() for a in doc.favorite_actors) if doc else set()
-        thematic_tags = [t.lower() for t in doc.thematic_tags] if doc else []
+        try:
+            # Build lookup weights for quick scoring
+            genre_weights = {}
+            if doc and doc.top_genres:
+                for g in doc.top_genres:
+                    if isinstance(g, dict) and "name" in g and "percentage" in g:
+                        genre_weights[str(g["name"]).lower()] = float(g.get("percentage") or 0.0) / 100.0
 
-        scored = []
-        seen_ids = set()
+            avoid_set = set(str(g).lower() for g in doc.avoid_genres if g and str(g) != "nan") if doc else set()
+            fav_directors = set(str(d).lower() for d in doc.favorite_directors if d and str(d) != "nan") if doc else set()
+            fav_actors = set(str(a).lower() for a in doc.favorite_actors if a and str(a) != "nan") if doc else set()
+            thematic_tags = [str(t).lower() for t in doc.thematic_tags if t and str(t) != "nan"] if doc else []
 
-        for item in candidate_movies:
-            mid = item.get("id") or item.get("movie_id")
-            if not mid or mid in seen_ids:
-                continue
-            seen_ids.add(mid)
-            
-            m_meta = self._resolve_movie(int(mid))
-            genres = [g.lower() for g in m_meta.get("genres", [])]
-            director = (m_meta.get("director") or "").lower()
-            cast = [c.lower() for c in m_meta.get("cast", [])]
-            overview = (m_meta.get("overview") or "").lower()
-            vote_avg = m_meta.get("vote_average", 0.0)
+            scored = []
+            seen_ids = set()
 
-            # Avoid filter
-            if any(ag in genres for ag in avoid_set):
-                continue
+            for item in candidate_movies:
+                mid = item.get("id") or item.get("movie_id")
+                if not mid or mid in seen_ids:
+                    continue
+                seen_ids.add(mid)
+                
+                try:
+                    m_meta = self._resolve_movie(int(mid))
+                except Exception:
+                    m_meta = {}
 
-            # Calculate taste score
-            # 1. Genre affinity (0.0 to 1.0)
-            genre_score = sum(genre_weights.get(g, 0.05) for g in genres)
-            
-            # 2. Director & Cast bonus
-            director_bonus = 0.35 if (director and director in fav_directors) else 0.0
-            cast_bonus = 0.15 * sum(1 for c in cast if c in fav_actors)
+                genres = [str(g).lower() for g in m_meta.get("genres", []) if g and str(g) != "nan"]
+                raw_dir = m_meta.get("director")
+                director = str(raw_dir).strip().lower() if (raw_dir is not None and str(raw_dir) != "nan") else ""
+                cast = [str(c).lower() for c in m_meta.get("cast", []) if c and str(c) != "nan"]
+                raw_ov = m_meta.get("overview")
+                overview = str(raw_ov).strip().lower() if (raw_ov is not None and str(raw_ov) != "nan") else ""
+                try:
+                    vote_avg = float(m_meta.get("vote_average") or 0.0)
+                    if math.isnan(vote_avg):
+                        vote_avg = 0.0
+                except Exception:
+                    vote_avg = 0.0
 
-            # 3. Thematic bonus
-            thematic_bonus = 0.15 if any(tag in overview for tag in thematic_tags) else 0.0
+                # Avoid filter
+                if any(ag in genres for ag in avoid_set):
+                    continue
 
-            # 4. Quality score (vote_average / 10)
-            quality_score = min(vote_avg / 10.0, 1.0) if vote_avg > 0 else 0.65
+                # Calculate taste score
+                # 1. Genre affinity (0.0 to 1.0)
+                genre_score = sum(genre_weights.get(g, 0.05) for g in genres)
+                
+                # 2. Director & Cast bonus
+                director_bonus = 0.35 if (director and director in fav_directors) else 0.0
+                cast_bonus = 0.15 * sum(1 for c in cast if c in fav_actors)
 
-            # 5. Base recommender score
-            base_score = float(item.get("score") or 0.7)
+                # 3. Thematic bonus
+                thematic_bonus = 0.15 if any(tag in overview for tag in thematic_tags) else 0.0
 
-            total_score = (
-                (genre_score * 0.40) +
-                (director_bonus + cast_bonus) +
-                (thematic_bonus * 0.15) +
-                (quality_score * 0.20) +
-                (base_score * 0.25)
-            )
+                # 4. Quality score (vote_average / 10)
+                quality_score = min(vote_avg / 10.0, 1.0) if vote_avg > 0 else 0.65
 
-            # Build taste reason
-            reasons = list(item.get("reasons") or [])
-            matched_genres = [g.capitalize() for g in genres if g in genre_weights]
-            if matched_genres:
-                reasons.insert(0, f"Top match for your {matched_genres[0]} taste")
-            elif doc and doc.persona_title:
-                reasons.insert(0, f"Matched to your {doc.persona_title} profile")
+                # 5. Base recommender score
+                try:
+                    base_score = float(item.get("score") or 0.7)
+                    if math.isnan(base_score):
+                        base_score = 0.7
+                except Exception:
+                    base_score = 0.7
 
-            persona_badge = f"Matched to your {doc.persona_title} taste" if (doc and doc.persona_title) else "Curated for you"
+                total_score = (
+                    (genre_score * 0.40) +
+                    (director_bonus + cast_bonus) +
+                    (thematic_bonus * 0.15) +
+                    (quality_score * 0.20) +
+                    (base_score * 0.25)
+                )
 
-            scored.append({
-                "id": int(mid),
-                "score": round(total_score, 3),
-                "taste_score": round(total_score, 3),
-                "reasons": reasons,
-                "persona_badge": persona_badge,
-                "title": m_meta.get("title", item.get("title", ""))
-            })
+                # Build taste reason
+                reasons = list(item.get("reasons") or [])
+                matched_genres = [g.capitalize() for g in genres if g in genre_weights]
+                if matched_genres:
+                    reasons.insert(0, f"Top match for your {matched_genres[0]} taste")
+                elif doc and doc.persona_title:
+                    reasons.insert(0, f"Matched to your {doc.persona_title} profile")
 
-        # Sort descending by taste score
-        scored.sort(key=lambda x: x["taste_score"], reverse=True)
-        return scored[:limit]
+                persona_badge = f"Matched to your {doc.persona_title} taste" if (doc and doc.persona_title) else "Curated for you"
+
+                scored.append({
+                    "id": int(mid),
+                    "score": round(total_score, 3),
+                    "taste_score": round(total_score, 3),
+                    "reasons": reasons,
+                    "persona_badge": persona_badge,
+                    "title": str(m_meta.get("title", item.get("title", "")))
+                })
+
+            # Sort descending by taste score
+            scored.sort(key=lambda x: x["taste_score"], reverse=True)
+            return scored[:limit]
+
+        except Exception as err:
+            logger.error(f"Error ranking hero candidates: {err}", exc_info=True)
+            # Graceful fallback to raw candidates
+            fallback = []
+            for item in candidate_movies[:limit]:
+                mid = item.get("id") or item.get("movie_id")
+                if not mid:
+                    continue
+                fallback.append({
+                    "id": int(mid),
+                    "score": float(item.get("score") or 0.7),
+                    "taste_score": float(item.get("score") or 0.7),
+                    "reasons": list(item.get("reasons") or []),
+                    "persona_badge": "Curated for you",
+                    "title": str(item.get("title", ""))
+                })
+            return fallback
 
 detail_engine = DetailEngine()
