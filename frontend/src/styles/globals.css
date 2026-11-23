@@ -878,34 +878,7 @@ body {
 
 .discover-page-layout {
   display: flex;
-  gap: 36px;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.discover-movie-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 22px;
-}
-
-@media (max-width: 1400px) {
-  .discover-movie-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .discover-movie-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
-}
-
-.discover-page-layout {
-  display: flex;
-  gap: 36px;
+  gap: 32px;
   align-items: flex-start;
   width: 100%;
   position: relative;
@@ -918,19 +891,37 @@ body {
   flex-direction: column;
 }
 
-.discover-main-content.has-inspector {
-  margin-right: calc(clamp(360px, 24vw, 430px) + 32px);
+.discover-movie-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 22px;
+}
+
+@media (max-width: 1450px) {
+  .discover-movie-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .discover-movie-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
 }
 
 .discover-inspector-panel {
-  width: clamp(360px, 24vw, 430px);
-  position: fixed;
-  top: calc(var(--navbar-height) + 66px);
-  right: 36px;
-  height: calc(100vh - var(--navbar-height) - 82px);
-  max-height: calc(100vh - var(--navbar-height) - 82px);
+  width: clamp(380px, 25vw, 440px);
+  position: sticky;
+  top: 0px;
+  height: calc(100vh - var(--navbar-height) - 40px);
+  max-height: calc(100vh - var(--navbar-height) - 40px);
   overflow: hidden;
-  z-index: 25;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
 }
 
 .discover-inspector-body {
@@ -951,13 +942,9 @@ body {
   border-radius: 4px;
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 1100px) {
   .discover-page-layout {
-    flex-direction: column-reverse;
-  }
-  
-  .discover-main-content.has-inspector {
-    margin-right: 0;
+    flex-direction: column;
   }
   
   .discover-inspector-panel {

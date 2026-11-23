@@ -876,16 +876,15 @@ export const DiscoverPage: FC = () => {
     <div
       style={{
         width: '100%',
-        minHeight: '100vh',
+        minHeight: '100%',
         padding: '0 24px 60px',
-        marginTop: '-10px',
         boxSizing: 'border-box',
       }}
     >
-      {/* Main Two-Column Layout: Grid & Filters on Left, Fixed Inspector on Right */}
+      {/* Main Two-Column Layout: Grid & Filters on Left, Sticky Inspector on Right */}
       <div className="discover-page-layout">
         {/* Left Column: Filter Bar + Movie Poster Grid (5 Columns) */}
-        <div className={`discover-main-content ${selectedMovie ? 'has-inspector' : ''}`}>
+        <div className="discover-main-content">
           {/* Top Filter Bar: Format, Category, Genre */}
           <div
             style={{
@@ -982,11 +981,11 @@ export const DiscoverPage: FC = () => {
               {/* Exactly 5 Columns Movie Grid with slightly bigger posters & smooth transitions */}
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={`${selectedCategory}-${selectedGenreId}-${selectedMediaType}`}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  key={`${category}-${selectedGenreId}-${mediaType}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
                   className="discover-movie-grid"
                 >
                 {filteredMovies.map((movie) => {
