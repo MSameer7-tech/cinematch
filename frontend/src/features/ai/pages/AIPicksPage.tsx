@@ -7,7 +7,7 @@ export const AIPicksPage: React.FC = () => {
   const userId = user?.id || (guest as any)?.sessionId || (guest as any)?.guestId || (guest as any)?.id || 'guest-user';
 
   return (
-    <div style={{ height: 'calc(100vh - var(--navbar-height) - 36px)', width: '100%', position: 'relative', borderRadius: '16px', overflow: 'hidden' }}>
+    <div style={{ height: 'calc(100vh - var(--navbar-height))', width: '100%', position: 'relative', overflow: 'hidden' }}>
       <AIChat userId={userId} />
     </div>
   );

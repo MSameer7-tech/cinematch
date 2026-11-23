@@ -9,6 +9,7 @@ import { TopNavbar } from '../components/layout/TopNavbar';
 export const MainLayout: FC = () => {
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const isAIPage = location.pathname === '/ai-picks' || location.pathname === '/ai';
   const mainRef = useRef<HTMLElement>(null);
 
   // Seamless scroll to top on page navigation
@@ -27,7 +28,7 @@ export const MainLayout: FC = () => {
           <Sidebar />
           <main 
             ref={mainRef}
-            className={`content-container ${isHome ? 'home-immersive' : ''}`}
+            className={`content-container ${isHome ? 'home-immersive' : isAIPage ? 'ai-immersive' : ''}`}
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div

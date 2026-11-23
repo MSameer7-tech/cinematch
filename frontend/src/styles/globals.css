@@ -320,6 +320,13 @@ body {
   margin-left: 0;
 }
 
+.content-container.ai-immersive {
+  padding: var(--navbar-height) 0 0 0;
+  overflow: hidden;
+  height: 100vh;
+  min-height: 100vh;
+}
+
 .content-container.home-immersive .movie-carousel-section {
   padding-left: calc(var(--sidebar-width) + 36px) !important;
   padding-right: 48px !important;
