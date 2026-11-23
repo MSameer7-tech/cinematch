@@ -258,19 +258,24 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
     return movie.releaseYear || (movie.releaseDate ? movie.releaseDate.slice(0, 4) : '');
   }, [movie]);
 
-  // Genres list - deduplicated and filtered for clean display
+  // Genres list - deduplicated, mapped to official TMDB genres, and free from 'General'
   const genresList = useMemo(() => {
     let raw: string[] = [];
     if (details?.genres && details.genres.length > 0) {
-      raw = details.genres.map((g) => g.name);
+      raw = details.genres.map((g) => {
+        if (!g.name || g.name.toLowerCase() === 'general') {
+          return GENRE_OPTIONS.find((opt) => opt.id === g.id)?.label || 'Drama';
+        }
+        return g.name;
+      });
     } else {
       raw = (movie.genreIds || [])
         .map((gid) => GENRE_OPTIONS.find((g) => g.id === gid)?.label)
         .filter((n): n is string => Boolean(n) && n !== 'All Genres');
     }
     const unique = Array.from(new Set(raw.filter(Boolean)));
-    const filtered = unique.filter((g) => g.toLowerCase() !== 'general' || unique.length === 1);
-    return filtered.length > 0 ? filtered : unique;
+    const filtered = unique.filter((g) => g.toLowerCase() !== 'general');
+    return filtered.length > 0 ? filtered : ['Drama'];
   }, [details, movie]);
 
   const ratingFormatted = movie.voteAverage ? movie.voteAverage.toFixed(1) : '7.5';
@@ -469,20 +474,20 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
         )}
 
         {/* CAST Section */}
-        {topCast.length > 0 && (
-          <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '1.2px',
-                color: 'rgba(255, 255, 255, 0.5)',
-                marginBottom: '6px',
-              }}
-            >
-              CAST
-            </div>
+        <div>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '1.2px',
+              color: 'rgba(255, 255, 255, 0.5)',
+              marginBottom: '6px',
+            }}
+          >
+            CAST
+          </div>
+          {topCast.length > 0 ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {topCast.slice(0, 4).map((actor) => (
                 <span
@@ -501,24 +506,33 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 </span>
               ))}
             </div>
-          </div>
-        )}
+          ) : isDetailsLoading ? (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ width: '80px', height: '28px', borderRadius: '20px', backgroundColor: 'rgba(255, 255, 255, 0.05)' }} />
+              <div style={{ width: '90px', height: '28px', borderRadius: '20px', backgroundColor: 'rgba(255, 255, 255, 0.05)' }} />
+            </div>
+          ) : (
+            <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)', fontStyle: 'italic' }}>
+              Cast details uncredited
+            </span>
+          )}
+        </div>
 
         {/* DIRECTOR Section */}
-        {director && (
-          <div>
-            <div
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '1.2px',
-                color: 'rgba(255, 255, 255, 0.5)',
-                marginBottom: '6px',
-              }}
-            >
-              DIRECTOR
-            </div>
+        <div>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '1.2px',
+              color: 'rgba(255, 255, 255, 0.5)',
+              marginBottom: '6px',
+            }}
+          >
+            DIRECTOR
+          </div>
+          {director ? (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <span
                 style={{
@@ -534,8 +548,14 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 {director}
               </span>
             </div>
-          </div>
-        )}
+          ) : isDetailsLoading ? (
+            <div style={{ width: '90px', height: '28px', borderRadius: '20px', backgroundColor: 'rgba(168, 85, 247, 0.08)' }} />
+          ) : (
+            <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)', fontStyle: 'italic' }}>
+              Director uncredited
+            </span>
+          )}
+        </div>
 
         {/* Bottom Anchored Wrapper: Actions & Specifications Box */}
         <div
@@ -748,26 +768,22 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 {details?.originalLanguage || 'en'}
               </span>
             </div>
-            {details?.budget && details.budget > 0 ? (
-              <div>
-                <span style={{ color: 'rgba(255, 255, 255, 0.45)', display: 'block', fontSize: '9.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
-                  Budget
-                </span>
-                <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>
-                  ${(details.budget / 1_000_000).toFixed(0)}M
-                </span>
-              </div>
-            ) : null}
-            {movie.voteCount && movie.voteCount > 0 ? (
-              <div>
-                <span style={{ color: 'rgba(255, 255, 255, 0.45)', display: 'block', fontSize: '9.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
-                  Total Votes
-                </span>
-                <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>
-                  {movie.voteCount.toLocaleString()}
-                </span>
-              </div>
-            ) : null}
+            <div>
+              <span style={{ color: 'rgba(255, 255, 255, 0.45)', display: 'block', fontSize: '9.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+                Budget
+              </span>
+              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>
+                {details?.budget && details.budget > 0 ? `$${(details.budget / 1_000_000).toFixed(0)}M` : 'Undisclosed'}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: 'rgba(255, 255, 255, 0.45)', display: 'block', fontSize: '9.5px', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '2px' }}>
+                Total Votes
+              </span>
+              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>
+                {movie.voteCount && movie.voteCount > 0 ? movie.voteCount.toLocaleString() : 'N/A'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

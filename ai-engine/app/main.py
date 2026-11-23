@@ -526,6 +526,15 @@ def get_movie_videos_endpoint(movie_id: int, title: Optional[str] = None):
 
 @app.get("/api/movies/{movie_id}")
 def get_movie_detail(movie_id: int):
+    from app.content.services.tmdb_live_service import tmdb_live_service
+    detail = tmdb_live_service.get_movie_detail(movie_id)
+    if detail:
+        cached_logo = logo_cache.get(str(movie_id))
+        if cached_logo and cached_logo.get("logo_path"):
+            detail["logo_path"] = cached_logo["logo_path"]
+        return detail
+
+    # Fallback to local raw file if exists
     raw_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "raw", f"movie_{movie_id}.json")
     if os.path.exists(raw_path):
         with open(raw_path, "r", encoding="utf-8") as f:
@@ -534,17 +543,13 @@ def get_movie_detail(movie_id: int):
             if cached_logo and cached_logo.get("logo_path"):
                 data["logo_path"] = cached_logo["logo_path"]
             return data
-    
-    # Attempt live TMDB fallback
-    from app.content.services.tmdb_live_service import tmdb_live_service
-    live_detail = tmdb_live_service.get_movie_detail(movie_id)
-    if live_detail:
-        cached_logo = logo_cache.get(str(movie_id))
-        if cached_logo and cached_logo.get("logo_path"):
-            live_detail["logo_path"] = cached_logo["logo_path"]
-        return live_detail
 
     raise HTTPException(status_code=404, detail="Movie not found")
+
+@app.get("/api/movies/{movie_id}/credits")
+def get_movie_credits_endpoint(movie_id: int):
+    from app.content.services.tmdb_live_service import tmdb_live_service
+    return tmdb_live_service.get_movie_credits(movie_id)
 
 @app.post("/api/movies/batch")
 def get_movies_batch(req: MovieBatchRequest):

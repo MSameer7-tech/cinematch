@@ -13,6 +13,28 @@ import urllib3.util.connection as urllib_conn
 
 logger = logging.getLogger(__name__)
 
+TMDB_GENRE_MAP = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Science Fiction",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western",
+}
+
 # Ensure DNS-blocked TMDB domains route correctly via known direct CloudFront IP
 TMDB_DIRECT_IP = "3.175.86.37"
 _orig_create_conn = urllib_conn.create_connection
@@ -60,7 +82,7 @@ class TMDBLiveService:
                 return
             path = os.path.join(self.raw_dir, f"movie_{mid}.json")
             if not os.path.exists(path):
-                # Format to match TMDBMovieDetails
+                # Format to match TMDBMovieDetails with accurate genre mapping
                 stub = {
                     "id": mid,
                     "title": movie.get("title", ""),
@@ -69,7 +91,7 @@ class TMDBLiveService:
                     "poster_path": movie.get("poster_path"),
                     "backdrop_path": movie.get("backdrop_path"),
                     "genre_ids": movie.get("genre_ids", []),
-                    "genres": [{"id": gid, "name": "General"} for gid in movie.get("genre_ids", [])],
+                    "genres": [{"id": gid, "name": TMDB_GENRE_MAP.get(gid, "Drama")} for gid in movie.get("genre_ids", [])],
                     "release_date": movie.get("release_date", ""),
                     "vote_average": movie.get("vote_average", 0.0),
                     "vote_count": movie.get("vote_count", 0),
@@ -184,25 +206,59 @@ class TMDBLiveService:
         return self._fetch_paginated_released("movie/top_rated", page=page, target_count=20)
 
     def get_movie_detail(self, movie_id: int) -> Optional[dict]:
-        """Fetch full movie details, caching to disk."""
+        """Fetch full movie details with credits and proper genres, caching to disk."""
         path = os.path.join(self.raw_dir, f"movie_{movie_id}.json")
+        cached_data = None
+        is_stub = False
+
         if os.path.exists(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                    cached_data = json.load(f)
+                    genres = cached_data.get("genres", [])
+                    has_general = any(g.get("name") == "General" for g in genres if isinstance(g, dict))
+                    has_credits = "credits" in cached_data and bool(cached_data.get("credits", {}).get("cast"))
+                    if not has_general and has_credits:
+                        return cached_data
+                    is_stub = True
             except Exception:
                 pass
 
-        # Live fetch from TMDB
-        data = self._fetch_endpoint(f"movie/{movie_id}")
+        # Live fetch from TMDB with append_to_response=credits
+        data = self._fetch_endpoint(f"movie/{movie_id}", {"append_to_response": "credits"})
         if data:
+            if "genres" in data:
+                for g in data["genres"]:
+                    if isinstance(g, dict) and (g.get("name") == "General" or not g.get("name")):
+                        g["name"] = TMDB_GENRE_MAP.get(g.get("id"), "Drama")
             try:
                 with open(path, "w", encoding="utf-8") as f:
                     json.dump(data, f)
             except Exception as e:
                 logger.warning(f"Failed to cache movie {movie_id}: {e}")
             return data
+
+        # If live TMDB fetch failed or was blocked, sanitize cached stub genres
+        if cached_data is not None:
+            if "genres" in cached_data:
+                for g in cached_data["genres"]:
+                    if isinstance(g, dict) and (g.get("name") == "General" or not g.get("name")):
+                        g["name"] = TMDB_GENRE_MAP.get(g.get("id"), "Drama")
+            return cached_data
+
         return None
+
+    def get_movie_credits(self, movie_id: int) -> dict:
+        """Fetch movie credits from TMDB with disk & memory caching."""
+        detail = self.get_movie_detail(movie_id)
+        if detail and "credits" in detail and detail["credits"]:
+            return detail["credits"]
+
+        credits_data = self._fetch_endpoint(f"movie/{movie_id}/credits")
+        if credits_data:
+            return credits_data
+
+        return {"id": movie_id, "cast": [], "crew": []}
 
     def _search_youtube_trailer(self, title: str, year: str = "") -> List[str]:
         """Search YouTube for movie official trailer video IDs."""

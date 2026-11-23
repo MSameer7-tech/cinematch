@@ -276,6 +276,17 @@ export const movieService = {
 
   getMovieCredits: async (id: number): Promise<MovieCredits> => {
     try {
+      const res = await fetch(`/api/movies/${id}/credits`);
+      if (res.ok) {
+        const raw = await res.json();
+        if (raw && (raw.cast || raw.crew)) {
+          return mapTMDBToMovieCredits(raw);
+        }
+      }
+    } catch {
+      // fallback
+    }
+    try {
       const res = await fetch(`/api/movies/${id}`);
       if (res.ok) {
         const raw = await res.json();
