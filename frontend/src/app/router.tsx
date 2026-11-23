@@ -79,6 +79,10 @@ export const router = createBrowserRouter([
             path: 'ai',
             element: <AIPicksPage />,
           },
+          {
+            path: 'onboarding',
+            element: <OnboardingPage />,
+          },
         ],
       },
       // Protected Routes (accessible ONLY by Authenticated users)
@@ -92,10 +96,6 @@ export const router = createBrowserRouter([
           {
             path: 'settings',
             element: <SettingsPage />,
-          },
-          {
-            path: 'onboarding',
-            element: <OnboardingPage />,
           },
           {
             path: 'admin/analytics',

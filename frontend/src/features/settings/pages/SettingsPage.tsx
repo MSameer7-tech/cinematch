@@ -1,11 +1,13 @@
 import type { FC } from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { Settings, Bell, Shield, Smartphone, ChevronRight } from 'lucide-react';
+import { Settings, Bell, Shield, Smartphone, ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const SettingsPage: FC = () => {
   const { user, guest } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'general' | 'notifications' | 'privacy'>('general');
   const userEmail = (user as any)?.email || user?.displayName || (guest ? 'Guest Session' : 'user@example.com');
 
@@ -105,6 +107,55 @@ export const SettingsPage: FC = () => {
 
                 <div>
                   <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px' }}>App Preferences</h3>
+                  
+                  {/* Taste Calibration */}
+                  <div
+                    onClick={() => navigate('/onboarding')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '16px',
+                      borderRadius: '14px',
+                      background: 'rgba(168, 85, 247, 0.08)',
+                      border: '1px solid rgba(168, 85, 247, 0.2)',
+                      cursor: 'pointer',
+                      marginBottom: '16px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(168, 85, 247, 0.13)';
+                      e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.35)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(168, 85, 247, 0.08)';
+                      e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.2)';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '10px',
+                          background: 'rgba(168, 85, 247, 0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Sparkles size={18} color="#c084fc" />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#f3f4f6' }}>Cinematic Taste Calibration</div>
+                        <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.65)' }}>
+                          Recalibrate your preferred genres, foundation films & persona archetype
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight size={18} color="rgba(255, 255, 255, 0.5)" />
+                  </div>
+
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0' }}>
                     <div>
                       <div style={{ fontWeight: 500 }}>High Quality Posters</div>

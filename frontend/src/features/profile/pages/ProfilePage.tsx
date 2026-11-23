@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useWatchlist } from '../../library/hooks/useWatchlist';
 import { useFavorites } from '../../library/hooks/useFavorites';
-import { User, Mail, Calendar, Bookmark, Heart, LogOut } from 'lucide-react';
+import { User, Mail, Calendar, Bookmark, Heart, LogOut, Sparkles, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -135,6 +135,82 @@ export const ProfilePage: FC = () => {
           <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Loved movies</div>
         </motion.div>
       </div>
+
+      {/* Taste Calibration Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        style={{
+          background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(124, 58, 237, 0.03) 100%)',
+          borderRadius: '20px',
+          padding: '24px 28px',
+          border: '1px solid rgba(168, 85, 247, 0.2)',
+          marginBottom: '32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '480px' }}>
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
+              background: 'rgba(168, 85, 247, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              border: '1px solid rgba(168, 85, 247, 0.3)'
+            }}
+          >
+            <Sparkles size={24} color="#c084fc" />
+          </div>
+          <div>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '0 0 4px', color: '#f3f4f6' }}>
+              Cinematic Taste Calibration
+            </h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.45 }}>
+              Recalibrate your preferred vibes, foundation anchor films, and persona archetype to fine-tune AI recommendations.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => navigate('/onboarding')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 22px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)',
+            color: '#ffffff',
+            border: 'none',
+            fontSize: '13.5px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(168, 85, 247, 0.35)',
+            transition: 'all 0.2s ease',
+            flexShrink: 0
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(168, 85, 247, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(168, 85, 247, 0.35)';
+          }}
+        >
+          <SlidersHorizontal size={15} />
+          <span>Launch Calibration</span>
+        </button>
+      </motion.div>
 
       {/* Actions */}
       <motion.div 
