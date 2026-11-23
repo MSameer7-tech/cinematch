@@ -310,7 +310,7 @@ body {
   padding: calc(var(--navbar-height) + 24px) var(--content-padding) var(--content-padding) var(--content-padding);
   min-height: 100vh;
   background-color: var(--bg-primary);
-  overflow-y: auto;
+  overflow-y: visible;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -921,9 +921,10 @@ body {
 .discover-inspector-panel {
   width: clamp(380px, 25vw, 440px);
   position: sticky;
-  top: 0px;
-  height: calc(100vh - var(--navbar-height) - 40px);
-  max-height: calc(100vh - var(--navbar-height) - 40px);
+  top: calc(var(--navbar-height) + 24px + 64px);
+  margin-top: 64px;
+  height: calc(100vh - var(--navbar-height) - 112px);
+  max-height: calc(100vh - var(--navbar-height) - 112px);
   overflow: hidden;
   flex-shrink: 0;
   display: flex;

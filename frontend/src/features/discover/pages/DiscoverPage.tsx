@@ -891,6 +891,8 @@ export const DiscoverPage: FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '14px',
+              minHeight: '44px',
+              height: '44px',
               marginBottom: '20px',
               flexWrap: 'wrap',
             }}
