@@ -863,6 +863,13 @@ export const DiscoverPage: FC = () => {
     setIsTrailerOpen(true);
   };
 
+  // Automatically backfill if the initial batch has fewer than 20 items (to ensure all 5 columns in every row are filled)
+  useEffect(() => {
+    if (!isLoading && allMovies.length > 0 && allMovies.length < 20 && hasMore && !isLoadingMore) {
+      handleLoadMore();
+    }
+  }, [isLoading, allMovies.length, hasMore, isLoadingMore]);
+
   // Load More Handler
   const handleLoadMore = async () => {
     if (isLoadingMore || !hasMore) return;

@@ -135,57 +135,53 @@ class TMDBLiveService:
 
         return released
 
+    def _fetch_paginated_released(self, endpoint: str, page: int = 1, target_count: int = 20) -> dict:
+        """Fetch released movies from an endpoint, backfilling from subsequent pages if needed to reach target_count."""
+        current_page = page
+        released: List[dict] = []
+        total_pages = 1
+
+        while len(released) < target_count and current_page <= total_pages + 3:
+            data = self._fetch_endpoint(endpoint, {"page": current_page})
+            if not data or "results" not in data:
+                break
+            total_pages = data.get("total_pages", 1)
+            page_released = self._filter_released_movies(data["results"])
+
+            seen_ids = {m.get("id") for m in released}
+            for m in page_released:
+                if m.get("id") not in seen_ids:
+                    released.append(m)
+                    seen_ids.add(m.get("id"))
+                    if len(released) >= target_count:
+                        break
+
+            if current_page >= total_pages or len(data.get("results", [])) == 0:
+                break
+            current_page += 1
+
+        return {
+            "page": page,
+            "results": released,
+            "total_pages": total_pages,
+            "total_results": len(released)
+        }
+
     def get_trending(self, page: int = 1) -> dict:
         """Fetch live trending movies of the day from TMDB."""
-        data = self._fetch_endpoint("trending/movie/day", {"page": page})
-        if data and "results" in data:
-            released = self._filter_released_movies(data["results"])
-            return {
-                "page": page,
-                "results": released,
-                "total_pages": data.get("total_pages", 1),
-                "total_results": len(released)
-            }
-        return {"page": page, "results": [], "total_pages": 0, "total_results": 0}
+        return self._fetch_paginated_released("trending/movie/day", page=page, target_count=20)
 
     def get_new_releases(self, page: int = 1) -> dict:
         """Fetch live now-playing / newly released movies from TMDB."""
-        data = self._fetch_endpoint("movie/now_playing", {"page": page})
-        if data and "results" in data:
-            released = self._filter_released_movies(data["results"])
-            return {
-                "page": page,
-                "results": released,
-                "total_pages": data.get("total_pages", 1),
-                "total_results": len(released)
-            }
-        return {"page": page, "results": [], "total_pages": 0, "total_results": 0}
+        return self._fetch_paginated_released("movie/now_playing", page=page, target_count=20)
 
     def get_popular(self, page: int = 1) -> dict:
         """Fetch live popular movies from TMDB."""
-        data = self._fetch_endpoint("movie/popular", {"page": page})
-        if data and "results" in data:
-            released = self._filter_released_movies(data["results"])
-            return {
-                "page": page,
-                "results": released,
-                "total_pages": data.get("total_pages", 1),
-                "total_results": len(released)
-            }
-        return {"page": page, "results": [], "total_pages": 0, "total_results": 0}
+        return self._fetch_paginated_released("movie/popular", page=page, target_count=20)
 
     def get_top_rated(self, page: int = 1) -> dict:
         """Fetch live top rated movies from TMDB."""
-        data = self._fetch_endpoint("movie/top_rated", {"page": page})
-        if data and "results" in data:
-            released = self._filter_released_movies(data["results"])
-            return {
-                "page": page,
-                "results": released,
-                "total_pages": data.get("total_pages", 1),
-                "total_results": len(released)
-            }
-        return {"page": page, "results": [], "total_pages": 0, "total_results": 0}
+        return self._fetch_paginated_released("movie/top_rated", page=page, target_count=20)
 
     def get_movie_detail(self, movie_id: int) -> Optional[dict]:
         """Fetch full movie details, caching to disk."""
