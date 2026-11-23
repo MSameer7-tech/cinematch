@@ -1,66 +1,148 @@
-import type { FC } from 'react';
-import { SmartHero } from '../../movies/components/hero/SmartHero';
-import { MovieSection } from '../../movies/components/carousel/MovieSection';
-import { 
-  useTrendingMovies, 
-  usePopularMovies, 
-  useTopRatedMovies, 
-  useUpcomingMovies 
-} from '../../movies/hooks/useMovies';
-import { features } from '../../../config/features';
-import { Sparkles } from 'lucide-react';
+import { type FC, useEffect, useMemo } from 'react';
+import { HeroBanner } from '../../movies/components/hero/HeroBanner';
+import { MovieCarousel } from '../../movies/components/carousel/MovieCarousel';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { useHomepage } from '../hooks/useHomepage';
+import { useRecommendationTracking } from '../../recommendations/hooks/useRecommendationTracking';
+import { useWatchedTrailers } from '../../movies/hooks/useWatchedTrailers';
+import { HeroSkeleton } from '../../../components/loading/HeroSkeleton';
+import { MovieRowSkeleton } from '../../../components/loading/MovieRowSkeleton';
+import { isMovieReleased } from '../../movies/utils/movie.mapper';
+import type { Movie } from '../../movies/types/movie.types';
 
 export const HomePage: FC = () => {
+  const { user, guest } = useAuth();
+  const userId = user?.id || guest?.id || 'anonymous';
+  const { sections, hero, heroMovies: backendHeroMovies, isLoading, isError } = useHomepage(userId);
+  const { trackEvent } = useRecommendationTracking();
+  const { watchedMovies } = useWatchedTrailers();
+
+  // Curate top featured movies with backdrop artwork for the rotating hero banner
+  const heroMovies = useMemo(() => {
+    const list: Movie[] = [];
+    const seen = new Set<number>();
+
+    // 1. Prioritize taste-profile recommended hero movies from backend
+    if (backendHeroMovies && backendHeroMovies.length > 0) {
+      for (const m of backendHeroMovies) {
+        if (m && isMovieReleased(m) && !seen.has(m.id)) {
+          seen.add(m.id);
+          list.push(m as any);
+        }
+        if (list.length >= 8) break;
+      }
+    } else if (hero && isMovieReleased(hero)) {
+      list.push(hero as any);
+      seen.add(hero.id);
+    }
+
+    // 2. Add high quality backdrop movies from sections to fill up to 8
+    for (const section of sections) {
+      for (const m of section.movies) {
+        if (m && isMovieReleased(m) && m.backdropPath && !seen.has(m.id)) {
+          seen.add(m.id);
+          list.push(m as any);
+        }
+        if (list.length >= 8) break;
+      }
+      if (list.length >= 8) break;
+    }
+
+    return list;
+  }, [hero, backendHeroMovies, sections]);
+
+  // Filter out any stale generic continue_watching section from backend
+  const standardSections = useMemo(() => {
+    return sections.filter((s) => 
+      s.id !== 'continue_watching' && 
+      s.strategy !== 'continue_watching' &&
+      !s.title.toLowerCase().includes('continue watching')
+    );
+  }, [sections]);
+
+  useEffect(() => {
+    if (!isLoading && user?.id) {
+      // Preload search index when homepage loads and user is logged in
+      import('../../search/services/index.service').then(({ indexService }) => {
+        indexService.preloadIndex();
+      });
+    }
+  }, [isLoading, user?.id]);
+
+  if (isLoading) {
+    return (
+      <div className="home-page" style={{ paddingBottom: '60px' }}>
+        <HeroSkeleton />
+        <MovieRowSkeleton />
+        <MovieRowSkeleton />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div style={{ padding: '60px 40px', minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
+        <h3>Error loading homepage contents. Please try again.</h3>
+      </div>
+    );
+  }
+
+  const handleMovieShown = (id: number, position: number, sectionId: string) => {
+    if (user?.id) {
+      // Track card shown event with section and position for CTR calculations (Phase 10)
+      trackEvent(user.id, 'shown', id, undefined, sectionId, position);
+    }
+  };
+
+  const handleMovieClick = (id: number, position: number, sectionId: string) => {
+    if (user?.id) {
+      // Track card clicked event with section type and card index position
+      trackEvent(user.id, 'clicked', id, undefined, sectionId, position);
+    }
+    // Redirect to detail page
+    window.location.href = `/movie/${id}`;
+  };
+
   return (
     <div className="home-page" style={{ paddingBottom: '60px' }}>
-      {/* 1. Hero Banner (Smart Strategy) */}
-      <SmartHero />
-
-      {/* 2. Continue Watching (Stub) */}
-      <section style={{ margin: '40px 0', padding: '0 40px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '20px' }}>
-          Continue Watching
-        </h2>
-        <div style={{ padding: '20px', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text-secondary)' }}>
-          No watch history yet. Start watching to see titles here.
-        </div>
-      </section>
-
-      {/* 3. AI Pick For You (Feature Flagged) */}
-      {features.ENABLE_AI && (
-        <section style={{ margin: '40px 0', padding: '0 40px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-            <Sparkles size={20} style={{ color: 'var(--primary-color)' }} />
-            <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, background: 'linear-gradient(90deg, var(--primary-color), #d8b4fe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              AI Pick For You
-            </h2>
-          </div>
-          <div style={{ padding: '20px', backgroundColor: 'rgba(168, 85, 247, 0.05)', border: '1px solid rgba(168, 85, 247, 0.2)', borderRadius: '8px', color: 'var(--primary-light)' }}>
-            Tell our AI what you're in the mood for, and we'll find the perfect match. (Coming soon in Phase 2)
-          </div>
-        </section>
+      {/* 1. Dynamic Rotating Hero Banner */}
+      {heroMovies.length > 0 && (
+        <HeroBanner movies={heroMovies} intervalMs={6000} />
       )}
 
-      {/* 4. Live TMDB Data Sections */}
-      <MovieSection 
-        title="Trending Now" 
-        queryHook={() => useTrendingMovies(1)} 
-      />
-      
-      <MovieSection 
-        title="Popular Movies" 
-        queryHook={() => usePopularMovies(1)} 
-      />
-      
-      <MovieSection 
-        title="Top Rated" 
-        queryHook={() => useTopRatedMovies(1)} 
-      />
-      
-      <MovieSection 
-        title="Coming Soon" 
-        queryHook={() => useUpcomingMovies(1)} 
-      />
+      {/* 2. Continue Watching (ONLY movies whose trailer the user has been watching) */}
+      {watchedMovies.length > 0 && (
+        <MovieCarousel
+          key="continue_watching"
+          sectionId="continue_watching"
+          title="Continue Watching"
+          movies={watchedMovies}
+          page={1}
+          pageSize={watchedMovies.length}
+          totalMovies={watchedMovies.length}
+          hasMore={false}
+          nextPage={null}
+          onMovieShown={handleMovieShown}
+          onMovieClick={handleMovieClick}
+        />
+      )}
+
+      {/* 3. Discovery Sections Loop */}
+      {standardSections.map((section) => (
+        <MovieCarousel
+          key={section.id}
+          sectionId={section.id}
+          title={section.title}
+          movies={section.movies}
+          page={section.page}
+          pageSize={section.pageSize}
+          totalMovies={section.totalMovies}
+          hasMore={section.hasMore}
+          nextPage={section.nextPage}
+          onMovieShown={handleMovieShown}
+          onMovieClick={handleMovieClick}
+        />
+      ))}
     </div>
   );
 };

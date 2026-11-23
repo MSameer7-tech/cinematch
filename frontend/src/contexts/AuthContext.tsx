@@ -26,25 +26,65 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>({ 
+const AUTH_CACHE_KEY = 'cinematch_auth_cache';
+
+const getInitialAuthState = (): AuthState => {
+  try {
+    const cached = localStorage.getItem(AUTH_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && (parsed.user || parsed.guest)) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore parse error
+  }
+  return { 
     status: 'LOADING', 
     user: null, 
     guest: null 
-  });
-  const [isInitializing, setIsInitializing] = useState(true);
+  };
+};
+
+export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const [authState, setAuthStateInternal] = useState<AuthState>(getInitialAuthState);
+  const [isInitializing, setIsInitializing] = useState(() => authState.status === 'LOADING');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const setAuthState = (state: AuthState) => {
+    setAuthStateInternal(state);
+    try {
+      if (state.status === 'AUTHENTICATED' || state.status === 'GUEST') {
+        localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(state));
+      } else if (state.status === 'UNAUTHENTICATED') {
+        localStorage.removeItem(AUTH_CACHE_KEY);
+      }
+    } catch {
+      // Ignore storage error
+    }
+  };
 
   const user = authState.user;
   const guest = authState.guest;
 
   const initializeAuth = async () => {
     try {
-      const state = await authService.initializeSession();
+      // 1.2-second safety timeout race so slow network checks never block the UI
+      const timeoutPromise = new Promise<AuthState>((resolve) => 
+        setTimeout(() => resolve(
+          authState.user || authState.guest
+            ? authState
+            : { status: 'GUEST', user: null, guest: { id: 'guest-offline', sessionToken: 'offline', createdAt: new Date().toISOString(), lastActivityAt: new Date().toISOString(), migratedToUserId: null, migratedAt: null } }
+        ), 1200)
+      );
+      const state = await Promise.race([authService.initializeSession(), timeoutPromise]);
       setAuthState(state);
     } catch (error) {
       console.error('Failed to initialize auth:', error);
-      setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+      if (!authState.user && !authState.guest) {
+        setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+      }
     } finally {
       setIsInitializing(false);
     }
@@ -53,9 +93,10 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
     initializeAuth();
 
-    // Listen for real-time auth changes from Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async () => {
-      await initializeAuth();
+    // Listen for real-time auth changes from Supabase (ignoring INITIAL_SESSION to prevent lock deadlocks)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'INITIAL_SESSION') return;
+      initializeAuth();
     });
 
     return () => {

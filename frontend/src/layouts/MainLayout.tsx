@@ -5,26 +5,24 @@ import { AppShell } from '../components/layout/AppShell';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopNavbar } from '../components/layout/TopNavbar';
 
-import { useState } from 'react';
-
 export const MainLayout: FC = () => {
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const isHome = location.pathname === '/';
 
   return (
     <AppShell>
-      <div className={`app-layout ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <div className="app-layout">
         <TopNavbar />
         <div className="layout-body">
-          <Sidebar isCollapsed={isCollapsed} onToggleCollapse={() => setIsCollapsed(!isCollapsed)} />
-          <main className="content-container">
+          <Sidebar />
+          <main className={`content-container ${isHome ? 'home-immersive' : ''}`}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.35, ease: 'easeInOut' }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
                 style={{ width: '100%', height: '100%' }}
               >
                 <Outlet />

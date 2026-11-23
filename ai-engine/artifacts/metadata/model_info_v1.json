@@ -1,0 +1,21 @@
+{
+    "model_type": "TfidfVectorizer",
+    "data_version": "v1",
+    "hyperparameters": {
+        "stop_words": "english",
+        "ngram_range": [
+            1,
+            2
+        ],
+        "min_df": 2,
+        "max_df": 0.8,
+        "sublinear_tf": true
+    },
+    "vocabulary_size": 29896,
+    "matrix_shape": [
+        4632,
+        29896
+    ],
+    "training_time_seconds": 0.19,
+    "timestamp": "2026-06-30T11:48:40Z"
+}

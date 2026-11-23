@@ -12,6 +12,7 @@ export interface Movie {
   overview: string;
   posterPath: string | null;
   backdropPath: string | null;
+  logoPath?: string | null;
   genreIds: number[];
   releaseDate: string;
   releaseYear: string; // Extracted from releaseDate for UI convenience

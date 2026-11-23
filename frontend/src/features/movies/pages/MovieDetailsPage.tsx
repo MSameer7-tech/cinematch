@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { 
   useMovieDetails, 
@@ -12,6 +13,7 @@ import { CastCarousel } from '../components/details/CastCarousel';
 import { MovieCarousel } from '../components/carousel/MovieCarousel';
 import { HeroSkeleton } from '../../../components/loading/HeroSkeleton';
 import { MovieRowSkeleton } from '../../../components/loading/MovieRowSkeleton';
+import { useAddRecentlyViewed } from '../../library/hooks/useRecentlyViewed';
 
 export const MovieDetailsPage: FC = () => {
   const { id } = useParams<{ id: string }>();

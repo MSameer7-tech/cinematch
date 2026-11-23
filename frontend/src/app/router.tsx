@@ -17,14 +17,18 @@ import { AuthDebugPage } from '../features/auth/pages/AuthDebugPage';
 // Feature Pages
 import { HomePage } from '../features/home/pages/HomePage';
 import { DiscoverPage } from '../features/discover/pages/DiscoverPage';
+import { SearchPage } from '../features/search/pages/SearchPage';
 
-import { WatchlistPage } from '../features/watchlist/pages/WatchlistPage';
-import { FavoritesPage } from '../features/favorites/pages/FavoritesPage';
+import { WatchlistPage } from '../features/library/pages/WatchlistPage';
+import { FavoritesPage } from '../features/library/pages/FavoritesPage';
+import { RatingsPage } from '../features/library/pages/RatingsPage';
 import { RecommendationsPage } from '../features/recommendations/pages/RecommendationsPage';
+import { AIPicksPage } from '../features/ai/pages/AIPicksPage';
 
 import { MovieDetailsPage } from '../features/movies/pages/MovieDetailsPage';
 import { ProfilePage } from '../features/profile/pages/ProfilePage';
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
+import { RecommendationAnalyticsPage } from '../features/admin/pages/RecommendationAnalyticsPage';
 
 export const router = createBrowserRouter([
   {
@@ -44,6 +48,10 @@ export const router = createBrowserRouter([
             element: <DiscoverPage />,
           },
           {
+            path: 'search',
+            element: <SearchPage />,
+          },
+          {
             path: 'movie/:id',
             element: <MovieDetailsPage />,
           },
@@ -56,8 +64,20 @@ export const router = createBrowserRouter([
             element: <FavoritesPage />,
           },
           {
+            path: 'ratings',
+            element: <RatingsPage />,
+          },
+          {
             path: 'recommendations',
             element: <RecommendationsPage />,
+          },
+          {
+            path: 'ai-picks',
+            element: <AIPicksPage />,
+          },
+          {
+            path: 'ai',
+            element: <AIPicksPage />,
           },
         ],
       },
@@ -76,6 +96,10 @@ export const router = createBrowserRouter([
           {
             path: 'onboarding',
             element: <OnboardingPage />,
+          },
+          {
+            path: 'admin/analytics',
+            element: <RecommendationAnalyticsPage />,
           },
         ],
       },

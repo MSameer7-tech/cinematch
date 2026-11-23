@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      target: builder # Just run the node container
+    command: npm run dev -- --host
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_API_BASE_URL=http://localhost:8000/api
+    networks:
+      - cinematch_dev_net
+
+  api:
+    build:
+      context: ./ai-engine
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai-engine:/app
+    env_file:
+      - ./ai-engine/.env
+    networks:
+      - cinematch_dev_net
+
+networks:
+  cinematch_dev_net:
+    driver: bridge

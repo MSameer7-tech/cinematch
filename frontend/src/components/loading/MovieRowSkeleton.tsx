@@ -4,7 +4,14 @@ import { motion } from 'framer-motion';
 
 export const MovieRowSkeleton: FC = () => {
   return (
-    <section style={{ margin: '40px 0', padding: '0 40px' }}>
+    <section 
+      className="movie-carousel-section"
+      style={{ 
+        margin: '40px 0', 
+        paddingLeft: 'calc(var(--sidebar-width, 76px) + 36px)',
+        paddingRight: '48px',
+      }}
+    >
       {/* Header Skeleton */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
         <motion.div 

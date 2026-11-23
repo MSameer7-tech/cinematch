@@ -161,12 +161,73 @@ export const mapTMDBToMovieDetails = (raw: TMDBMovieDetails): MovieDetails => {
   return mapDTOToMovieDetails(mapTMDBToMovieDetailsDTO(raw));
 };
 
+/**
+ * Determines if a movie has already been released.
+ * Excludes future release dates, unannounced dates, and unreleased statuses (e.g. Planned, In Production).
+ */
+export const isMovieReleased = (movie: {
+  status?: string | null;
+  releaseDate?: string | null;
+  release_date?: string | null;
+  releaseYear?: string | number | null;
+} | null | undefined): boolean => {
+  if (!movie) return false;
+
+  // 1. Status check: If explicit status is given, it must be 'Released' (case-insensitive)
+  if (movie.status && typeof movie.status === 'string' && movie.status.trim().length > 0) {
+    if (movie.status.trim().toLowerCase() !== 'released') {
+      return false;
+    }
+  }
+
+  // 2. Release date check: Must not be in the future
+  const rawDate = movie.releaseDate || movie.release_date;
+  if (rawDate && typeof rawDate === 'string' && rawDate.trim().length > 0) {
+    const timestamp = Date.parse(rawDate);
+    if (!isNaN(timestamp)) {
+      if (timestamp > Date.now()) {
+        return false;
+      }
+    }
+  }
+
+  // 3. Release year check: Must not exceed current calendar year
+  const currentYear = new Date().getFullYear();
+  let yearNum: number | null = null;
+
+  if (typeof movie.releaseYear === 'number' && !isNaN(movie.releaseYear)) {
+    yearNum = movie.releaseYear;
+  } else if (typeof movie.releaseYear === 'string' && movie.releaseYear !== 'N/A') {
+    const parsed = parseInt(movie.releaseYear, 10);
+    if (!isNaN(parsed)) {
+      yearNum = parsed;
+    }
+  } else if (rawDate) {
+    const parsed = parseInt(rawDate.slice(0, 4), 10);
+    if (!isNaN(parsed)) {
+      yearNum = parsed;
+    }
+  }
+
+  if (yearNum !== null && yearNum > currentYear) {
+    return false;
+  }
+
+  // If no date and no year and no released status is known, it is unreleased/unannounced
+  if (!rawDate && (!movie.releaseYear || movie.releaseYear === 'N/A') && (!movie.status || movie.status.toLowerCase() !== 'released')) {
+    return false;
+  }
+
+  return true;
+};
+
 export const mapTMDBToPaginatedMovies = (
   raw: TMDBPaginatedResponse<TMDBMovie>
 ): PaginatedMovies => {
+  const released = (raw.results || []).filter(isMovieReleased);
   return {
     page: raw.page,
-    results: raw.results.map(mapTMDBToMovie),
+    results: released.map(mapTMDBToMovie),
     totalPages: raw.total_pages,
     totalResults: raw.total_results,
   };

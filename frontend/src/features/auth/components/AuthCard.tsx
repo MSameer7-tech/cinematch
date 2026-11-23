@@ -11,6 +11,17 @@ export const AuthCard: React.FC<AuthCardProps> = ({ children, title, subtitle, f
   return (
     <div className="glass-card" style={{ padding: '40px', maxWidth: '500px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        <img 
+          src="/logo.png" 
+          alt="CineMatch" 
+          style={{ 
+            width: '56px', 
+            height: '56px', 
+            margin: '0 auto 14px auto', 
+            display: 'block',
+            filter: 'drop-shadow(0 4px 16px rgba(139, 92, 246, 0.45))'
+          }} 
+        />
         <div style={{ 
           fontSize: '28px', 
           fontWeight: 800, 

@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Environments
+.env
+.env.*
+!.env.example
+.venv
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+dist/
+build/
+.npm
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+
+# Data/Artifacts
+ai-engine/artifacts/cache/*
+!ai-engine/artifacts/cache/.gitkeep

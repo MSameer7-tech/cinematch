@@ -33,6 +33,27 @@ export const AuthLayout: React.FC = () => {
           textAlign: 'left',
           maxWidth: '460px',
         }} className="auth-branding-panel">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' }}>
+            <img 
+              src="/logo.png" 
+              alt="CineMatch" 
+              style={{ 
+                width: '46px', 
+                height: '46px', 
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 4px 14px rgba(139, 92, 246, 0.45))'
+              }} 
+            />
+            <span style={{ 
+              fontSize: '22px', 
+              fontWeight: 800, 
+              letterSpacing: '2.5px', 
+              color: '#ffffff',
+              fontFamily: 'var(--font-heading, inherit)'
+            }}>
+              CINE<span style={{ color: 'var(--primary-color)' }}>MATCH</span>
+            </span>
+          </div>
           <h1 style={{ 
             fontSize: '48px', 
             fontWeight: 800, 

@@ -28,3 +28,11 @@ export const getProfileUrl = (
   if (!path) return PLACEHOLDERS.PROFILE;
   return `${env.TMDB_IMAGE_URL}/${size}${path}`;
 };
+
+export const getLogoUrl = (
+  path: string | null | undefined,
+  size: string = 'w500'
+): string | null => {
+  if (!path) return null;
+  return `${env.TMDB_IMAGE_URL}/${size}${path}`;
+};

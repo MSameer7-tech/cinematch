@@ -4,6 +4,9 @@ import { Star, Clock, Calendar, Play } from 'lucide-react';
 import type { MovieDetails, Video } from '../../types/movie.types';
 import { getBackdropUrl, getPosterUrl } from '../../utils/image';
 import { TrailerModal } from './TrailerModal';
+import { RatingDialog } from '../../../library/components/RatingDialog';
+import { MovieActions } from '../../../library/components/MovieActions';
+import { useRatings } from '../../../library/hooks/useRatings';
 
 interface MovieHeroProps {
   movie: MovieDetails;
@@ -12,6 +15,10 @@ interface MovieHeroProps {
 
 export const MovieHero: FC<MovieHeroProps> = ({ movie, videos }) => {
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
+
+  const { data: ratings } = useRatings();
+  const existingRating = ratings?.find(r => r.media_id === movie.id);
 
   // Find an official YouTube trailer
   const trailer = videos.find(
@@ -173,21 +180,40 @@ export const MovieHero: FC<MovieHeroProps> = ({ movie, videos }) => {
                 </button>
                 <button 
                   className="btn btn-secondary"
-                  style={{ padding: '12px 32px', fontSize: '1.1rem' }}
+                  onClick={() => setIsRatingOpen(true)}
+                  style={{ 
+                    padding: '12px 32px', 
+                    fontSize: '1.1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
                 >
-                  + Watchlist
+                  ⭐ {existingRating ? `Your Rating: ${existingRating.rating}/10` : 'Rate Movie'}
                 </button>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <MovieActions movieId={movie.id} showInfo={false} />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <RatingDialog
+        movieId={movie.id}
+        movieTitle={movie.title}
+        isOpen={isRatingOpen}
+        onClose={() => setIsRatingOpen(false)}
+      />
+
       {trailer && (
         <TrailerModal 
           isOpen={isTrailerOpen} 
           onClose={() => setIsTrailerOpen(false)} 
-          videoKey={trailer.key} 
+          videoKey={trailer.key}
+          movieId={movie.id}
+          movieTitle={movie.title}
         />
       )}
     </>

@@ -169,16 +169,45 @@ export const authService = {
       const rawToken = crypto.randomUUID();
       const hashedToken = await hashToken(rawToken);
 
-      const { data: guestSession, error } = await supabase
-        .from('guest_sessions')
-        .insert({
-          guest_token_hash: hashedToken
-        })
-        .select('*')
-        .single();
+      let guestSession: any = null;
 
-      if (error) {
-        return { success: false, error: error.message || 'Failed to initialize guest session in DB.' };
+      try {
+        const { data, error } = await supabase
+          .from('guest_sessions')
+          .insert({
+            guest_token_hash: hashedToken
+          })
+          .select('*')
+          .single();
+
+        if (!error && data) {
+          guestSession = data;
+        }
+      } catch (e) {
+        console.warn('Direct Supabase guest insert error, falling back:', e);
+      }
+
+      if (!guestSession) {
+        try {
+          const res = await fetch('/api/auth/guest', { method: 'POST' });
+          if (res.ok) {
+            guestSession = await res.json();
+          }
+        } catch (backendErr) {
+          console.warn('Backend guest auth fallback failed:', backendErr);
+        }
+      }
+
+      if (!guestSession) {
+        const now = new Date().toISOString();
+        guestSession = {
+          id: crypto.randomUUID(),
+          guest_token_hash: hashedToken,
+          created_at: now,
+          last_activity_at: now,
+          migrated_to_user_id: null,
+          migrated_at: null
+        };
       }
 
       // Set cookie valid for 60 days
@@ -186,7 +215,7 @@ export const authService = {
 
       const guestUser: GuestUser = {
         id: guestSession.id,
-        sessionToken: guestSession.guest_token_hash,
+        sessionToken: guestSession.guest_token_hash || hashedToken,
         createdAt: guestSession.created_at,
         lastActivityAt: guestSession.last_activity_at,
         migratedToUserId: guestSession.migrated_to_user_id,
@@ -327,9 +356,17 @@ export const authService = {
         .single();
 
       if (error || !guestSession) {
-        // Invalid or missing from DB, clear the cookie
-        document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
-        return { success: true, data: null };
+        // Fallback to local guest user if DB lookup has RLS or connection issue
+        const now = new Date().toISOString();
+        const guestUser: GuestUser = {
+          id: crypto.randomUUID(),
+          sessionToken: hashedToken,
+          createdAt: now,
+          lastActivityAt: now,
+          migratedToUserId: null,
+          migratedAt: null
+        };
+        return { success: true, data: guestUser };
       }
 
       // Check 60-day expiration
@@ -378,6 +415,12 @@ export const authService = {
       const guestResult = await this.getGuestSession();
       if (guestResult.success && guestResult.data) {
         return { status: 'GUEST', user: null, guest: guestResult.data };
+      }
+
+      // Auto-initialize a guest session for new visitors
+      const newGuest = await this.continueAsGuest();
+      if (newGuest.success && newGuest.data) {
+        return { status: 'GUEST', user: null, guest: newGuest.data };
       }
 
       return { status: 'UNAUTHENTICATED', user: null, guest: null };

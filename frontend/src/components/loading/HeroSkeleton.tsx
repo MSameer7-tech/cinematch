@@ -25,8 +25,10 @@ export const HeroSkeleton: FC = () => {
       <div style={{
         position: 'absolute',
         bottom: '10%',
-        left: '40px',
-        width: '50%',
+        left: 'calc(var(--sidebar-width, 76px) + 36px)',
+        width: '46%',
+        minWidth: '420px',
+        maxWidth: '680px',
         display: 'flex',
         flexDirection: 'column',
         gap: '24px',

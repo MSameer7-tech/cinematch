@@ -28,22 +28,34 @@ export const tmdbClient = async <T>(
     });
   }
 
-  const response = await fetch(url.toString(), {
-    ...fetchOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${env.TMDB_TOKEN}`,
-      ...fetchOptions.headers,
-    },
-  });
+  // 2.5-second timeout to prevent indefinite hangs on ISP blocks / offline TMDB
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => null);
-    throw new Error(
-      errorData?.status_message || 
-      `TMDB API Error: ${response.status} ${response.statusText}`
-    );
+  try {
+    const response = await fetch(url.toString(), {
+      ...fetchOptions,
+      signal: fetchOptions.signal || controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.TMDB_TOKEN}`,
+        ...fetchOptions.headers,
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(
+        errorData?.status_message || 
+        `TMDB API Error: ${response.status} ${response.statusText}`
+      );
+    }
+
+    return response.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
   }
-
-  return response.json();
 };
