@@ -157,14 +157,17 @@ class TMDBLiveService:
 
         return released
 
-    def _fetch_paginated_released(self, endpoint: str, page: int = 1, target_count: int = 20) -> dict:
+    def _fetch_paginated_released(self, endpoint: str, page: int = 1, target_count: int = 20, params: Optional[dict] = None) -> dict:
         """Fetch released movies from an endpoint, backfilling from subsequent pages if needed to reach target_count."""
         current_page = page
         released: List[dict] = []
         total_pages = 1
+        base_params = dict(params) if params else {}
 
         while len(released) < target_count and current_page <= total_pages + 3:
-            data = self._fetch_endpoint(endpoint, {"page": current_page})
+            req_params = dict(base_params)
+            req_params["page"] = current_page
+            data = self._fetch_endpoint(endpoint, req_params)
             if not data or "results" not in data:
                 break
             total_pages = data.get("total_pages", 1)
@@ -204,6 +207,41 @@ class TMDBLiveService:
     def get_top_rated(self, page: int = 1) -> dict:
         """Fetch live top rated movies from TMDB."""
         return self._fetch_paginated_released("movie/top_rated", page=page, target_count=20)
+
+    def discover_movies(
+        self,
+        page: int = 1,
+        genre_id: Optional[int] = None,
+        category: str = "popular",
+        media_type: str = "movie"
+    ) -> dict:
+        """Discover movies with server-side genre, category, and sorting support."""
+        if genre_id and int(genre_id) > 0:
+            gid = int(genre_id)
+            sort_map = {
+                "popular": "popularity.desc",
+                "trending": "popularity.desc",
+                "topRated": "vote_average.desc",
+                "upcoming": "primary_release_date.desc",
+            }
+            sort_by = sort_map.get(category, "popularity.desc")
+            params = {
+                "with_genres": gid,
+                "sort_by": sort_by,
+            }
+            if category == "topRated":
+                params["vote_count.gte"] = 30
+            return self._fetch_paginated_released("discover/movie", page=page, target_count=20, params=params)
+
+        # No genre filter -> use category endpoints
+        if category == "trending":
+            return self.get_trending(page=page)
+        elif category == "topRated":
+            return self.get_top_rated(page=page)
+        elif category == "upcoming":
+            return self.get_new_releases(page=page)
+        else:
+            return self.get_popular(page=page)
 
     def get_movie_detail(self, movie_id: int) -> Optional[dict]:
         """Fetch full movie details with credits and proper genres, caching to disk."""

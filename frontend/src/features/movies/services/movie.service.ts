@@ -159,6 +159,50 @@ export const movieService = {
     return mapTMDBToPaginatedMovies(raw);
   },
 
+  discoverMovies: async (params: {
+    page?: number;
+    genreId?: number;
+    category?: string;
+    mediaType?: string;
+  } = {}): Promise<PaginatedMovies> => {
+    const { page = 1, genreId = 0, category = 'popular', mediaType = 'movie' } = params;
+    try {
+      const queryParams = new URLSearchParams({
+        page: String(page),
+        category,
+        media_type: mediaType,
+      });
+      if (genreId > 0) {
+        queryParams.set('genre_id', String(genreId));
+      }
+      const res = await fetch(`/api/movies/discover?${queryParams.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        return mapTMDBToPaginatedMovies(data);
+      }
+    } catch (e) {
+      console.warn("Backend discover failed, trying TMDB fallback:", e);
+    }
+    try {
+      const sortMap: Record<string, string> = {
+        popular: 'popularity.desc',
+        trending: 'popularity.desc',
+        topRated: 'vote_average.desc',
+        upcoming: 'primary_release_date.desc',
+      };
+      const raw = await tmdbClient<TMDBPaginatedResponse<TMDBMovie>>('/discover/movie', {
+        params: {
+          page,
+          sort_by: sortMap[category] || 'popularity.desc',
+          ...(genreId > 0 ? { with_genres: genreId } : {}),
+        },
+      });
+      return mapTMDBToPaginatedMovies(raw);
+    } catch {
+      return { page, results: [], totalPages: 0, totalResults: 0 };
+    }
+  },
+
   searchMovies: async (query: string, page = 1): Promise<PaginatedMovies> => {
     try {
       const res = await fetch(`/api/movies/search?query=${encodeURIComponent(query)}&page=${page}`);

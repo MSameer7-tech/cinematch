@@ -1,5 +1,6 @@
 import { type FC, useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Play, 
   Clapperboard, 
@@ -782,29 +783,25 @@ export const DiscoverPage: FC = () => {
   // Library States for badges
   const { data: watchlist } = useWatchlist();
 
-  // Queries for different categories
-  const popularQuery = usePopularMovies(1, category === 'popular');
-  const trendingQuery = useTrendingMovies(1, category === 'trending');
-  const topRatedQuery = useTopRatedMovies(1, category === 'topRated');
-  const upcomingQuery = useUpcomingMovies(1, category === 'upcoming');
-
-  // Reset pagination when category changes
+  // Reset pagination when category, genre, or mediaType changes
   useEffect(() => {
     setCurrentPage(1);
     setExtraMovies([]);
     setHasMore(true);
-  }, [category]);
+  }, [category, selectedGenreId, mediaType]);
 
-  const getActiveQuery = () => {
-    switch (category) {
-      case 'trending': return trendingQuery;
-      case 'topRated': return topRatedQuery;
-      case 'upcoming': return upcomingQuery;
-      default: return popularQuery;
-    }
-  };
-
-  const { data, isLoading, isError } = getActiveQuery();
+  // Server-side Discover query using category, selected genre, and media format
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['discover_movies', category, selectedGenreId, mediaType, 1],
+    queryFn: () =>
+      movieService.discoverMovies({
+        page: 1,
+        genreId: selectedGenreId,
+        category,
+        mediaType,
+      }),
+    staleTime: 60 * 1000,
+  });
 
   // Combine initial query results with loaded extra pages and remove duplicates
   const allMovies = useMemo(() => {
@@ -818,11 +815,8 @@ export const DiscoverPage: FC = () => {
     });
   }, [data, extraMovies]);
 
-  // Apply Genre Filter
-  const filteredMovies = useMemo(() => {
-    if (selectedGenreId === 0) return allMovies;
-    return allMovies.filter((m) => m.genreIds && m.genreIds.includes(selectedGenreId));
-  }, [allMovies, selectedGenreId]);
+  // Since filtering is handled server-side by the TMDB discover API, allMovies are already accurately filtered
+  const filteredMovies = allMovies;
 
   // Set default selected movie once data is loaded
   useEffect(() => {
@@ -850,27 +844,18 @@ export const DiscoverPage: FC = () => {
     }
   }, [isLoading, allMovies.length, hasMore, isLoadingMore]);
 
-  // Load More Handler
+  // Load More Handler - fetches next page with active category, genre, and media format
   const handleLoadMore = async () => {
     if (isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
     const nextPage = currentPage + 1;
     try {
-      let result: PaginatedMovies;
-      switch (category) {
-        case 'trending':
-          result = await movieService.getTrending(nextPage);
-          break;
-        case 'topRated':
-          result = await movieService.getTopRated(nextPage);
-          break;
-        case 'upcoming':
-          result = await movieService.getUpcoming(nextPage);
-          break;
-        default:
-          result = await movieService.getPopular(nextPage);
-          break;
-      }
+      const result = await movieService.discoverMovies({
+        page: nextPage,
+        genreId: selectedGenreId,
+        category,
+        mediaType,
+      });
       const newItems = (result.results || []).filter(isMovieReleased);
       if (newItems.length === 0) {
         setHasMore(false);

@@ -491,6 +491,21 @@ def get_movies_new_releases(page: int = Query(1, ge=1)):
     from app.content.services.tmdb_live_service import tmdb_live_service
     return tmdb_live_service.get_new_releases(page=page)
 
+@app.get("/api/movies/discover")
+def discover_movies_endpoint(
+    page: int = Query(1, ge=1),
+    genre_id: Optional[int] = Query(None),
+    category: str = Query("popular"),
+    media_type: str = Query("movie")
+):
+    from app.content.services.tmdb_live_service import tmdb_live_service
+    return tmdb_live_service.discover_movies(
+        page=page,
+        genre_id=genre_id,
+        category=category,
+        media_type=media_type
+    )
+
 @app.get("/api/movies/popular")
 def get_movies_popular(page: int = Query(1, ge=1)):
     from app.content.services.tmdb_live_service import tmdb_live_service
