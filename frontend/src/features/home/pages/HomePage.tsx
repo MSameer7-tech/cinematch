@@ -70,24 +70,6 @@ export const HomePage: FC = () => {
     }
   }, [isLoading, user?.id]);
 
-  if (isLoading) {
-    return (
-      <div className="home-page" style={{ paddingBottom: '60px' }}>
-        <HeroSkeleton />
-        <MovieRowSkeleton />
-        <MovieRowSkeleton />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div style={{ padding: '60px 40px', minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
-        <h3>Error loading homepage contents. Please try again.</h3>
-      </div>
-    );
-  }
-
   const navigate = useNavigate();
 
   const handleMovieShown = useCallback((id: number, position: number, sectionId: string) => {
@@ -105,6 +87,24 @@ export const HomePage: FC = () => {
     // Client-side smooth navigation
     navigate(`/movie/${id}`);
   }, [user?.id, trackEvent, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="home-page" style={{ paddingBottom: '60px' }}>
+        <HeroSkeleton />
+        <MovieRowSkeleton />
+        <MovieRowSkeleton />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div style={{ padding: '60px 40px', minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
+        <h3>Error loading homepage contents. Please try again.</h3>
+      </div>
+    );
+  }
 
   return (
     <div className="home-page" style={{ paddingBottom: '60px' }}>
