@@ -114,23 +114,32 @@ export const MovieCard: FC<MovieCardProps> = ({ movie, onClick }) => {
           {/* Match Percentage Badge if available */}
           {movie.score !== undefined && (
             <div
+              title={`${Math.min(100, Math.max(1, movie.score > 1 ? Math.round(movie.score) : Math.round(movie.score * 100)))}% Match`}
               style={{
                 position: 'absolute',
-                top: '10px',
-                left: '10px',
-                backgroundColor: 'rgba(10, 10, 18, 0.85)',
+                top: '8px',
+                left: '8px',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(12, 10, 22, 0.9)',
                 backdropFilter: 'blur(8px)',
                 WebkitBackdropFilter: 'blur(8px)',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                border: '1px solid rgba(168, 85, 247, 0.4)',
-                fontSize: '11px',
-                fontWeight: 700,
+                border: '1.5px solid rgba(168, 85, 247, 0.55)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '9.5px',
+                fontWeight: 800,
                 color: '#c084fc',
+                letterSpacing: '-0.3px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
                 zIndex: 10,
+                pointerEvents: 'auto',
+                flexShrink: 0,
               }}
             >
-              {Math.min(100, Math.max(1, movie.score > 1 ? Math.round(movie.score) : Math.round(movie.score * 100)))}% Match
+              {Math.min(100, Math.max(1, movie.score > 1 ? Math.round(movie.score) : Math.round(movie.score * 100)))}%
             </div>
           )}
 
