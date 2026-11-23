@@ -318,14 +318,8 @@ export const WatchlistPage: FC = () => {
           </div>
         </div>
 
-        {/* Right Search Input & Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {movies.length > 0 && (
-            <div className="watchlist-stats-pill">
-              {movies.length} {movies.length === 1 ? 'Title' : 'Titles'} • {watchedCount} Watched
-            </div>
-          )}
-
+        {/* Right Search Input */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <div className="watchlist-search-box">
             <Search 
               size={15} 

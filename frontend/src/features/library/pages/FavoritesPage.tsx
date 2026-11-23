@@ -307,14 +307,8 @@ export const FavoritesPage: FC = () => {
           </div>
         </div>
 
-        {/* Right Search Input & Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {movies.length > 0 && (
-            <div className="watchlist-stats-pill">
-              {movies.length} {movies.length === 1 ? 'Favorite' : 'Favorites'} • {watchedCount} Watched
-            </div>
-          )}
-
+        {/* Right Search Input */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <div className="watchlist-search-box">
             <Search 
               size={15} 
@@ -369,14 +363,6 @@ export const FavoritesPage: FC = () => {
             >
               <Compass size={16} />
               Explore Movies
-            </button>
-            <button
-              type="button"
-              className="watchlist-secondary-cta-btn"
-              onClick={handlePreloadSampleFavorites}
-            >
-              <Sparkles size={16} />
-              Load Sample Favorites
             </button>
           </div>
         </div>
