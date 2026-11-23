@@ -97,6 +97,7 @@
 }
 
 .watchlist-tab-pill {
+  position: relative;
   padding: 7px 16px;
   border-radius: 20px;
   font-size: 13px;
@@ -105,7 +106,7 @@
   background: transparent;
   color: #94a3b8;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -114,13 +115,12 @@
 
 .watchlist-tab-pill:hover {
   color: #f8fafc;
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .watchlist-tab-pill.active {
-  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   color: #ffffff;
   font-weight: 600;
+  background: transparent;
   box-shadow: none;
 }
 

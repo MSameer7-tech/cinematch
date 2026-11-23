@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRatings } from '../hooks/useRatings';
 import { movieKeys } from '../../../lib/react-query/queryKeys';
 import { movieService } from '../../movies/services/movie.service';
@@ -128,15 +129,24 @@ export const RatingsPage: FC = () => {
           </p>
         </div>
       ) : (
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-          gap: '24px' 
-        }}>
-          {processedMovies.map(movie => (
-            <MovieCard key={movie.id} movie={movie} onClick={(id) => window.location.href = `/movie/${id}`} />
-          ))}
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={`${sortBy}-${searchQuery}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+              gap: '24px' 
+            }}
+          >
+            {processedMovies.map(movie => (
+              <MovieCard key={movie.id} movie={movie} onClick={(id) => window.location.href = `/movie/${id}`} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );

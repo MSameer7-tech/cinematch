@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   ChevronDown, 
@@ -31,6 +32,15 @@ import './WatchlistPage.css';
 
 type SortFilterTab = 'last-watched' | 'a-z' | 'z-a' | 'most-watched' | 'watched' | 'not-watched';
 type TypeDropdownFilter = 'all' | 'movies' | 'top-rated';
+
+const WATCHLIST_TABS: { id: SortFilterTab; label: string }[] = [
+  { id: 'last-watched', label: 'Last Watched' },
+  { id: 'a-z', label: 'A-Z' },
+  { id: 'z-a', label: 'Z-A' },
+  { id: 'most-watched', label: 'Most Watched' },
+  { id: 'watched', label: 'Watched' },
+  { id: 'not-watched', label: 'Not Watched' },
+];
 
 // Popular classic starter IDs if user wishes to test with 1-click sample
 const SAMPLE_STARTER_IDS = [
@@ -271,50 +281,35 @@ export const WatchlistPage: FC = () => {
             )}
           </div>
 
-          {/* Filter Tab Pills */}
+          {/* Filter Tab Pills with Smooth Sliding Indicator */}
           <div className="watchlist-tabs">
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'last-watched' ? 'active' : ''}`}
-              onClick={() => setActiveTab('last-watched')}
-            >
-              Last Watched
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'a-z' ? 'active' : ''}`}
-              onClick={() => setActiveTab('a-z')}
-            >
-              A-Z
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'z-a' ? 'active' : ''}`}
-              onClick={() => setActiveTab('z-a')}
-            >
-              Z-A
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'most-watched' ? 'active' : ''}`}
-              onClick={() => setActiveTab('most-watched')}
-            >
-              Most Watched
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'watched' ? 'active' : ''}`}
-              onClick={() => setActiveTab('watched')}
-            >
-              Watched
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'not-watched' ? 'active' : ''}`}
-              onClick={() => setActiveTab('not-watched')}
-            >
-              Not Watched
-            </button>
+            {WATCHLIST_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`watchlist-tab-pill ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{ position: 'relative' }}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="watchlist-active-tab-pill"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: '20px',
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                        zIndex: 0,
+                      }}
+                      transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+                    />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -376,8 +371,16 @@ export const WatchlistPage: FC = () => {
           </div>
         </div>
       ) : (
-        // 8-Column Movie Poster Grid
-        <div className="watchlist-grid">
+        // 8-Column Movie Poster Grid with Smooth Animated Switch
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${activeTab}-${dropdownFilter}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="watchlist-grid"
+          >
           {processedMovies.map((movie) => {
             const watched = isWatched(movie.id);
             const progress = getProgress(movie.id);
@@ -495,7 +498,8 @@ export const WatchlistPage: FC = () => {
               </div>
             );
           })}
-        </div>
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {/* Trailer Modal */}

@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   ChevronDown, 
@@ -30,6 +31,16 @@ import './WatchlistPage.css';
 
 type FavTab = 'all' | 'a-z' | 'z-a' | 'most-popular' | 'highest-rated' | 'watched' | 'not-watched';
 type TypeDropdownFilter = 'all' | 'movies' | 'top-rated';
+
+const FAVORITES_TABS: { id: FavTab; label: string }[] = [
+  { id: 'all', label: 'All Favorites' },
+  { id: 'a-z', label: 'A-Z' },
+  { id: 'z-a', label: 'Z-A' },
+  { id: 'most-popular', label: 'Most Popular' },
+  { id: 'highest-rated', label: 'Highest Rated' },
+  { id: 'watched', label: 'Watched' },
+  { id: 'not-watched', label: 'Not Watched' },
+];
 
 // Popular classic movies for 1-click sample favorites preloading
 const SAMPLE_FAVORITE_IDS = [
@@ -253,57 +264,35 @@ export const FavoritesPage: FC = () => {
             )}
           </div>
 
-          {/* Filter Tab Pills */}
+          {/* Filter Tab Pills with Sliding Indicator */}
           <div className="watchlist-tabs">
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'all' ? 'active' : ''}`}
-              onClick={() => setActiveTab('all')}
-            >
-              All Favorites
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'a-z' ? 'active' : ''}`}
-              onClick={() => setActiveTab('a-z')}
-            >
-              A-Z
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'z-a' ? 'active' : ''}`}
-              onClick={() => setActiveTab('z-a')}
-            >
-              Z-A
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'most-popular' ? 'active' : ''}`}
-              onClick={() => setActiveTab('most-popular')}
-            >
-              Most Popular
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'highest-rated' ? 'active' : ''}`}
-              onClick={() => setActiveTab('highest-rated')}
-            >
-              Highest Rated
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'watched' ? 'active' : ''}`}
-              onClick={() => setActiveTab('watched')}
-            >
-              Watched
-            </button>
-            <button
-              type="button"
-              className={`watchlist-tab-pill ${activeTab === 'not-watched' ? 'active' : ''}`}
-              onClick={() => setActiveTab('not-watched')}
-            >
-              Not Watched
-            </button>
+            {FAVORITES_TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`watchlist-tab-pill ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  style={{ position: 'relative' }}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="favorites-active-tab-pill"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: '20px',
+                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+                        zIndex: 0,
+                      }}
+                      transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+                    />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -357,8 +346,16 @@ export const FavoritesPage: FC = () => {
           </div>
         </div>
       ) : (
-        // 8-Column Movie Poster Grid
-        <div className="watchlist-grid">
+        // 8-Column Movie Poster Grid with Smooth Tab/Filter Switch Animation
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${activeTab}-${dropdownFilter}`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="watchlist-grid"
+          >
           {processedMovies.map((movie) => {
             const watched = isWatched(movie.id);
             const progress = getProgress(movie.id);
@@ -486,7 +483,8 @@ export const FavoritesPage: FC = () => {
               </div>
             );
           })}
-        </div>
+          </motion.div>
+        </AnimatePresence>
       )}
 
       {/* Trailer Modal */}

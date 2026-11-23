@@ -1,6 +1,7 @@
 import { type FC, useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Play, 
   Clapperboard, 
@@ -978,8 +979,16 @@ export const DiscoverPage: FC = () => {
             </div>
           ) : (
             <>
-              {/* Exactly 5 Columns Movie Grid with slightly bigger posters */}
-              <div className="discover-movie-grid">
+              {/* Exactly 5 Columns Movie Grid with slightly bigger posters & smooth transitions */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${selectedCategory}-${selectedGenreId}-${selectedMediaType}`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className="discover-movie-grid"
+                >
                 {filteredMovies.map((movie) => {
                   const isSelected = movie.id === selectedMovie?.id;
                   const isWatchlisted = watchlist?.some((w) => w.media_id === movie.id);
@@ -1089,7 +1098,8 @@ export const DiscoverPage: FC = () => {
                     </div>
                   );
                 })}
-              </div>
+                </motion.div>
+              </AnimatePresence>
 
               {/* Load More Movies Option at Bottom */}
               {hasMore && (

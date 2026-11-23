@@ -14,7 +14,7 @@ import {
   BarChart2,
   Film
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { aiApi } from '../../ai/api/ai.api';
 import type { TasteProfile } from '../../ai/types/ai.types';
@@ -82,17 +82,18 @@ export const SettingsPage: FC = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   style={{
+                    position: 'relative',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
                     padding: '12px 16px',
-                    backgroundColor: isActive ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
+                    backgroundColor: 'transparent',
                     border: 'none',
                     borderRadius: '12px',
-                    color: isActive ? 'var(--primary-color)' : 'var(--text-secondary)',
+                    color: isActive ? '#c084fc' : 'var(--text-secondary)',
                     fontWeight: isActive ? 600 : 500,
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    transition: 'color 0.2s ease',
                     textAlign: 'left'
                   }}
                   onMouseEnter={(e) => {
@@ -102,8 +103,24 @@ export const SettingsPage: FC = () => {
                     if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
-                  <Icon size={18} />
-                  {tab.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="settings-active-pill"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(168, 85, 247, 0.14)',
+                        border: '1px solid rgba(168, 85, 247, 0.28)',
+                        zIndex: 0,
+                      }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                    />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Icon size={18} />
+                    {tab.label}
+                  </span>
                 </button>
               );
             })}
@@ -111,12 +128,15 @@ export const SettingsPage: FC = () => {
         </div>
 
         {/* Content Area */}
-        <motion.div 
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          style={{ flex: 1, minWidth: '300px' }}
-        >
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={activeTab}
+            initial={{ opacity: 0, y: 12, filter: 'blur(3px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -10, filter: 'blur(3px)' }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            style={{ flex: 1, minWidth: '300px' }}
+          >
           <div style={{
             backgroundColor: 'var(--bg-surface-elevated)',
             borderRadius: '24px',
@@ -519,6 +539,7 @@ export const SettingsPage: FC = () => {
             )}
           </div>
         </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

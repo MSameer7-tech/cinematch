@@ -1,5 +1,6 @@
 import { type FC, useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
   Compass, 
   Sparkles,
@@ -213,6 +214,7 @@ export const Sidebar: FC = () => {
                 <NavLink
                   to={item.path}
                   style={({ isActive }) => ({
+                    position: 'relative',
                     width: '46px',
                     height: '46px',
                     borderRadius: '14px',
@@ -220,16 +222,34 @@ export const Sidebar: FC = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: isActive ? '#8B5CF6' : isHovered ? '#ffffff' : 'rgba(255, 255, 255, 0.45)',
-                    backgroundColor: isHovered 
+                    backgroundColor: isHovered && !isActive 
                       ? 'rgba(255, 255, 255, 0.08)' 
-                      : isActive 
-                        ? 'rgba(139, 92, 246, 0.12)' 
-                        : 'transparent',
-                    transition: 'all 0.2s ease',
+                      : 'transparent',
+                    transition: 'color 0.2s ease',
                     textDecoration: 'none',
                   })}
                 >
-                  {({ isActive }) => item.render(isActive)}
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active-indicator"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            borderRadius: '14px',
+                            backgroundColor: 'rgba(139, 92, 246, 0.16)',
+                            border: '1px solid rgba(139, 92, 246, 0.35)',
+                            zIndex: 0,
+                          }}
+                          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                        />
+                      )}
+                      <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {item.render(isActive)}
+                      </span>
+                    </>
+                  )}
                 </NavLink>
 
                 {/* Clean Frosted Glass Tooltip */}
