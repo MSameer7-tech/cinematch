@@ -172,7 +172,7 @@ export const MovieCard: FC<MovieCardProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 10px rgba(168, 85, 247, 0.3)',
+                    boxShadow: 'none',
                     transition: 'transform 0.2s ease',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}

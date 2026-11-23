@@ -576,16 +576,14 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                   fontSize: '14.5px',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(124, 58, 237, 0.4)',
+                  boxShadow: 'none',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(124, 58, 237, 0.55)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(124, 58, 237, 0.4)';
                 }}
               >
                 <span>Initialize Taste Profile</span>
@@ -721,7 +719,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                   fontSize: '14.5px',
                   fontWeight: 600,
                   cursor: selectedGenreIds.length > 0 ? 'pointer' : 'not-allowed',
-                  boxShadow: selectedGenreIds.length > 0 ? '0 4px 16px rgba(124, 58, 237, 0.4)' : 'none',
+                  boxShadow: 'none',
                   transition: 'all 0.2s ease',
                   opacity: selectedGenreIds.length > 0 ? 1 : 0.5
                 }}
@@ -902,7 +900,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                   fontSize: '14.5px',
                   fontWeight: 600,
                   cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(124, 58, 237, 0.4)',
+                  boxShadow: 'none',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -1044,20 +1042,18 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                   fontSize: '15px',
                   fontWeight: 700,
                   cursor: isFinishing ? 'wait' : 'pointer',
-                  boxShadow: '0 6px 24px rgba(168, 85, 247, 0.5)',
+                  boxShadow: 'none',
                   transition: 'all 0.2s ease',
                   opacity: isFinishing ? 0.7 : 1
                 }}
                 onMouseEnter={(e) => {
                   if (!isFinishing) {
                     e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(168, 85, 247, 0.65)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isFinishing) {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 6px 24px rgba(168, 85, 247, 0.5)';
                   }
                 }}
               >

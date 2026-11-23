@@ -270,7 +270,7 @@ export const RatingDialog: FC<RatingDialogProps> = ({ movieId, isOpen, onClose, 
                   cursor: selectedRating === null ? 'not-allowed' : 'pointer',
                   fontWeight: 600,
                   fontSize: '14px',
-                  boxShadow: selectedRating !== null ? '0 4px 16px rgba(124, 58, 237, 0.45)' : 'none',
+                  boxShadow: 'none',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {

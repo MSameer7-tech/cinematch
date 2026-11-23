@@ -194,17 +194,15 @@ export const ProfilePage: FC = () => {
             fontSize: '13.5px',
             fontWeight: 600,
             cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(168, 85, 247, 0.35)',
+            boxShadow: 'none',
             transition: 'all 0.2s ease',
             flexShrink: 0
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(168, 85, 247, 0.5)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(168, 85, 247, 0.35)';
           }}
         >
           <SlidersHorizontal size={15} />

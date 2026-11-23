@@ -12,7 +12,7 @@
   --border-color: rgba(255, 255, 255, 0.08);
   --primary-color: #8B5CF6;
   --primary-hover: #7C3AED;
-  --primary-glow: rgba(139, 92, 246, 0.4);
+  --primary-glow: transparent;
   
   --text-primary: #FFFFFF;
   --text-secondary: #94A3B8;
@@ -99,12 +99,12 @@ body {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
   color: #fff;
-  box-shadow: 0 4px 14px 0 var(--primary-glow);
+  box-shadow: none;
 }
 
 .btn-primary:hover {
   transform: translateY(-1.5px);
-  box-shadow: 0 6px 20px 0 var(--primary-glow);
+  box-shadow: none;
   opacity: 0.95;
 }
 

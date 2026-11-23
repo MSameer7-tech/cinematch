@@ -107,7 +107,7 @@ export const HorizontalMovieCard: FC<HorizontalMovieCardProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(168, 85, 247, 0.4)',
+              boxShadow: 'none',
             }}
           >
             <Play size={20} fill="#fff" style={{ marginLeft: '2px' }} />

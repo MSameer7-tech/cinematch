@@ -692,16 +692,14 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
                 fontSize: '14px',
                 fontWeight: 700,
                 cursor: 'pointer',
-                boxShadow: '0 4px 18px rgba(168, 85, 247, 0.45)',
+                boxShadow: 'none',
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.04)';
-                e.currentTarget.style.boxShadow = '0 6px 24px rgba(168, 85, 247, 0.6)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 18px rgba(168, 85, 247, 0.45)';
               }}
             >
               <Play size={16} fill="#ffffff" />

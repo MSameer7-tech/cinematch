@@ -121,7 +121,7 @@
   background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+  box-shadow: none;
 }
 
 /* Search Box */
@@ -402,12 +402,12 @@
 .watchlist-trailer-btn {
   background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
   color: #fff;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
+  box-shadow: none;
 }
 
 .watchlist-trailer-btn:hover {
   transform: scale(1.02);
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.6);
+  box-shadow: none;
 }
 
 .watchlist-action-row {
@@ -543,14 +543,14 @@
   color: #fff;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+  box-shadow: none;
   transition: all 0.2s ease;
   text-decoration: none;
 }
 
 .watchlist-cta-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+  box-shadow: none;
 }
 
 .watchlist-secondary-cta-btn {

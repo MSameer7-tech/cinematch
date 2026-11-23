@@ -37,7 +37,7 @@ export const PlayTrailerButton: FC<PlayTrailerButtonProps> = ({ onClick, size = 
         fontWeight: 600,
         fontSize,
         cursor: 'pointer',
-        boxShadow: '0 4px 14px rgba(168, 85, 247, 0.4)',
+        boxShadow: 'none',
         transition: 'all 0.2s ease',
       }}
       onMouseEnter={(e) => {
