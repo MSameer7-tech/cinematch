@@ -1,0 +1,532 @@
+/* Watchlist Page - Modern Reference Styling */
+
+.watchlist-page-container {
+  width: 100%;
+  min-height: calc(100vh - var(--navbar-height));
+  padding: 8px 16px 60px 16px;
+  background-color: var(--bg-primary);
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* Header & Controls Bar */
+.watchlist-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+}
+
+.watchlist-filters-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Dropdown Button */
+.watchlist-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: #f1f5f9;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.watchlist-dropdown-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.watchlist-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  min-width: 160px;
+  background: rgba(18, 20, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.watchlist-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.watchlist-dropdown-item:hover,
+.watchlist-dropdown-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* Filter Pill Tabs */
+.watchlist-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.watchlist-tab-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.watchlist-tab-pill:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.watchlist-tab-pill.active {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+}
+
+/* Search Box */
+.watchlist-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 240px;
+  max-width: 320px;
+}
+
+.watchlist-search-input {
+  width: 100%;
+  padding: 8px 36px 8px 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.watchlist-search-input:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+}
+
+.watchlist-search-input::placeholder {
+  color: #64748b;
+}
+
+/* Quick Stats */
+.watchlist-stats-pill {
+  font-size: 12px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 8-Column Grid Layout */
+.watchlist-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 1750px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+@media (max-width: 1480px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 1220px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 960px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .watchlist-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Movie Poster Card */
+.watchlist-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  user-select: none;
+}
+
+.watchlist-poster-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #12131d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.watchlist-poster-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(124, 58, 237, 0.25);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.watchlist-poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.watchlist-poster-card:hover .watchlist-poster-img {
+  transform: scale(1.04);
+}
+
+/* Watched Badge (Top Left Yellow Circle) */
+.watchlist-watched-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f59e0b;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+  z-index: 6;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.watchlist-watched-badge:hover {
+  transform: scale(1.15);
+  background: #fbbf24;
+}
+
+.watchlist-unwatched-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.watchlist-poster-card:hover .watchlist-unwatched-badge {
+  opacity: 1;
+}
+
+.watchlist-unwatched-badge:hover {
+  background: rgba(245, 158, 11, 0.85);
+  border-color: #f59e0b;
+  color: #000;
+  transform: scale(1.15);
+}
+
+/* Progress Bar at Bottom of Poster */
+.watchlist-progress-track {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  right: 10px;
+  height: 3.5px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 6;
+}
+
+.watchlist-progress-fill {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  transition: width 0.3s ease;
+}
+
+/* Hover Action Overlay */
+.watchlist-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 11, 18, 0.95) 0%, rgba(10, 11, 18, 0.6) 45%, rgba(10, 11, 18, 0.2) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 14px 8px;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+}
+
+.watchlist-poster-card:hover .watchlist-card-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.watchlist-overlay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  width: 90%;
+}
+
+.watchlist-trailer-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
+}
+
+.watchlist-trailer-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.6);
+}
+
+.watchlist-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 90%;
+}
+
+.watchlist-icon-btn {
+  flex: 1;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.watchlist-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.watchlist-icon-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+}
+
+/* Title & Metadata Below Poster */
+.watchlist-card-info {
+  margin-top: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.watchlist-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.watchlist-card-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Empty State */
+.watchlist-empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 60px 24px;
+  background: rgba(18, 20, 30, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.watchlist-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a855f7;
+  margin-bottom: 20px;
+}
+
+.watchlist-empty-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f8fafc;
+  margin: 0 0 8px 0;
+}
+
+.watchlist-empty-desc {
+  font-size: 14px;
+  color: #94a3b8;
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.watchlist-empty-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.watchlist-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.watchlist-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+}
+
+.watchlist-secondary-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.watchlist-secondary-cta-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
