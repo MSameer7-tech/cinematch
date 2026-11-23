@@ -1,4 +1,4 @@
-/* Watchlist Page - Modern Reference Styling */
+/* Library & Watchlist / Favorites Page - Modern Reference Styling */
 
 .watchlist-page-container {
   width: 100%;
@@ -165,64 +165,72 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* 8-Column Grid Layout */
+/* ==========================================================================
+   8-Column Grid Layout: ALL columns use minmax(0, 1fr) so that long titles
+   NEVER distort column widths and every poster is GUARANTEED identical size.
+   ========================================================================== */
 .watchlist-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1750px) {
   .watchlist-grid {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1480px) {
   .watchlist-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1220px) {
   .watchlist-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 960px) {
   .watchlist-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 720px) {
   .watchlist-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .watchlist-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 }
 
-/* Movie Poster Card */
+/* Movie Poster Card Wrapper */
 .watchlist-card-wrapper {
   display: flex;
   flex-direction: column;
   position: relative;
   user-select: none;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .watchlist-poster-card {
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 3;
+  min-width: 0;
   border-radius: 12px;
   overflow: hidden;
   background: #12131d;
@@ -305,6 +313,32 @@
   border-color: #f59e0b;
   color: #000;
   transform: scale(1.15);
+}
+
+/* Favorite Heart Badge (Top Right) */
+.watchlist-fav-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.9);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  z-index: 6;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.watchlist-fav-badge:hover {
+  transform: scale(1.15);
+  background: #f43f5e;
 }
 
 /* Progress Bar at Bottom of Poster */
@@ -415,6 +449,8 @@
   margin-top: 8px;
   text-align: center;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .watchlist-card-title {
@@ -426,6 +462,9 @@
   text-overflow: ellipsis;
   margin: 0;
   line-height: 1.3;
+  width: 100%;
+  max-width: 100%;
+  display: block;
 }
 
 .watchlist-card-subtitle {
@@ -436,6 +475,9 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Empty State */
