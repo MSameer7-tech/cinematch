@@ -1,14 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSearch } from '../hooks/useSearch';
 import { useSearchStore } from '../stores/search.store';
-import { SearchFilters } from '../components/SearchFilters';
 import { MovieCard } from '../../movies/components/card/MovieCard';
 import { MovieCardSkeleton } from '../../../components/loading/MovieCardSkeleton';
 import { searchApi } from '../api/search.api';
 import { analyticsService } from '../services/analytics.service';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { Search, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
+import indexService from '../services/index.service';
+import type { SortOption } from '../types/search.types';
+import { 
+  Search, 
+  Sparkles, 
+  AlertCircle, 
+  RefreshCw, 
+  SlidersHorizontal, 
+  Film, 
+  Tv, 
+  Layers, 
+  X,
+  Star,
+  Check
+} from 'lucide-react';
+import './SearchPage.css';
 
 const SentinelCard: React.FC<{ onVisible: () => void }> = ({ onVisible }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -29,8 +43,22 @@ export const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const queryParam = searchParams.get('q') || '';
   
-  const { setQuery, setFilters, resetFilters } = useSearchStore();
-  const { results, loading, hasMore, loadNextPage, userTasteProfile } = useSearch();
+  const { 
+    setQuery, 
+    filters, 
+    setFilters, 
+    resetFilters, 
+    sort, 
+    setSort 
+  } = useSearchStore();
+
+  const { results, loading, hasMore, loadNextPage } = useSearch();
+
+  // Collapsible Filters Drawer state
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+  // Available metadata for filters
+  const bootstrap = indexService.getIndex();
 
   // AI Search input variables
   const [aiQuery, setAiQuery] = useState('');
@@ -44,6 +72,16 @@ export const SearchPage: React.FC = () => {
     }
   }, [queryParam, setQuery]);
 
+  // Count active filters for badge
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.genres && filters.genres.length > 0) count += filters.genres.length;
+    if (filters.ratingMin) count += 1;
+    if (filters.yearMin || filters.yearMax) count += 1;
+    if (filters.language) count += 1;
+    return count;
+  }, [filters]);
+
   const handleAISearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!aiQuery.trim()) return;
@@ -52,52 +90,33 @@ export const SearchPage: React.FC = () => {
     setAiError(null);
 
     try {
-      // 1. Call LLM extraction API (Phase 13)
       const data = await searchApi.parseAISearch(aiQuery);
-      
-      // Reset current query filters first
       resetFilters();
 
-      // 2. Set structured filters into the Zustand store
       const mappedFilters: any = {};
-      if (data.genres && data.genres.length > 0) {
-        mappedFilters.genres = data.genres;
-      }
-      if (data.runtimeMax) {
-        mappedFilters.runtimeMax = data.runtimeMax;
-      }
-      if (data.ratingMin) {
-        mappedFilters.ratingMin = data.ratingMin;
-      }
-      if (data.language) {
-        mappedFilters.language = data.language;
-      }
-      if (data.yearMin) {
-        mappedFilters.yearMin = data.yearMin;
-      }
-      if (data.yearMax) {
-        mappedFilters.yearMax = data.yearMax;
-      }
+      if (data.genres && data.genres.length > 0) mappedFilters.genres = data.genres;
+      if (data.runtimeMax) mappedFilters.runtimeMax = data.runtimeMax;
+      if (data.ratingMin) mappedFilters.ratingMin = data.ratingMin;
+      if (data.language) mappedFilters.language = data.language;
+      if (data.yearMin) mappedFilters.yearMin = data.yearMin;
+      if (data.yearMax) mappedFilters.yearMax = data.yearMax;
 
       setFilters(mappedFilters);
 
-      // 3. Set query to seed movie or a key term
       if (data.type === 'recommendation' && data.seedMovies && data.seedMovies.length > 0) {
         setQuery(data.seedMovies[0]);
       } else if (data.keywords && data.keywords.length > 0) {
         setQuery(data.keywords[0]);
       } else {
-        // Fallback to query
         setQuery(aiQuery);
       }
 
-      // Track AI Search submission
       if (user?.id) {
         analyticsService.logEvent(user.id, `ai_search:${aiQuery.slice(0, 50)}`);
       }
 
       setAiQuery('');
-    } catch (err: any) {
+    } catch {
       setAiError("Failed to parse AI filters. Try again with simpler terms.");
     } finally {
       setAiLoading(false);
@@ -110,162 +129,256 @@ export const SearchPage: React.FC = () => {
     }
   };
 
+  const handleGenreToggle = (genreName: string) => {
+    const active = filters.genres || [];
+    const updated = active.includes(genreName)
+      ? active.filter((g) => g !== genreName)
+      : [...active, genreName];
+    setFilters({ genres: updated });
+  };
+
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 24px' }}>
+    <div className="search-page-container">
       
-      {/* Header Grid with AI Search input */}
-      <div 
-        style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '24px', 
-          marginBottom: '40px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          paddingBottom: '32px'
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, margin: 0 }}>
+      {/* 1. Header Row & AI Search Assistant */}
+      <div className="search-header-row">
+        <div className="search-title-block">
+          <h1 className="search-title-heading">
             {queryParam ? `Search Results for "${queryParam}"` : 'Explore CineMatch'}
           </h1>
-          
-          {/* AI Search Assistant input bar */}
-          <form 
-            onSubmit={handleAISearchSubmit}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '10px',
-              backgroundColor: 'rgba(229, 9, 20, 0.05)',
-              border: '1px solid rgba(229, 9, 20, 0.2)',
-              borderRadius: '24px',
-              padding: '4px 6px 4px 16px',
-              width: '100%',
-              maxWidth: '480px'
-            }}
+          <span className="search-subtitle-stats">
+            {loading && results.length === 0 
+              ? 'Searching our cinematic catalog...'
+              : `${results.length} titles found`}
+          </span>
+        </div>
+        
+        {/* Sleek AI Search Capsule (No red) */}
+        <form onSubmit={handleAISearchSubmit} className="ai-search-capsule">
+          <Sparkles size={16} color="#c084fc" />
+          <input 
+            type="text"
+            placeholder='Ask AI: "mind-bending sci-fi like Interstellar"'
+            value={aiQuery}
+            onChange={(e) => setAiQuery(e.target.value)}
+            disabled={aiLoading}
+            className="ai-search-input"
+          />
+          <button
+            type="submit"
+            disabled={aiLoading}
+            className="btn-ai-submit"
           >
-            <Sparkles size={16} color="var(--color-primary, #E50914)" />
-            <input 
-              type="text"
-              placeholder='Ask AI: "Korean horror movies under 2 hours"'
-              value={aiQuery}
-              onChange={(e) => setAiQuery(e.target.value)}
-              disabled={aiLoading}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#fff',
-                fontSize: '13px',
-                outline: 'none',
-                width: '100%',
-                padding: '6px 0'
-              }}
-            />
-            <button
-              type="submit"
-              disabled={aiLoading}
-              style={{
-                backgroundColor: 'var(--color-primary, #E50914)',
-                border: 'none',
-                borderRadius: '18px',
-                padding: '6px 14px',
-                color: '#fff',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                opacity: aiLoading ? 0.7 : 1
-              }}
-            >
-              {aiLoading ? (
-                <RefreshCw size={12} className="animate-spin" />
-              ) : (
-                'Ask AI'
-              )}
-            </button>
-          </form>
+            {aiLoading ? (
+              <RefreshCw size={13} className="animate-spin" />
+            ) : (
+              <>
+                <Sparkles size={13} />
+                <span>Ask AI</span>
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+
+      {aiError && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fb7185', fontSize: '13px', marginBottom: '16px' }}>
+          <AlertCircle size={14} />
+          <span>{aiError}</span>
+        </div>
+      )}
+
+      {/* 2. Top Control Bar (Content Type Tabs + Sort + Filter Toggle) */}
+      <div className="search-control-bar">
+        {/* Content Type Tabs */}
+        <div className="search-type-tabs">
+          <button
+            className={`type-tab-btn ${(!filters.contentType || filters.contentType === 'both') ? 'active' : ''}`}
+            onClick={() => setFilters({ contentType: 'both' })}
+          >
+            All
+          </button>
+          <button
+            className={`type-tab-btn ${filters.contentType === 'movie' ? 'active' : ''}`}
+            onClick={() => setFilters({ contentType: 'movie' })}
+          >
+            Movies
+          </button>
+          <button
+            className={`type-tab-btn ${filters.contentType === 'tv' ? 'active' : ''}`}
+            onClick={() => setFilters({ contentType: 'tv' })}
+          >
+            Series
+          </button>
         </div>
 
-        {aiError && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ff4d4f', fontSize: '13px', margin: 0 }}>
-            <AlertCircle size={14} />
-            <span>{aiError}</span>
+        {/* Right Side: Quick Sort & Filters Toggle */}
+        <div className="search-actions-right">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+            className="search-sort-select"
+            aria-label="Sort search results"
+          >
+            <option value="relevance">Sort: Relevance</option>
+            <option value="popularity">Sort: Most Popular</option>
+            <option value="rating">Sort: Highest Rated</option>
+            <option value="newest">Sort: Newest First</option>
+            <option value="oldest">Sort: Oldest First</option>
+            <option value="alphabetical">Sort: A to Z</option>
+          </select>
+
+          <button
+            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            className={`btn-filter-toggle ${isFiltersOpen ? 'active' : ''}`}
+          >
+            <SlidersHorizontal size={14} />
+            <span>Filters</span>
+            {activeFiltersCount > 0 && (
+              <span className="filter-badge-pill">{activeFiltersCount}</span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Collapsible Filter Drawer */}
+      {isFiltersOpen && (
+        <div className="search-filter-drawer">
+          <div className="filter-drawer-header">
+            <div className="filter-drawer-title">
+              <SlidersHorizontal size={14} color="#c084fc" />
+              <span>Refine Search</span>
+            </div>
+            {activeFiltersCount > 0 && (
+              <button onClick={resetFilters} className="btn-reset-filters">
+                Reset All Filters
+              </button>
+            )}
+          </div>
+
+          <div className="filter-controls-row">
+            {/* Genres */}
+            <div>
+              <span className="filter-group-label">Genres</span>
+              <div className="genre-chips-scroll">
+                {(bootstrap?.genres || [
+                  'Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 
+                  'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Music', 
+                  'Mystery', 'Romance', 'Science Fiction', 'Thriller', 'War', 'Western'
+                ]).map((genre) => {
+                  const isSelected = (filters.genres || []).includes(genre);
+                  return (
+                    <button
+                      key={genre}
+                      onClick={() => handleGenreToggle(genre)}
+                      className={`genre-chip ${isSelected ? 'active' : ''}`}
+                    >
+                      {genre}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Minimum Rating */}
+            <div>
+              <span className="filter-group-label">Minimum Rating</span>
+              <div className="rating-chips-row">
+                {[
+                  { label: 'All', value: null },
+                  { label: '6.0+', value: 6.0 },
+                  { label: '7.0+', value: 7.0 },
+                  { label: '8.0+', value: 8.0 },
+                ].map((item) => {
+                  const isActive = (filters.ratingMin || null) === item.value;
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => setFilters({ ratingMin: item.value })}
+                      className={`rating-chip ${isActive ? 'active' : ''}`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Release Year Range */}
+            <div>
+              <span className="filter-group-label">Year Range</span>
+              <div className="year-inputs-row">
+                <input 
+                  type="number"
+                  placeholder="Min"
+                  value={filters.yearMin || ''}
+                  onChange={(e) => setFilters({ yearMin: parseInt(e.target.value) || null })}
+                  className="year-input"
+                />
+                <span style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '13px' }}>—</span>
+                <input 
+                  type="number"
+                  placeholder="Max"
+                  value={filters.yearMax || ''}
+                  onChange={(e) => setFilters({ yearMax: parseInt(e.target.value) || null })}
+                  className="year-input"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Full-Width Results Grid (Occupies Empty Space Just Like Stremio) */}
+      <main>
+        {results.length === 0 && !loading ? (
+          <div className="search-empty-state">
+            <div className="search-empty-icon">
+              <Search size={30} />
+            </div>
+            <h3 className="search-empty-title">
+              {queryParam ? `No results found for "${queryParam}"` : 'Start searching CineMatch'}
+            </h3>
+            <p className="search-empty-desc">
+              {queryParam 
+                ? 'Try checking for typos, adjusting your filters, or asking our AI search assistant.'
+                : 'Search by title, director, actor, genre, or describe a theme.'}
+            </p>
+          </div>
+        ) : (
+          <div className="search-results-full-grid">
+            {results.map((movie, index) => (
+              <div 
+                key={`${movie.id}_${index}`} 
+                onClick={() => handleMovieClick(movie.id, index)}
+              >
+                <MovieCard movie={movie} />
+              </div>
+            ))}
+
+            {/* Loading skeletons */}
+            {loading && (
+              <>
+                <MovieCardSkeleton />
+                <MovieCardSkeleton />
+                <MovieCardSkeleton />
+                <MovieCardSkeleton />
+                <MovieCardSkeleton />
+                <MovieCardSkeleton />
+                <MovieCardSkeleton />
+              </>
+            )}
+
+            {/* Infinite Scroll Sentinel */}
+            {hasMore && !loading && (
+              <SentinelCard onVisible={loadNextPage} />
+            )}
           </div>
         )}
-      </div>
+      </main>
 
-      {/* Main Grid: Sidebar Filters & Results */}
-      <div 
-        style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '300px 1fr', 
-          gap: '32px',
-          alignItems: 'start'
-        }}
-        className="search-layout-grid"
-      >
-        
-        {/* Filters Sidebar (Phase 10) */}
-        <aside>
-          <SearchFilters />
-        </aside>
-
-        {/* Results Pane */}
-        <main style={{ minHeight: '50vh' }}>
-          {results.length === 0 && !loading ? (
-            <div 
-              style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                padding: '80px 0',
-                color: 'var(--text-secondary)',
-                opacity: 0.7
-              }}
-            >
-              <Search size={48} style={{ marginBottom: '16px' }} />
-              <p style={{ fontSize: '18px', fontWeight: 500, margin: 0 }}>
-                {queryParam ? 'No matching movies found.' : 'Type a query or ask our AI assistant above.'}
-              </p>
-            </div>
-          ) : (
-            <div 
-              style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-                gap: '24px' 
-              }}
-              className="search-results-grid"
-            >
-              {results.map((movie, index) => (
-                <div key={`${movie.id}_${index}`} onClick={() => handleMovieClick(movie.id, index)}>
-                  <MovieCard movie={movie} />
-                </div>
-              ))}
-
-              {/* Skeletons load indicators */}
-              {loading && (
-                <>
-                  <MovieCardSkeleton />
-                  <MovieCardSkeleton />
-                  <MovieCardSkeleton />
-                  <MovieCardSkeleton />
-                </>
-              )}
-
-              {/* Sentinel Card for Infinite Search observer (Phase 11) */}
-              {hasMore && !loading && (
-                <SentinelCard onVisible={loadNextPage} />
-              )}
-            </div>
-          )}
-        </main>
-
-      </div>
     </div>
   );
 };
+
 export default SearchPage;

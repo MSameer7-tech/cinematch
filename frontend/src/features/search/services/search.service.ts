@@ -75,7 +75,7 @@ export const searchService = {
       localPromise,
       Promise.race([
         tmdbPromise,
-        new Promise<MovieDetails[]>((resolve) => setTimeout(() => resolve([]), 1500))
+        new Promise<MovieDetails[]>((resolve) => setTimeout(() => resolve([]), 6000))
       ])
     ]);
 
@@ -134,7 +134,13 @@ export const searchService = {
         };
       });
 
-    // Sort descending by rank score
-    return rankedMovies.sort((a, b) => (b.score || 0) - (a.score || 0));
+    // Sort descending by rank score, prioritizing movies with posters
+    return rankedMovies.sort((a, b) => {
+      const aHasPoster = !!(a.posterPath || (a as any).poster_path);
+      const bHasPoster = !!(b.posterPath || (b as any).poster_path);
+      if (aHasPoster && !bHasPoster) return -1;
+      if (!aHasPoster && bHasPoster) return 1;
+      return (b.score || 0) - (a.score || 0);
+    });
   }
 };
