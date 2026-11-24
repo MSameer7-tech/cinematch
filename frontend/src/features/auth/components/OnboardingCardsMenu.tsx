@@ -328,20 +328,16 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
       }}>
         {/* Brand Label */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '7px',
-            background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#fff',
-            fontSize: '14px',
-            fontWeight: 800
-          }}>
-            C
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="CineMatch" 
+            style={{
+              width: '28px',
+              height: '28px',
+              objectFit: 'contain',
+              display: 'block'
+            }}
+          />
           <span style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', letterSpacing: '-0.3px' }}>
             CineMatch Calibration
           </span>
@@ -431,42 +427,25 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
         {currentStep === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', flex: 1 }}>
             <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '4px 12px',
-                borderRadius: '16px',
-                backgroundColor: 'rgba(139, 92, 246, 0.12)',
-                border: '1px solid rgba(139, 92, 246, 0.25)',
-                color: '#c084fc',
-                fontSize: '12px',
-                fontWeight: 600,
-                marginBottom: '16px'
-              }}>
-                <Cpu size={14} />
-                <span>Next-Gen Cinema Discovery</span>
-              </div>
-
               <h1 style={{
-                fontSize: '34px',
+                fontSize: '32px',
                 fontWeight: 800,
                 color: '#ffffff',
-                margin: '0 0 12px 0',
+                margin: '8px 0 12px 0',
                 letterSpacing: '-0.8px',
-                lineHeight: 1.2
+                lineHeight: 1.25
               }}>
-                Curate your cinematic universe with mathematical precision.
+                Personalized movie discovery, tailored to you.
               </h1>
 
               <p style={{
                 fontSize: '15px',
                 color: 'rgba(255, 255, 255, 0.65)',
                 lineHeight: 1.6,
-                maxWidth: '680px',
-                margin: '0 0 36px 0'
+                maxWidth: '640px',
+                margin: '0 0 32px 0'
               }}>
-                CineMatch isn't a passive streaming grid. We construct a dynamic mathematical profile of your film taste — learning from director signatures, narrative tropes, and your viewing affinity.
+                CineMatch learns your taste from favorite directors, stories, and ratings to recommend movies you'll actually love.
               </p>
 
               {/* 3 Architectural Pillars */}
@@ -493,10 +472,10 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                     <Layers size={20} />
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', margin: 0 }}>
-                    Detail Engine
+                    Taste Profile
                   </h3>
-                  <p style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.5, margin: 0 }}>
-                    Extracts director lineages, cast affinities, and genre distribution vectors tailored to you.
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.5, margin: 0 }}>
+                    Tracks your favorite directors, genres, and cast to find matches tailored to your taste.
                   </p>
                 </div>
 
@@ -522,10 +501,10 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                     <Sparkles size={20} />
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', margin: 0 }}>
-                    Conversational AI
+                    AI Recommendations
                   </h3>
-                  <p style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.5, margin: 0 }}>
-                    Inquire about your film archetype, ask for bespoke mood recommendations, and explore cinema.
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.5, margin: 0 }}>
+                    Chat anytime to find films by mood, theme, or movies you already like.
                   </p>
                 </div>
 
@@ -551,10 +530,10 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                     <Clapperboard size={20} />
                   </div>
                   <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', margin: 0 }}>
-                    Adaptive Hero Canvas
+                    Dynamic Home
                   </h3>
-                  <p style={{ fontSize: '12.5px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.5, margin: 0 }}>
-                    Your homepage hero poster immediately updates to showcase cinematic titles matching your persona.
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', lineHeight: 1.5, margin: 0 }}>
+                    Your home screen and hero banner continuously refresh with films picked for you.
                   </p>
                 </div>
               </div>
