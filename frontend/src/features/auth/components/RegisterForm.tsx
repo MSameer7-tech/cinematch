@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FC, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { PasswordInput } from './PasswordInput';
 import { GoogleButton } from './GoogleButton';
@@ -31,9 +32,13 @@ export const RegisterForm: FC = () => {
     setError(null);
 
     try {
-      await register({ email, password, displayName });
-      // Redirect to email verification check screen
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      const { requiresVerification } = await register({ email, password, displayName });
+      if (requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      } else {
+        toast.success('Account created successfully!');
+        navigate('/');
+      }
     } catch (err: any) {
       setError(err?.message || 'Failed to create account. Please try again.');
     }
@@ -52,6 +57,7 @@ export const RegisterForm: FC = () => {
     setError(null);
     try {
       await continueAsGuest();
+      navigate('/');
     } catch (err: any) {
       setError(err?.message || 'Failed to access guest session.');
     }

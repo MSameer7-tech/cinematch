@@ -1,5 +1,5 @@
 import { type FC, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Compass, 
@@ -120,11 +120,13 @@ const navItems: NavItem[] = [
 
 export const Sidebar: FC = () => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
   const handleLogout = async () => {
     try {
       await logout();
+      navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }

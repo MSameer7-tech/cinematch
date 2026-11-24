@@ -63,7 +63,7 @@ export const authService = {
   /**
    * Register a new user with email, password, and public display name.
    */
-  async register(credentials: RegisterCredentials): Promise<ServiceResult<AppUser>> {
+  async register(credentials: RegisterCredentials): Promise<ServiceResult<{ user: AppUser; requiresVerification: boolean }>> {
     try {
       const { data, error } = await supabase.auth.signUp({
         email: credentials.email,
@@ -83,6 +83,8 @@ export const authService = {
         return { success: false, error: 'Sign up succeeded but no user details were returned.' };
       }
 
+      const hasSession = !!data.session;
+
       const appUser: AppUser = {
         id: data.user.id,
         displayName: credentials.displayName,
@@ -96,7 +98,25 @@ export const authService = {
         deletedAt: null
       };
 
-      return { success: true, data: appUser };
+      try {
+        await supabase.from('users').upsert({
+          id: data.user.id,
+          display_name: credentials.displayName,
+          avatar_url: null,
+          onboarding_completed: false,
+          account_status: 'ACTIVE'
+        });
+      } catch (dbErr) {
+        console.warn('User profile upsert warning:', dbErr);
+      }
+
+      return { 
+        success: true, 
+        data: { 
+          user: appUser, 
+          requiresVerification: !hasSession 
+        } 
+      };
     } catch (err: any) {
       console.error('Registration service failure:', err);
       return { success: false, error: err?.message || 'An unexpected error occurred during registration.' };
@@ -130,7 +150,11 @@ export const authService = {
   async logout(): Promise<ServiceResult<void>> {
     try {
       await supabase.auth.signOut();
-      document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
+      document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;';
+      document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      try {
+        localStorage.removeItem('cinematch_auth_cache');
+      } catch {}
       return { success: true, data: undefined };
     } catch (err: any) {
       console.error('Logout error:', err);
@@ -211,7 +235,7 @@ export const authService = {
       }
 
       // Set cookie valid for 60 days
-      document.cookie = `cinematch_guest_token=${rawToken}; path=/; max-age=${60 * 24 * 60 * 60}; SameSite=Lax; Secure`;
+      document.cookie = `cinematch_guest_token=${rawToken}; path=/; max-age=${60 * 24 * 60 * 60}; SameSite=Lax;`;
 
       const guestUser: GuestUser = {
         id: guestSession.id,
@@ -279,53 +303,61 @@ export const authService = {
         return { success: false, error: 'No active session found.' };
       }
 
-      let { data: profile, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', supabaseUser.id)
-        .single();
+      const displayName = supabaseUser.user_metadata?.display_name || 
+                          supabaseUser.user_metadata?.full_name || 
+                          supabaseUser.email?.split('@')[0] || 
+                          'User';
+      const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
 
-      // If user profile does not exist in public.users, create it on-demand (fallback for OAuth/signup sync issues)
-      if (profileError && (profileError.code === 'PGRST116' || profileError.message.includes('JSON object'))) {
-        const displayName = supabaseUser.user_metadata?.display_name || 
-                            supabaseUser.user_metadata?.full_name || 
-                            supabaseUser.email?.split('@')[0] || 
-                            'User';
-        const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
-
-        const { data: newProfile, error: insertError } = await supabase
+      try {
+        const { data: profile, error: profileError } = await supabase
           .from('users')
-          .insert({
+          .select('*')
+          .eq('id', supabaseUser.id)
+          .single();
+
+        if (!profileError && profile) {
+          const appUser: AppUser = {
+            id: profile.id,
+            displayName: profile.display_name || displayName,
+            avatarUrl: profile.avatar_url || avatarUrl,
+            onboardingCompleted: profile.onboarding_completed ?? false,
+            accountStatus: profile.account_status || 'ACTIVE',
+            createdAt: profile.created_at || supabaseUser.created_at,
+            updatedAt: profile.updated_at || supabaseUser.updated_at || supabaseUser.created_at,
+            lastSeenAt: profile.last_seen_at || null,
+            deletionRequestedAt: profile.deletion_requested_at || null,
+            deletedAt: profile.deleted_at || null
+          };
+          return { success: true, data: appUser };
+        }
+
+        // Try insert fallback
+        if (profileError && (profileError.code === 'PGRST116' || profileError.message?.includes('JSON object'))) {
+          await supabase.from('users').insert({
             id: supabaseUser.id,
             display_name: displayName,
             avatar_url: avatarUrl,
             onboarding_completed: false,
             account_status: 'ACTIVE'
-          })
-          .select('*')
-          .single();
-
-        if (insertError) {
-          console.error('Failed to create fallback user profile:', insertError);
-          return { success: false, error: 'Failed to create your user profile.' };
+          });
         }
-        profile = newProfile;
-      } else if (profileError) {
-        console.error('Failed to query user profile:', profileError);
-        return { success: false, error: 'Failed to load user profile.' };
+      } catch (dbErr) {
+        console.warn('Profile DB query warning, using auth user metadata:', dbErr);
       }
 
+      // Resilient fallback from verified Supabase session user
       const appUser: AppUser = {
-        id: profile.id,
-        displayName: profile.display_name,
-        avatarUrl: profile.avatar_url,
-        onboardingCompleted: profile.onboarding_completed,
-        accountStatus: profile.account_status,
-        createdAt: profile.created_at,
-        updatedAt: profile.updated_at,
-        lastSeenAt: profile.last_seen_at,
-        deletionRequestedAt: profile.deletion_requested_at,
-        deletedAt: profile.deleted_at
+        id: supabaseUser.id,
+        displayName,
+        avatarUrl,
+        onboardingCompleted: false,
+        accountStatus: 'ACTIVE',
+        createdAt: supabaseUser.created_at,
+        updatedAt: supabaseUser.updated_at || supabaseUser.created_at,
+        lastSeenAt: null,
+        deletionRequestedAt: null,
+        deletedAt: null
       };
 
       return { success: true, data: appUser };
@@ -347,52 +379,57 @@ export const authService = {
       }
 
       const rawToken = guestCookie.split('=')[1].trim();
-      const hashedToken = await hashToken(rawToken);
-
-      const { data: guestSession, error } = await supabase
-        .from('guest_sessions')
-        .select('*')
-        .eq('guest_token_hash', hashedToken)
-        .single();
-
-      if (error || !guestSession) {
-        // Fallback to local guest user if DB lookup has RLS or connection issue
-        const now = new Date().toISOString();
-        const guestUser: GuestUser = {
-          id: crypto.randomUUID(),
-          sessionToken: hashedToken,
-          createdAt: now,
-          lastActivityAt: now,
-          migratedToUserId: null,
-          migratedAt: null
-        };
-        return { success: true, data: guestUser };
-      }
-
-      // Check 60-day expiration
-      const lastActivity = new Date(guestSession.last_activity_at).getTime();
-      const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
-      if (Date.now() - lastActivity > sixtyDaysInMs) {
-        document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure';
+      if (!rawToken) {
         return { success: true, data: null };
       }
 
-      // Update activity timestamp in DB
+      const hashedToken = await hashToken(rawToken);
+
+      try {
+        const { data: guestSession, error } = await supabase
+          .from('guest_sessions')
+          .select('*')
+          .eq('guest_token_hash', hashedToken)
+          .single();
+
+        if (!error && guestSession) {
+          const lastActivity = new Date(guestSession.last_activity_at).getTime();
+          const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
+          if (Date.now() - lastActivity > sixtyDaysInMs) {
+            document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;';
+            return { success: true, data: null };
+          }
+
+          const now = new Date().toISOString();
+          await supabase
+            .from('guest_sessions')
+            .update({ last_activity_at: now })
+            .eq('id', guestSession.id);
+
+          const guestUser: GuestUser = {
+            id: guestSession.id,
+            sessionToken: guestSession.guest_token_hash,
+            createdAt: guestSession.created_at,
+            lastActivityAt: now,
+            migratedToUserId: guestSession.migrated_to_user_id,
+            migratedAt: guestSession.migrated_at
+          };
+
+          return { success: true, data: guestUser };
+        }
+      } catch (dbErr) {
+        console.warn('Guest session DB lookup warning:', dbErr);
+      }
+
       const now = new Date().toISOString();
-      await supabase
-        .from('guest_sessions')
-        .update({ last_activity_at: now })
-        .eq('id', guestSession.id);
-
       const guestUser: GuestUser = {
-        id: guestSession.id,
-        sessionToken: guestSession.guest_token_hash,
-        createdAt: guestSession.created_at,
+        id: crypto.randomUUID(),
+        sessionToken: hashedToken,
+        createdAt: now,
         lastActivityAt: now,
-        migratedToUserId: guestSession.migrated_to_user_id,
-        migratedAt: guestSession.migrated_at
+        migratedToUserId: null,
+        migratedAt: null
       };
-
       return { success: true, data: guestUser };
     } catch (err: any) {
       return { success: false, error: err?.message || 'Failed to restore guest session.' };
@@ -415,12 +452,6 @@ export const authService = {
       const guestResult = await this.getGuestSession();
       if (guestResult.success && guestResult.data) {
         return { status: 'GUEST', user: null, guest: guestResult.data };
-      }
-
-      // Auto-initialize a guest session for new visitors
-      const newGuest = await this.continueAsGuest();
-      if (newGuest.success && newGuest.data) {
-        return { status: 'GUEST', user: null, guest: newGuest.data };
       }
 
       return { status: 'UNAUTHENTICATED', user: null, guest: null };

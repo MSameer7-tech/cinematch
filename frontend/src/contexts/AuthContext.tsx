@@ -18,7 +18,7 @@ export interface AuthContextType {
   isSubmitting: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<{ requiresVerification: boolean }>;
   logout: () => Promise<void>;
   continueAsGuest: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -75,7 +75,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         setTimeout(() => resolve(
           authState.user || authState.guest
             ? authState
-            : { status: 'GUEST', user: null, guest: { id: 'guest-offline', sessionToken: 'offline', createdAt: new Date().toISOString(), lastActivityAt: new Date().toISOString(), migratedToUserId: null, migratedAt: null } }
+            : { status: 'UNAUTHENTICATED', user: null, guest: null }
         ), 1200)
       );
       const state = await Promise.race([authService.initializeSession(), timeoutPromise]);
@@ -93,9 +93,22 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   useEffect(() => {
     initializeAuth();
 
-    // Listen for real-time auth changes from Supabase (ignoring INITIAL_SESSION to prevent lock deadlocks)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // Listen for real-time auth changes from Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'INITIAL_SESSION') return;
+      if (event === 'SIGNED_OUT') {
+        try {
+          localStorage.removeItem(AUTH_CACHE_KEY);
+          sessionStorage.clear();
+        } catch {}
+        setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+        setIsInitializing(false);
+        return;
+      }
+      if (event === 'SIGNED_IN' && session?.user) {
+        initializeAuth();
+        return;
+      }
       initializeAuth();
     });
 
@@ -123,7 +136,12 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     try {
       const result = await authService.register(credentials);
       if (result.success) {
-        setAuthState({ status: 'AUTHENTICATED', user: result.data, guest: null });
+        if (!result.data.requiresVerification) {
+          setAuthState({ status: 'AUTHENTICATED', user: result.data.user, guest: null });
+        } else {
+          setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+        }
+        return { requiresVerification: result.data.requiresVerification };
       } else {
         throw new Error(result.error);
       }
@@ -135,12 +153,16 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const logout = async () => {
     setIsSubmitting(true);
     try {
-      const result = await authService.logout();
-      if (result.success) {
-        setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
-      } else {
-        throw new Error(result.error);
-      }
+      try {
+        localStorage.removeItem(AUTH_CACHE_KEY);
+        sessionStorage.clear();
+        document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax;';
+        document.cookie = 'cinematch_guest_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      } catch {}
+      setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
     } finally {
       setIsSubmitting(false);
     }

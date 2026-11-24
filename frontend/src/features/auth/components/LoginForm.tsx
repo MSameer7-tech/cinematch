@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { FC, FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { PasswordInput } from './PasswordInput';
 import { GoogleButton } from './GoogleButton';
@@ -11,6 +13,7 @@ export const LoginForm: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -23,6 +26,8 @@ export const LoginForm: FC = () => {
 
     try {
       await login({ email, password });
+      toast.success('Welcome back!');
+      navigate('/');
     } catch (err: any) {
       setError(err?.message || 'Failed to sign in. Please check your credentials.');
     }
@@ -41,6 +46,7 @@ export const LoginForm: FC = () => {
     setError(null);
     try {
       await continueAsGuest();
+      navigate('/');
     } catch (err: any) {
       setError(err?.message || 'Failed to access guest session.');
     }

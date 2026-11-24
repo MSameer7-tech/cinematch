@@ -27,7 +27,8 @@ export const PublicRoute: FC = () => {
     );
   }
 
-  if (authState.status === 'AUTHENTICATED' || authState.status === 'GUEST') {
+  // Only redirect away from login/register if already signed into a registered account
+  if (authState.status === 'AUTHENTICATED') {
     return <Navigate to="/" replace />;
   }
 

@@ -33,6 +33,7 @@ export const UserMenu: FC = () => {
     setIsOpen(false);
     try {
       await logout();
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
     }
