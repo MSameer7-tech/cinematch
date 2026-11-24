@@ -9,11 +9,7 @@ import {
   Play, 
   Bookmark, 
   Check, 
-  PanelLeftClose,
-  PanelLeftOpen,
-  Plus,
-  Trash2,
-  Pencil
+  PanelLeftOpen
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -63,8 +59,6 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
   const [input, setInput] = useState('');
   const [trailerMovie, setTrailerMovie] = useState<{ id: number; title: string } | null>(null);
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
-  const [isRenamingCurrent, setIsRenamingCurrent] = useState(false);
-  const [renameInputValue, setRenameInputValue] = useState('');
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -119,20 +113,6 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
     );
   };
 
-  const handleStartRenameCurrent = () => {
-    setRenameInputValue(activeConversationTitle);
-    setIsRenamingCurrent(true);
-  };
-
-  const handleSaveRenameCurrent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (renameInputValue.trim()) {
-      renameConversation(activeConversationId, renameInputValue.trim());
-      toast.success('Conversation renamed');
-    }
-    setIsRenamingCurrent(false);
-  };
-
   return (
     <div className="ai-chat-wrapper">
       {/* 1. Left Chat History Drawer / Sidebar */}
@@ -170,79 +150,18 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
 
       {/* 2. Main Chat View Column */}
       <div className="ai-chat-main-area">
-        {/* Top Sub-Header: Sidebar Toggle, New Chat, Active Title, Quick Actions */}
-        <header className="ai-chat-top-header">
-          <div className="ai-header-left">
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="ai-header-toggle-btn"
-              title={isSidebarOpen ? "Hide chat history" : "Show chat history"}
-              aria-label="Toggle chat history"
-            >
-              {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-              {!isSidebarOpen && conversations.length > 0 && (
-                <span className="ai-header-badge">{conversations.length}</span>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={createNewChat}
-              className="ai-header-new-btn"
-              title="Start a new conversation"
-            >
-              <Plus size={15} strokeWidth={2.5} />
-              <span>New Chat</span>
-            </button>
-
-            <div className="ai-header-title-box">
-              {isRenamingCurrent ? (
-                <form onSubmit={handleSaveRenameCurrent} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <input
-                    type="text"
-                    autoFocus
-                    value={renameInputValue}
-                    onChange={(e) => setRenameInputValue(e.target.value)}
-                    className="ai-convo-edit-input"
-                    onBlur={() => setIsRenamingCurrent(false)}
-                    style={{ height: '28px', fontSize: '13px', width: '220px' }}
-                  />
-                  <button type="submit" className="ai-convo-action-btn check">
-                    <Check size={14} />
-                  </button>
-                </form>
-              ) : (
-                <div 
-                  onClick={handleStartRenameCurrent} 
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-                  title="Click to rename"
-                >
-                  <span className="ai-header-active-title">
-                    {activeConversationTitle}
-                  </span>
-                  <Pencil size={12} style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="ai-header-right">
-            {messages.length > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  deleteConversation(activeConversationId);
-                  toast.success('Conversation deleted');
-                }}
-                className="ai-header-delete-btn"
-                title="Delete this conversation"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
-          </div>
-        </header>
+        {/* Floating Sidebar Toggle Button when history sidebar is closed */}
+        {!isSidebarOpen && (
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="ai-floating-sidebar-toggle"
+            title="Open chat history"
+            aria-label="Open chat history"
+          >
+            <PanelLeftOpen size={18} />
+          </button>
+        )}
 
         {/* Main Chat Scroll Area */}
         <div className="ai-chat-scroll custom-scrollbar">
