@@ -331,20 +331,20 @@ export const SettingsPage: FC = () => {
                         <div>
                           <span style={{ fontSize: '12px', color: '#94a3b8', display: 'block' }}>Average Rating</span>
                           <strong style={{ fontSize: '16px', color: '#f8fafc' }}>
-                            {tasteProfile.average_rating > 0 ? `${tasteProfile.average_rating.toFixed(1)}/10` : 'None'}
+                            {Number(tasteProfile.average_rating) > 0 ? `${Number(tasteProfile.average_rating).toFixed(1)}/10` : 'None'}
                           </strong>
                         </div>
                         <div>
                           <span style={{ fontSize: '12px', color: '#94a3b8', display: 'block' }}>Total Ratings</span>
-                          <strong style={{ fontSize: '16px', color: '#f8fafc' }}>{tasteProfile.total_ratings}</strong>
+                          <strong style={{ fontSize: '16px', color: '#f8fafc' }}>{tasteProfile.total_ratings ?? 0}</strong>
                         </div>
                         <div>
                           <span style={{ fontSize: '12px', color: '#94a3b8', display: 'block' }}>Favorites</span>
-                          <strong style={{ fontSize: '16px', color: '#f8fafc' }}>{tasteProfile.total_favorites}</strong>
+                          <strong style={{ fontSize: '16px', color: '#f8fafc' }}>{tasteProfile.total_favorites ?? 0}</strong>
                         </div>
                         <div>
                           <span style={{ fontSize: '12px', color: '#94a3b8', display: 'block' }}>Watchlist</span>
-                          <strong style={{ fontSize: '16px', color: '#f8fafc' }}>{tasteProfile.total_watchlist}</strong>
+                          <strong style={{ fontSize: '16px', color: '#f8fafc' }}>{tasteProfile.total_watchlist ?? 0}</strong>
                         </div>
                       </div>
                     </div>

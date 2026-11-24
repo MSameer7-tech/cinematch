@@ -83,20 +83,20 @@ export const router = createBrowserRouter([
             path: 'onboarding',
             element: <OnboardingPage />,
           },
+          {
+            path: 'settings',
+            element: <SettingsPage />,
+          },
+          {
+            path: 'profile',
+            element: <ProfilePage />,
+          },
         ],
       },
       // Protected Routes (accessible ONLY by Authenticated users)
       {
         element: <ProtectedRoute />,
         children: [
-          {
-            path: 'profile',
-            element: <ProfilePage />,
-          },
-          {
-            path: 'settings',
-            element: <SettingsPage />,
-          },
           {
             path: 'admin/analytics',
             element: <RecommendationAnalyticsPage />,
