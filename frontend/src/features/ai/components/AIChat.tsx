@@ -58,6 +58,7 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
   const [input, setInput] = useState('');
   const [trailerMovie, setTrailerMovie] = useState<{ id: number; title: string } | null>(null);
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,9 +82,13 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
     }
   };
 
-  const handleCopy = (text: string) => {
+  const handleCopy = (msgId: string, text: string) => {
     navigator.clipboard.writeText(text);
+    setCopiedMsgId(msgId);
     toast.success('Copied to clipboard');
+    setTimeout(() => {
+      setCopiedMsgId(prev => (prev === msgId ? null : prev));
+    }, 2000);
   };
 
   const handleFeedback = (msgId: string, type: 'up' | 'down') => {
@@ -235,8 +240,8 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
                       </div>
 
                       <div className="ai-assistant-content">
-                        {/* Response Text */}
-                        <div className="ai-assistant-text">
+                        {/* Response Text inside Frosted Chat Card / Bubble */}
+                        <div className="ai-assistant-bubble">
                           {msg.content}
                         </div>
 
@@ -313,27 +318,43 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
                         <div className="ai-assistant-actions">
                           <button
                             type="button"
-                            className="ai-action-btn"
-                            title="Copy message"
-                            onClick={() => handleCopy(msg.content)}
+                            className={`ai-action-btn ${copiedMsgId === msg.id ? 'copied' : ''}`}
+                            title={copiedMsgId === msg.id ? 'Copied to clipboard' : 'Copy response'}
+                            onClick={() => handleCopy(msg.id, msg.content)}
                           >
-                            <Copy size={14} />
+                            {copiedMsgId === msg.id ? (
+                              <>
+                                <Check size={13} strokeWidth={2.4} />
+                                <span>Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={13} />
+                                <span>Copy</span>
+                              </>
+                            )}
                           </button>
+
+                          <span className="ai-action-divider" />
+
                           <button
                             type="button"
-                            className={`ai-action-btn ${currentFeedback === 'up' ? 'active' : ''}`}
-                            title="Good response"
+                            className={`ai-action-btn icon-only ${currentFeedback === 'up' ? 'active-up' : ''}`}
+                            title="Helpful response"
+                            aria-label="Helpful response"
                             onClick={() => handleFeedback(msg.id, 'up')}
                           >
-                            <ThumbsUp size={14} />
+                            <ThumbsUp size={13} fill={currentFeedback === 'up' ? 'currentColor' : 'none'} />
                           </button>
+
                           <button
                             type="button"
-                            className={`ai-action-btn ${currentFeedback === 'down' ? 'active' : ''}`}
-                            title="Poor response"
+                            className={`ai-action-btn icon-only ${currentFeedback === 'down' ? 'active-down' : ''}`}
+                            title="Not helpful"
+                            aria-label="Not helpful"
                             onClick={() => handleFeedback(msg.id, 'down')}
                           >
-                            <ThumbsDown size={14} />
+                            <ThumbsDown size={13} fill={currentFeedback === 'down' ? 'currentColor' : 'none'} />
                           </button>
                         </div>
                       </div>

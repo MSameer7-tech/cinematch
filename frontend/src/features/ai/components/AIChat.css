@@ -696,11 +696,26 @@
   width: 100%;
 }
 
-.ai-assistant-text {
-  color: #f1f5f9;
+.ai-assistant-bubble {
+  background: rgba(18, 19, 32, 0.84);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px 20px 20px 20px;
+  padding: 16px 22px;
+  color: #f8fafc;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   white-space: pre-line;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  max-width: 92%;
+  width: fit-content;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-assistant-bubble:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55);
 }
 
 /* Horizontal Movie Recommendations Grid / Cards */
@@ -866,31 +881,84 @@
   transform: scale(1.1);
 }
 
-/* Feedback Action Bar */
-.ai-feedback-bar {
-  display: flex;
+/* Assistant Action Bar: Frosted Capsule Cluster */
+.ai-assistant-actions {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 2px;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 4px 6px;
+  background: rgba(18, 19, 30, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  width: fit-content;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
-.ai-feedback-btn {
+.ai-action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
   background: transparent;
-  border: none;
-  color: #64748b;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  user-select: none;
 }
 
-.ai-feedback-btn:hover {
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.06);
+.ai-action-btn.icon-only {
+  width: 30px;
+  padding: 0;
+}
+
+.ai-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.ai-action-btn:active {
+  transform: translateY(0);
+}
+
+/* Copied feedback state */
+.ai-action-btn.copied {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.5);
+  color: #d8b4fe;
+}
+
+/* Thumbs Up active state */
+.ai-action-btn.active-up {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #4ade80;
+}
+
+/* Thumbs Down active state */
+.ai-action-btn.active-down {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #f87171;
+}
+
+.ai-action-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 2px;
 }
 
 .ai-feedback-btn.active {
