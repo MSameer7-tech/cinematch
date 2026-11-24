@@ -42,14 +42,18 @@ class CompositeScorer:
             fresh = self.freshness_scorer.score(c)
             pop = self.popularity_scorer.score(c, max_popularity=max_pop)
             
+            # Quality factor based on critically verified vote average (scaled 5.0 to 9.0 -> 0.0 to 1.0)
+            quality = max(0.0, min(1.0, (c.vote_average - 5.0) / 4.0)) if c.vote_average > 0 else 0.5
+            
             raw_score = (
-                sim * self.weights.get("similarity", 0.60) +
-                nov * self.weights.get("novelty", 0.20) +
-                fresh * self.weights.get("freshness", 0.10) +
-                pop * self.weights.get("popularity", 0.10)
+                sim * 0.45 +
+                quality * 0.30 +
+                pop * 0.15 +
+                nov * 0.05 +
+                fresh * 0.05
             )
             
-            # Calibrate raw score (typically 0.20 to 0.50) into an intuitive, high-affinity match percentage (0.75 to 0.98)
-            norm = max(0.0, min(1.0, (raw_score - 0.20) / 0.30))
-            calibrated = 0.75 + (norm * 0.23)
+            # Calibrate raw score (typically 0.25 to 0.65) into an intuitive match percentage (0.78 to 0.98)
+            norm = max(0.0, min(1.0, (raw_score - 0.25) / 0.35))
+            calibrated = 0.78 + (norm * 0.20)
             c.rank_score = round(min(calibrated, 0.98), 3)

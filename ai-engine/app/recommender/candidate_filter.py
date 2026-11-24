@@ -46,6 +46,15 @@ class CandidateFilter:
                 continue
             if candidate.release_year and candidate.release_year > current_year:
                 continue
+
+            # Filter 6: Quality threshold to prevent low-budget, obscure movies from dominating
+            min_votes = 40 if candidate.release_year and candidate.release_year >= current_year - 2 else 100
+            if candidate.vote_count < min_votes:
+                continue
+                
+            # Filter 7: Minimum rating threshold
+            if candidate.vote_average > 0 and candidate.vote_average < 5.5:
+                continue
                 
             filtered_candidates.append(candidate)
             

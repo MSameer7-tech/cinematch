@@ -100,20 +100,39 @@ class ConversationService:
                 "taste_profile": taste_doc.model_dump() if taste_doc else None
             }
             
-        # Contextualize movies for LLM
+        # Contextualize movies with rich cinematic metadata for LLM
         from app.content.repositories.movie_repository import MovieRepository
         movie_repo = MovieRepository()
-        titles = []
-        for r in recommendations:
+        movie_details_list = []
+        for r in recommendations[:4]:
             m = movie_repo.get_movie_by_id(r["movie_id"])
             if m:
-                titles.append(m.get("title", "Unknown Movie"))
-        movie_titles = ", ".join(titles) if titles else "Curated cinematic gems"
+                title = m.get("title", "Unknown Movie")
+                year = int(m.get("release_year") or 0)
+                director = m.get("director", "")
+                cast = ", ".join([a.strip() for a in str(m.get("cast", "")).split(",")[:3] if a.strip()])
+                genres = m.get("genre_names", "")
+                overview = str(m.get("overview", "")).strip()
+                rating = m.get("vote_average", "")
+                details = f"- **{title}** ({year})"
+                if director:
+                    details += f" | Dir: {director}"
+                if cast:
+                    details += f" | Starring: {cast}"
+                if rating:
+                    details += f" | Rating: {rating}/10"
+                if genres:
+                    details += f" | Genres: {genres}"
+                if overview:
+                    details += f"\n  Premise: {overview[:180]}..."
+                movie_details_list.append(details)
+        
+        movies_context_str = "\n".join(movie_details_list) if movie_details_list else "Curated cinematic recommendations"
         
         taste_summary_str = f"Persona: {taste_doc.persona_title}. {taste_doc.summary}" if taste_doc else "Cinephile exploring new titles"
         
         explanation_msg = EXPLANATION_PROMPT.format(
-            movies_context=movie_titles,
+            movies_context=movies_context_str,
             user_message=message,
             user_taste_summary=taste_summary_str
         )

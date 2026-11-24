@@ -49,11 +49,29 @@ class CandidateGenerator:
             
         return seeds
 
-    def generate_candidates(self, context: RecommendationContext, top_k_per_seed: int = 30) -> None:
+    def generate_candidates(self, context: RecommendationContext, top_k_per_seed: int = 30, request: any = None) -> None:
         """
         Populates context.candidates with the top similar movies from the seed movies.
+        Prioritizes explicit request seeds and genre seeds when available.
         """
-        seeds = self.build_seed_movies(context)
+        seeds = set()
+        if request and getattr(request, 'seed_movies', None):
+            seeds.update(request.seed_movies)
+        elif request and getattr(request, 'preferred_genres', None) and request.preferred_genres:
+            # Seed with top-rated, proven films from the user's requested genres
+            for g in request.preferred_genres:
+                genre_matches = self.df[
+                    self.df['genre_names'].str.contains(g, case=False, na=False) &
+                    (self.df['vote_count'] >= 500) &
+                    (self.df['vote_average'] >= 7.2)
+                ].sort_values(by=['vote_average', 'vote_count'], ascending=[False, False]).head(3)
+                seeds.update(genre_matches['movie_id'].tolist())
+            # Complement with taste profile signals
+            profile_seeds = self.build_seed_movies(context)
+            seeds.update(list(profile_seeds)[:3])
+        else:
+            seeds = self.build_seed_movies(context)
+
         candidates_dict = {} # movie_id -> CandidateMovie
         
         for seed_id in seeds:
@@ -70,7 +88,7 @@ class CandidateGenerator:
                 candidate_id = self.idx_to_movie_id[candidate_idx]
                 score = sim_scores[candidate_idx]
                 
-                # Don't add the seed movie itself to candidates
+                # Don't add the seed movie itself to candidates unless explicitly desired
                 if candidate_id == seed_id:
                     continue
                     
@@ -95,6 +113,8 @@ class CandidateGenerator:
                         
                     status = str(row['status']).strip() if pd.notna(row.get('status')) else None
                     popularity = float(row['popularity']) if pd.notna(row.get('popularity')) else 0.0
+                    vote_average = float(row['vote_average']) if pd.notna(row.get('vote_average')) else 0.0
+                    vote_count = float(row['vote_count']) if pd.notna(row.get('vote_count')) else 0.0
                     metadata_score = int(row['metadata_score']) if pd.notna(row.get('metadata_score')) else 0
                     adult = bool(row['adult']) if pd.notna(row.get('adult')) else False
                     spoken_langs = [l.strip() for l in row['spoken_languages'].split(',')] if pd.notna(row.get('spoken_languages')) and row['spoken_languages'] else []
@@ -109,6 +129,8 @@ class CandidateGenerator:
                         release_year=release_year,
                         status=status,
                         popularity=popularity,
+                        vote_average=vote_average,
+                        vote_count=vote_count,
                         metadata_score=metadata_score,
                         adult=adult,
                         spoken_languages=spoken_langs

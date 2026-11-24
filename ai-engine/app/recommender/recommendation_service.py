@@ -40,9 +40,7 @@ class RecommendationService:
         context = RecommendationContext(profile=profile)
         
         # 3. Candidate Generation
-        # Note: If request has seed_movies, candidate_generator could theoretically use them directly.
-        # For now, CandidateGenerator uses profile, and we will enhance it later to respect seeds.
-        self.candidate_generator.generate_candidates(context)
+        self.candidate_generator.generate_candidates(context, request=request)
         
         # Apply temporary filters if present (Simple genre match)
         if request.preferred_genres:
@@ -54,6 +52,13 @@ class RecommendationService:
                     filtered_candidates.append(c)
             if filtered_candidates:
                 context.candidates = filtered_candidates
+
+        if request.excluded_genres:
+            excl_lower = [g.lower() for g in request.excluded_genres]
+            context.candidates = [
+                c for c in context.candidates 
+                if not any(excl in [g.lower() for g in c.genres] for excl in excl_lower)
+            ]
         
         # 4. Filter Candidates
         self.candidate_filter.filter_candidates(context)

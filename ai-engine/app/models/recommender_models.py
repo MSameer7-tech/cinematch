@@ -16,6 +16,8 @@ class CandidateMovie(BaseModel):
     release_year: Optional[int] = None
     status: Optional[str] = None
     popularity: float = 0.0
+    vote_average: float = 0.0
+    vote_count: float = 0.0
     metadata_score: int = 0
     adult: bool = False
     spoken_languages: List[str] = Field(default_factory=list)
