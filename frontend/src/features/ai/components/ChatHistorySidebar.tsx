@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Search, 
@@ -127,17 +128,27 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
     setConfirmDeleteId(null);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <>
-      {/* Mobile Backdrop Overlay */}
-      <div 
-        className="ai-sidebar-backdrop" 
-        onClick={onClose} 
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop Overlay */}
+          <motion.div 
+            className="ai-sidebar-backdrop" 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose} 
+          />
 
-      <aside className="ai-chat-history-sidebar custom-scrollbar">
+          <motion.aside 
+            className="ai-chat-history-sidebar custom-scrollbar"
+            initial={{ x: '-100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '-100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 240 }}
+          >
         {/* Sidebar Header */}
         <div className="ai-sidebar-header">
           <div className="ai-sidebar-brand">
@@ -360,7 +371,9 @@ export const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
             )}
           </div>
         )}
-      </aside>
+      </motion.aside>
     </>
+  )}
+</AnimatePresence>
   );
 };

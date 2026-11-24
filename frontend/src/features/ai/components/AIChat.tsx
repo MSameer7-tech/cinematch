@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, 
   AtSign, 
@@ -9,7 +10,7 @@ import {
   Play, 
   Bookmark, 
   Check, 
-  PanelLeftOpen
+  Menu
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,9 +54,7 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
   const { data: watchlist } = useWatchlist();
   const toggleWatchlistMutation = useToggleWatchlist();
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    return typeof window !== 'undefined' ? window.innerWidth >= 1024 : true;
-  });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [input, setInput] = useState('');
   const [trailerMovie, setTrailerMovie] = useState<{ id: number; title: string } | null>(null);
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
@@ -150,18 +149,30 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
 
       {/* 2. Main Chat View Column */}
       <div className="ai-chat-main-area">
-        {/* Floating Sidebar Toggle Button when history sidebar is closed */}
-        {!isSidebarOpen && (
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen(true)}
-            className="ai-floating-sidebar-toggle"
-            title="Open chat history"
-            aria-label="Open chat history"
-          >
-            <PanelLeftOpen size={18} />
-          </button>
-        )}
+        {/* Pill-Shaped Hamburger Icon Button at Bottom Left */}
+        <AnimatePresence>
+          {!isSidebarOpen && (
+            <motion.button
+              type="button"
+              onClick={() => setIsSidebarOpen(true)}
+              className="ai-pill-hamburger-btn"
+              initial={{ opacity: 0, scale: 0.88, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 12 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title="View Chat History"
+              aria-label="View Chat History"
+            >
+              <Menu size={18} strokeWidth={2.4} />
+              <span>Chats</span>
+              {conversations.length > 0 && (
+                <span className="ai-pill-badge">{conversations.length}</span>
+              )}
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         {/* Main Chat Scroll Area */}
         <div className="ai-chat-scroll custom-scrollbar">

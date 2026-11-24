@@ -28,80 +28,93 @@
   overflow: hidden;
 }
 
-/* Sub-Header inside AI Chat */
-/* Floating Toggle Button when History Sidebar is Closed */
-.ai-floating-sidebar-toggle {
+/* ==========================================================================
+   Pill-Shaped Hamburger Button at Bottom Left
+   ========================================================================== */
+.ai-pill-hamburger-btn {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 25;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(15, 15, 25, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.8);
-  display: flex;
+  bottom: 26px;
+  left: 28px;
+  z-index: 35;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-radius: 9999px;
+  background: rgba(18, 19, 30, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-  transition: all 0.2s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  user-select: none;
 }
 
-.ai-floating-sidebar-toggle:hover {
-  background: rgba(124, 58, 237, 0.45);
-  border-color: rgba(168, 85, 247, 0.5);
+.ai-pill-hamburger-btn:hover {
+  background: rgba(32, 26, 52, 0.95);
+  border-color: rgba(168, 85, 247, 0.6);
   color: #ffffff;
-  transform: scale(1.05);
+  box-shadow: 0 10px 36px rgba(124, 58, 237, 0.35), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.ai-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (max-width: 1050px) {
+  .ai-pill-hamburger-btn {
+    bottom: 96px;
+    left: 20px;
+  }
 }
 
 /* ==========================================================================
    Chat History Sidebar Styles
    ========================================================================== */
 .ai-sidebar-backdrop {
-  display: none;
-}
-
-@media (max-width: 868px) {
-  .ai-sidebar-backdrop {
-    display: block;
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(4px);
-    z-index: 25;
-  }
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 45;
+  display: block;
 }
 
 .ai-chat-history-sidebar {
-  width: 290px;
-  flex-shrink: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 320px;
+  max-width: 88vw;
   height: 100%;
-  background: rgba(11, 11, 20, 0.90);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 13, 22, 0.95);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
-  position: relative;
-  z-index: 30;
+  z-index: 50;
   overflow: hidden;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@media (max-width: 868px) {
-  .ai-chat-history-sidebar {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 300px;
-    max-width: 85vw;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
-  }
+  box-shadow: 12px 0 48px rgba(0, 0, 0, 0.75);
 }
 
 .ai-sidebar-header {
