@@ -815,8 +815,19 @@ export const DiscoverPage: FC = () => {
     });
   }, [data, extraMovies]);
 
-  // Since filtering is handled server-side by the TMDB discover API, allMovies are already accurately filtered
-  const filteredMovies = allMovies;
+  // Stable sort: prioritize movies with valid posters in front; push movies without posters to the bottom
+  const filteredMovies = useMemo(() => {
+    const hasPoster = (m: Movie) => {
+      const p = m.posterPath || (m as any).poster_path;
+      return Boolean(p && typeof p === 'string' && p.trim() && p !== 'null' && p !== 'None');
+    };
+    return [...allMovies].sort((a, b) => {
+      const aHas = hasPoster(a);
+      const bHas = hasPoster(b);
+      if (aHas === bHas) return 0;
+      return aHas ? -1 : 1;
+    });
+  }, [allMovies]);
 
   // Set default selected movie once data is loaded
   useEffect(() => {

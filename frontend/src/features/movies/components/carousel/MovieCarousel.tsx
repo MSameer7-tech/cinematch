@@ -167,6 +167,20 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
     }
   }
 
+  // Sort movies so that movies with valid posters appear in the front, and movies without posters are pushed to the end
+  const displayMovies = useMemo(() => {
+    const hasPoster = (m: any) => {
+      const p = m.posterPath || (m as any).poster_path;
+      return Boolean(p && typeof p === 'string' && p.trim() && p !== 'null' && p !== 'None');
+    };
+    return [...deduplicatedMovies].sort((a, b) => {
+      const aHas = hasPoster(a);
+      const bHas = hasPoster(b);
+      if (aHas === bHas) return 0;
+      return aHas ? -1 : 1;
+    });
+  }, [deduplicatedMovies]);
+
   // Track page_loaded analytics depth (Phase 10)
   const pageCount = isPaginationEnabled && data ? data.pages.length : 1;
   useEffect(() => {
@@ -192,7 +206,7 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
     });
   };
 
-  if (!deduplicatedMovies?.length) return null;
+  if (!displayMovies?.length) return null;
 
   return (
     <section style={{ margin: '32px 0', padding: '0 48px', position: 'relative', overflow: 'hidden', maxWidth: '100vw', boxSizing: 'border-box' }} className="movie-carousel-section">
@@ -297,7 +311,7 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
           paddingTop: '10px'
         }}
       >
-        {deduplicatedMovies.map((movie, index) => (
+        {displayMovies.map((movie, index) => (
           <div key={movie.id} style={{ flex: '0 0 160px', width: '160px', minWidth: 0 }}>
             <TrackableMovieCard 
               movie={movie}

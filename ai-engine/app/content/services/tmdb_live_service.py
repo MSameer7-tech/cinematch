@@ -297,7 +297,7 @@ class TMDBLiveService:
             360814: 880.0,  # Dangal
             781732: 870.0,  # Animal
             872906: 860.0,  # Jawan
-            1111873: 850.0, # Stree 2
+            1112426: 850.0, # Stree 2
             348892: 840.0,  # Bajrangi Bhaijaan
             297222: 830.0,  # PK
             256040: 820.0,  # Baahubali 1
@@ -309,18 +309,27 @@ class TMDBLiveService:
             7508: 760.0,    # Taare Zameen Par
             4251: 750.0,    # Veer-Zaara
             534780: 740.0,  # Andhadhun
-            15301: 730.0,   # Sholay
+            12259: 730.0,   # Sholay
             117691: 720.0,  # Gangs of Wasseypur
         }
 
-        if category == "topRated":
-            pool.sort(key=lambda x: (x.get("vote_average", 0.0), x.get("vote_count", 0), x.get("popularity", 0.0)), reverse=True)
-        elif category in ("upcoming", "new_releases"):
-            pool.sort(key=lambda x: (x.get("release_date", ""), x.get("popularity", 0.0)), reverse=True)
-        elif category == "trending":
-            pool.sort(key=lambda x: (iconic_boost.get(x["id"], 0.0) * 0.7 + x.get("popularity", 0.0) * 0.3), reverse=True)
-        else:
-            pool.sort(key=lambda x: (iconic_boost.get(x["id"], 0.0) + x.get("popularity", 0.0)), reverse=True)
+        # Ensure movies with valid posters are strictly prioritized first; poster-less movies pushed to end
+        def sort_key(m: dict):
+            has_poster = 1 if (m.get("poster_path") and str(m.get("poster_path")).strip() and str(m.get("poster_path")).strip() != "None") else 0
+            if category == "topRated":
+                score = (m.get("vote_average", 0.0), m.get("vote_count", 0), m.get("popularity", 0.0))
+                return (has_poster, score)
+            elif category in ("upcoming", "new_releases"):
+                score = (m.get("release_date", ""), m.get("popularity", 0.0))
+                return (has_poster, score)
+            elif category == "trending":
+                score = (iconic_boost.get(m["id"], 0.0) * 0.7 + m.get("popularity", 0.0) * 0.3)
+                return (has_poster, score)
+            else:
+                score = (iconic_boost.get(m["id"], 0.0) + m.get("popularity", 0.0))
+                return (has_poster, score)
+
+        pool.sort(key=sort_key, reverse=True)
 
         total = len(pool)
         total_pages = max(1, math.ceil(total / page_size))
