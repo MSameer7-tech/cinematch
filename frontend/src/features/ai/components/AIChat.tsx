@@ -60,12 +60,34 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
   const [feedbackState, setFeedbackState] = useState<Record<string, 'up' | 'down'>>({});
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll on new messages or typing
+  // Auto-scroll on new messages or typing, ensuring content ends above floating dock
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = () => {
+      if (endRef.current) {
+        endRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    scrollToBottom();
+    const t1 = setTimeout(scrollToBottom, 100);
+    const t2 = setTimeout(scrollToBottom, 300);
+    const t3 = setTimeout(scrollToBottom, 600);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, [messages, isTyping]);
 
   const handleSend = (e?: React.FormEvent) => {
@@ -180,7 +202,7 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
         </AnimatePresence>
 
         {/* Main Chat Scroll Area */}
-        <div className="ai-chat-scroll custom-scrollbar">
+        <div ref={scrollContainerRef} className="ai-chat-scroll custom-scrollbar">
           <div className="ai-chat-content-container">
             {/* Centered Hero Section when no messages */}
             {messages.length === 0 ? (
@@ -376,7 +398,7 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
                   </div>
                 )}
 
-                <div ref={endRef} />
+                <div ref={endRef} className="ai-scroll-spacer" />
               </>
             )}
           </div>
