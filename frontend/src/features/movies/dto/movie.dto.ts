@@ -26,6 +26,9 @@ export interface MovieDetailsDTO extends MovieDTO {
   status: string;
   tagline: string | null;
   genres: Array<{ id: number; name: string }>;
+  productionCompanies?: Array<{ id: number; name: string; logoPath: string | null }>;
+  productionCountries?: string[];
+  spokenLanguages?: string[];
 }
 
 export interface VideoDTO {

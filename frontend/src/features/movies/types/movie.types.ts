@@ -28,6 +28,9 @@ export interface MovieDetails extends Movie {
   status: string;
   tagline: string | null;
   genres: Genre[];
+  productionCompanies?: Array<{ id: number; name: string; logoPath: string | null }>;
+  productionCountries?: string[];
+  spokenLanguages?: string[];
 }
 
 export interface Genre {

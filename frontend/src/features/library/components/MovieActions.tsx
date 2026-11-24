@@ -8,41 +8,48 @@ import { Info } from 'lucide-react';
 interface MovieActionsProps {
   movieId: number;
   showInfo?: boolean;
+  size?: 'small' | 'medium' | 'large';
 }
 
-export const MovieActions: FC<MovieActionsProps> = ({ movieId, showInfo = true }) => {
+export const MovieActions: FC<MovieActionsProps> = ({ movieId, showInfo = true, size = 'medium' }) => {
+  const isLarge = size === 'large';
+  const dimension = isLarge ? '48px' : size === 'small' ? '36px' : '40px';
+
   return (
-    <div style={{ display: 'flex', gap: '8px' }}>
-      <WatchlistButton movieId={movieId} />
-      <FavoriteButton movieId={movieId} />
-      <ShareButton movieId={movieId} />
+    <div style={{ display: 'flex', gap: isLarge ? '10px' : '8px', alignItems: 'center' }}>
+      <WatchlistButton movieId={movieId} size={size} />
+      <FavoriteButton movieId={movieId} size={size} />
+      <ShareButton movieId={movieId} size={size} />
       
       {showInfo && (
         <motion.button
           className="action-btn-secondary"
           title="Details"
           onClick={(e) => {
-            // Navigation handles bubble up, but we prevent default just in case
             e.preventDefault();
-            // Optional: You could navigate here or rely on the parent Card's onClick
           }}
           style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(8px)',
+            width: dimension,
+            height: dimension,
+            borderRadius: isLarge ? '14px' : '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(12px)',
             color: '#fff',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.16)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
-          whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ 
+            scale: 1.05, 
+            backgroundColor: 'rgba(255, 255, 255, 0.16)',
+            borderColor: 'rgba(255, 255, 255, 0.35)'
+          }}
+          whileTap={{ scale: 0.92 }}
         >
-          <Info size={20} />
+          <Info size={isLarge ? 20 : 18} />
         </motion.button>
       )}
     </div>

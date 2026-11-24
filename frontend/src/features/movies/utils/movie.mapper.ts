@@ -70,6 +70,7 @@ const TMDB_GENRE_NAMES: Record<number, string> = {
 };
 
 export const mapTMDBToMovieDetailsDTO = (raw: TMDBMovieDetails): MovieDetailsDTO => {
+  const anyRaw = raw as any;
   return {
     ...mapTMDBToMovieDTO(raw),
     budget: raw.budget,
@@ -83,6 +84,13 @@ export const mapTMDBToMovieDetailsDTO = (raw: TMDBMovieDetails): MovieDetailsDTO
         ? g.name
         : (TMDB_GENRE_NAMES[g.id] || g.name || 'Drama'),
     })),
+    productionCompanies: (anyRaw.production_companies || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      logoPath: c.logo_path,
+    })),
+    productionCountries: (anyRaw.production_countries || []).map((c: any) => c.name || c.iso_3166_1),
+    spokenLanguages: (anyRaw.spoken_languages || []).map((l: any) => l.english_name || l.name),
   };
 };
 
