@@ -7,6 +7,8 @@ import datetime
 import urllib.request
 import urllib.parse
 import re
+import math
+import glob
 from typing import Dict, Any, List, Optional
 import requests
 import urllib3.util.connection as urllib_conn
@@ -56,9 +58,13 @@ class TMDBLiveService:
             "data",
             "raw"
         )
+        self.alt_raw_dir = os.path.abspath(
+            os.path.join(self.raw_dir, "..", "..", "..", "data", "raw")
+        )
         os.makedirs(self.raw_dir, exist_ok=True)
         self.cache: Dict[str, Dict[str, Any]] = {}
         self.cache_ttl = 900  # 15 minutes TTL
+        self._bollywood_pool = None
 
     def _get_cache(self, key: str) -> Optional[Any]:
         if key in self.cache:
@@ -208,6 +214,127 @@ class TMDBLiveService:
         """Fetch live top rated movies from TMDB."""
         return self._fetch_paginated_released("movie/top_rated", page=page, target_count=20)
 
+    def _get_bollywood_pool(self) -> List[dict]:
+        if self._bollywood_pool is not None:
+            return self._bollywood_pool
+
+        today = datetime.date.today().isoformat()
+        exclude_ids = {530915, 522402, 381289, 804095, 57212, 296098, 87, 522518, 39254} # non-Indian productions
+
+        seen_ids = set()
+        pool = []
+        dirs = [self.raw_dir, self.alt_raw_dir]
+
+        for d in dirs:
+            if not os.path.exists(d):
+                continue
+            for p in glob.glob(os.path.join(d, "movie_*.json")):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        mid = data.get("id")
+                        if not mid or mid in seen_ids or mid in exclude_ids:
+                            continue
+
+                        lang = data.get("original_language", "")
+                        prod_countries = [c.get("name") for c in data.get("production_countries", []) if isinstance(c, dict)]
+                        is_indian = lang in ['hi', 'te', 'ta', 'ml', 'kn', 'bn', 'pa'] or 'India' in prod_countries
+                        if not is_indian:
+                            continue
+
+                        rdate = data.get("release_date", "")
+                        if not rdate or rdate > today:
+                            continue
+
+                        poster = data.get("poster_path")
+                        if not poster:
+                            continue
+
+                        seen_ids.add(mid)
+
+                        gids = data.get("genre_ids", [])
+                        if not gids and "genres" in data:
+                            gids = [g.get("id") for g in data.get("genres", []) if isinstance(g, dict) and g.get("id")]
+
+                        pool.append({
+                            "id": mid,
+                            "title": data.get("title", ""),
+                            "original_title": data.get("original_title", data.get("title", "")),
+                            "overview": data.get("overview", ""),
+                            "poster_path": poster,
+                            "backdrop_path": data.get("backdrop_path"),
+                            "release_date": rdate,
+                            "vote_average": float(data.get("vote_average") or 0.0),
+                            "vote_count": int(data.get("vote_count") or 0),
+                            "popularity": float(data.get("popularity") or 0.0),
+                            "genre_ids": gids,
+                            "status": "Released"
+                        })
+                except Exception:
+                    pass
+
+        self._bollywood_pool = pool
+        return pool
+
+    def get_bollywood_movies(
+        self,
+        page: int = 1,
+        page_size: int = 20,
+        genre_id: Optional[int] = None,
+        category: str = "popular"
+    ) -> dict:
+        pool = list(self._get_bollywood_pool())
+
+        if genre_id and int(genre_id) > 0:
+            gid = int(genre_id)
+            pool = [m for m in pool if gid in m.get("genre_ids", [])]
+
+        iconic_boost = {
+            579974: 1000.0, # RRR
+            864692: 950.0,  # Pathaan
+            19404: 900.0,   # DDLJ
+            20453: 890.0,   # 3 Idiots
+            360814: 880.0,  # Dangal
+            781732: 870.0,  # Animal
+            872906: 860.0,  # Jawan
+            1111873: 850.0, # Stree 2
+            348892: 840.0,  # Bajrangi Bhaijaan
+            297222: 830.0,  # PK
+            256040: 820.0,  # Baahubali 1
+            350312: 810.0,  # Baahubali 2
+            564147: 800.0,  # KGF 1
+            587412: 790.0,  # KGF 2
+            1029827: 780.0, # Drishyam 2
+            801688: 770.0,  # Kalki 2898-AD
+            7508: 760.0,    # Taare Zameen Par
+            4251: 750.0,    # Veer-Zaara
+            534780: 740.0,  # Andhadhun
+            15301: 730.0,   # Sholay
+            117691: 720.0,  # Gangs of Wasseypur
+        }
+
+        if category == "topRated":
+            pool.sort(key=lambda x: (x.get("vote_average", 0.0), x.get("vote_count", 0), x.get("popularity", 0.0)), reverse=True)
+        elif category in ("upcoming", "new_releases"):
+            pool.sort(key=lambda x: (x.get("release_date", ""), x.get("popularity", 0.0)), reverse=True)
+        elif category == "trending":
+            pool.sort(key=lambda x: (iconic_boost.get(x["id"], 0.0) * 0.7 + x.get("popularity", 0.0) * 0.3), reverse=True)
+        else:
+            pool.sort(key=lambda x: (iconic_boost.get(x["id"], 0.0) + x.get("popularity", 0.0)), reverse=True)
+
+        total = len(pool)
+        total_pages = max(1, math.ceil(total / page_size))
+        start = (page - 1) * page_size
+        end = start + page_size
+        results = pool[start:end]
+
+        return {
+            "page": page,
+            "results": results,
+            "total_pages": total_pages,
+            "total_results": total
+        }
+
     def discover_movies(
         self,
         page: int = 1,
@@ -215,7 +342,10 @@ class TMDBLiveService:
         category: str = "popular",
         media_type: str = "movie"
     ) -> dict:
-        """Discover movies with server-side genre, category, and sorting support."""
+        """Discover movies with server-side genre, category, sorting, and Bollywood support."""
+        if media_type == "bollywood":
+            return self.get_bollywood_movies(page=page, page_size=20, genre_id=genre_id, category=category)
+
         if genre_id and int(genre_id) > 0:
             gid = int(genre_id)
             sort_map = {
@@ -231,17 +361,35 @@ class TMDBLiveService:
             }
             if category == "topRated":
                 params["vote_count.gte"] = 30
-            return self._fetch_paginated_released("discover/movie", page=page, target_count=20, params=params)
-
-        # No genre filter -> use category endpoints
-        if category == "trending":
-            return self.get_trending(page=page)
+            res = self._fetch_paginated_released("discover/movie", page=page, target_count=20, params=params)
+        elif category == "trending":
+            res = self.get_trending(page=page)
         elif category == "topRated":
-            return self.get_top_rated(page=page)
+            res = self.get_top_rated(page=page)
         elif category == "upcoming":
-            return self.get_new_releases(page=page)
+            res = self.get_new_releases(page=page)
         else:
-            return self.get_popular(page=page)
+            res = self.get_popular(page=page)
+
+        # Blend top Bollywood movies into general results stream (2-3 per page)
+        try:
+            b_data = self.get_bollywood_movies(page=page, page_size=10, genre_id=genre_id, category=category)
+            b_movies = b_data.get("results", [])
+            if b_movies and res and "results" in res and res["results"]:
+                existing_ids = {m.get("id") for m in res["results"]}
+                insert_indices = [3, 9, 15]
+                b_idx = 0
+                for idx in insert_indices:
+                    if idx < len(res["results"]) and b_idx < len(b_movies):
+                        cand = b_movies[b_idx]
+                        b_idx += 1
+                        if cand.get("id") not in existing_ids:
+                            res["results"].insert(idx, cand)
+                            existing_ids.add(cand.get("id"))
+        except Exception as e:
+            logger.warning(f"Failed to blend Bollywood movies: {e}")
+
+        return res
 
     def get_movie_detail(self, movie_id: int) -> Optional[dict]:
         """Fetch full movie details with credits and proper genres, caching to disk."""
@@ -259,6 +407,22 @@ class TMDBLiveService:
                     if not has_general and has_credits:
                         return cached_data
                     is_stub = True
+            except Exception:
+                pass
+
+        # Check secondary alt raw dir
+        alt_path = os.path.join(self.alt_raw_dir, f"movie_{movie_id}.json")
+        if os.path.exists(alt_path):
+            try:
+                with open(alt_path, "r", encoding="utf-8") as f:
+                    alt_data = json.load(f)
+                    alt_genres = alt_data.get("genres", [])
+                    has_general = any(g.get("name") == "General" for g in alt_genres if isinstance(g, dict))
+                    has_credits = "credits" in alt_data and bool(alt_data.get("credits", {}).get("cast"))
+                    if not has_general and has_credits:
+                        return alt_data
+                    if cached_data is None:
+                        cached_data = alt_data
             except Exception:
                 pass
 

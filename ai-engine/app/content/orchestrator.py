@@ -12,6 +12,7 @@ from app.content.strategies.hidden_gems import HiddenGemsStrategy
 from app.content.strategies.trending import TrendingStrategy
 from app.content.strategies.new_releases import NewReleasesStrategy
 from app.content.strategies.explore import ExploreStrategy
+from app.content.strategies.bollywood import BollywoodStrategy
 
 class HomepageOrchestrator:
     def __init__(self):
@@ -19,6 +20,7 @@ class HomepageOrchestrator:
         self.strategies = {
             "continue_watching": ContinueWatchingStrategy(),
             "recommended": RecommendedForYouStrategy(),
+            "bollywood": BollywoodStrategy(),
             "because_you_liked": BecauseYouLikedStrategy(),
             "hidden_gems": HiddenGemsStrategy(),
             "trending": TrendingStrategy(),
@@ -97,7 +99,7 @@ class HomepageOrchestrator:
         hero_candidates = []
         seen_candidate_ids = set()
 
-        for strat in ["recommended", "because_you_liked", "hidden_gems", "trending", "new_releases"]:
+        for strat in ["recommended", "bollywood", "because_you_liked", "hidden_gems", "trending", "new_releases"]:
             for m in section_results_dict.get(strat, []):
                 mid = m.get("id")
                 if mid and mid not in seen_candidate_ids:

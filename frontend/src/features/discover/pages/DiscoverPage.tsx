@@ -42,6 +42,7 @@ const CATEGORY_OPTIONS = [
 // Media Type Options
 const TYPE_OPTIONS = [
   { id: 'movie', label: 'Movie' },
+  { id: 'bollywood', label: 'Bollywood' },
   { id: 'all', label: 'All Titles' },
 ] as const;
 
@@ -762,7 +763,7 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
 
 export const DiscoverPage: FC = () => {
   // Filter States
-  const [mediaType, setMediaType] = useState<'movie' | 'all'>('movie');
+  const [mediaType, setMediaType] = useState<'movie' | 'bollywood' | 'all'>('movie');
   const [category, setCategory] = useState<'popular' | 'trending' | 'topRated' | 'upcoming'>('popular');
   const [selectedGenreId, setSelectedGenreId] = useState<number>(0);
 

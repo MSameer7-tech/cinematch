@@ -29,10 +29,18 @@ HOMEPAGE_SECTIONS = [
         cache_type="personal"
     ),
     SectionConfig(
+        strategy_name="bollywood",
+        title="Bollywood Hits",
+        subtitle="Popular blockbusters and acclaimed Indian cinema",
+        priority=3,
+        enabled=True,
+        cache_type="static"
+    ),
+    SectionConfig(
         strategy_name="because_you_liked",
         title="Because You Liked",
         subtitle="Similar to your top picks",
-        priority=3,
+        priority=4,
         enabled=True,
         cache_type="personal"
     ),
@@ -40,7 +48,7 @@ HOMEPAGE_SECTIONS = [
         strategy_name="hidden_gems",
         title="Hidden Gems",
         subtitle="Under-the-radar high ratings",
-        priority=4,
+        priority=5,
         enabled=True,
         cache_type="static"
     ),
@@ -48,7 +56,7 @@ HOMEPAGE_SECTIONS = [
         strategy_name="trending",
         title="Trending Now",
         subtitle="Most popular choices today",
-        priority=5,
+        priority=6,
         enabled=True,
         cache_type="static"
     ),
@@ -56,7 +64,7 @@ HOMEPAGE_SECTIONS = [
         strategy_name="explore",
         title="Explore Something New",
         subtitle="Dive into adjacent genres",
-        priority=6,
+        priority=7,
         enabled=True,
         cache_type="personal"
     ),
@@ -64,7 +72,7 @@ HOMEPAGE_SECTIONS = [
         strategy_name="new_releases",
         title="New Releases",
         subtitle="Fresh cinema arrivals",
-        priority=7,
+        priority=8,
         enabled=True,
         cache_type="static"
     )
