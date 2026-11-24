@@ -716,7 +716,6 @@
   color: #f8fafc;
   font-size: 15px;
   line-height: 1.65;
-  white-space: pre-line;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
   max-width: 92%;
   width: fit-content;
@@ -726,6 +725,54 @@
 .ai-assistant-bubble:hover {
   border-color: rgba(168, 85, 247, 0.35);
   box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55);
+}
+
+/* Assistant Message Typography & Clean Formatting */
+.ai-formatted-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-bubble-paragraph {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.68;
+  color: #f1f5f9;
+  letter-spacing: -0.1px;
+}
+
+.ai-highlight-title {
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.15px;
+  background: rgba(168, 85, 247, 0.14);
+  padding: 1px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(168, 85, 247, 0.24);
+  display: inline-block;
+  margin: 0 2px;
+  vertical-align: baseline;
+}
+
+.ai-bubble-bullet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #f1f5f9;
+}
+
+.ai-bullet-dot {
+  color: #c084fc;
+  font-size: 16px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.ai-bullet-text {
+  flex: 1;
 }
 
 /* Horizontal Movie Recommendations Grid / Cards */

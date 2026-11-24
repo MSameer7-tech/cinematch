@@ -142,6 +142,11 @@ class ConversationService:
         
         reply = llm_client.chat(messages=explanation_messages, temperature=0.7)
         
+        # Clean up any rogue em-dashes, double hyphens, or awkward punctuation
+        if reply:
+            reply = reply.replace("—", ": ").replace(" -- ", ". ").replace("--", ", ")
+            reply = reply.replace(": :", ":")
+        
         # 5. Update Memory
         memory.append({"role": "user", "content": message})
         memory.append({"role": "assistant", "content": reply})

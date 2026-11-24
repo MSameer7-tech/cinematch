@@ -34,6 +34,67 @@ const REFERENCE_SUGGESTION_PILLS = [
   { label: 'Something spooky', query: 'Suggest something spooky and eerie for tonight with great atmosphere' },
 ];
 
+/**
+ * Formats assistant text cleanly:
+ * - Highlights **Movie Titles** with aesthetic cinephile badges
+ * - Cleans up excess em-dashes and rogue hyphens
+ * - Separates paragraphs and bullet lists with proper line-height
+ */
+const FormattedMessageContent: React.FC<{ content: string }> = ({ content }) => {
+  if (!content) return null;
+
+  // 1. Sanitize rogue em-dashes and double hyphens
+  const cleaned = content
+    .replace(/(\*\*[^*]+\*\*)—/g, '$1: ')
+    .replace(/—/g, ': ')
+    .replace(/\s*--\s*/g, '. ')
+    .replace(/:\s*:/g, ':');
+
+  // 2. Split into distinct paragraphs or lines
+  const paragraphs = cleaned
+    .split(/\n\s*\n|\n/)
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  const renderInline = (text: string) => {
+    // Split by bold markdown **title**
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, idx) => {
+      if (idx % 2 === 1) {
+        return (
+          <strong key={idx} className="ai-highlight-title">
+            {part}
+          </strong>
+        );
+      }
+      return part;
+    });
+  };
+
+  return (
+    <div className="ai-formatted-text">
+      {paragraphs.map((para, pIdx) => {
+        // Check if paragraph is a bullet list item
+        if (para.startsWith('• ') || para.startsWith('- ') || para.startsWith('* ')) {
+          const itemText = para.replace(/^[•\-*]\s*/, '');
+          return (
+            <div key={pIdx} className="ai-bubble-bullet-item">
+              <span className="ai-bullet-dot">•</span>
+              <span className="ai-bullet-text">{renderInline(itemText)}</span>
+            </div>
+          );
+        }
+
+        return (
+          <p key={pIdx} className="ai-bubble-paragraph">
+            {renderInline(para)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
   const navigate = useNavigate();
   const { 
@@ -264,7 +325,7 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
                       <div className="ai-assistant-content">
                         {/* Response Text inside Frosted Chat Card / Bubble */}
                         <div className="ai-assistant-bubble">
-                          {msg.content}
+                          <FormattedMessageContent content={msg.content} />
                         </div>
 
                         {/* Movie Recommendation Cards Grid */}
