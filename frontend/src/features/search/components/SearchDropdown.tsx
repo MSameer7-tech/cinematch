@@ -4,7 +4,7 @@ import { useSuggestions } from '../hooks/useSuggestions';
 import { historyService } from '../services/history.service';
 import { analyticsService } from '../services/analytics.service';
 import { useAuth } from '../../auth/hooks/useAuth';
-import { Search, X, TrendingUp, Sparkles, History, Film, User, Tag, Clapperboard, Folder } from 'lucide-react';
+import { Search, X, TrendingUp, History, Film, User, Tag, Clapperboard, Folder } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface SearchDropdownProps {
@@ -220,56 +220,6 @@ export const SearchDropdown: FC<SearchDropdownProps> = ({ onClose, userTasteProf
               ))}
             </div>
           </div>
-
-          {/* Suggested Searches Section */}
-          <div>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px', 
-              color: '#94a3b8', 
-              marginBottom: '10px',
-              padding: '0 4px'
-            }}>
-              <Sparkles size={14} color="#c084fc" />
-              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Suggested For You
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {historyService.getSuggestedSearches(userTasteProfile).map((suggested) => (
-                <button
-                  key={suggested}
-                  onClick={() => handleSelectQuery(suggested, 'suggested')}
-                  style={{
-                    padding: '7px 14px',
-                    backgroundColor: 'rgba(168, 85, 247, 0.08)',
-                    border: '1px solid rgba(168, 85, 247, 0.22)',
-                    borderRadius: '20px',
-                    fontSize: '12.5px',
-                    fontWeight: 500,
-                    color: '#e2e8f0',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.18)';
-                    e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.45)';
-                    e.currentTarget.style.color = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.08)';
-                    e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.22)';
-                    e.currentTarget.style.color = '#e2e8f0';
-                  }}
-                >
-                  {suggested}
-                </button>
-              ))}
-            </div>
-          </div>
-
         </div>
       ) : loading ? (
         <div style={{ padding: '32px 0', textAlign: 'center', color: '#94a3b8' }}>
