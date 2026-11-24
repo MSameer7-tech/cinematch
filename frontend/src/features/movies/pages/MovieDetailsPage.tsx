@@ -27,7 +27,8 @@ import {
   Camera, 
   PenTool, 
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Star
 } from 'lucide-react';
 import './MovieDetails.css';
 
@@ -182,11 +183,7 @@ export const MovieDetailsPage: FC = () => {
                 </div>
               </div>
 
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
-                gap: '20px' 
-              }}>
+              <div className="videos-grid-balanced">
                 {youtubeVideos.slice(0, 4).map((vid) => (
                   <div 
                     key={vid.id}
@@ -204,7 +201,7 @@ export const MovieDetailsPage: FC = () => {
                         loading="lazy"
                       />
                       <div className="video-play-badge">
-                        <Play size={18} fill="#ffffff" style={{ marginLeft: '2px' }} />
+                        <Play size={17} fill="#ffffff" style={{ marginLeft: '2px' }} />
                       </div>
                       <div style={{
                         position: 'absolute',
@@ -239,28 +236,57 @@ export const MovieDetailsPage: FC = () => {
               </div>
             </section>
           )}
-
-          {/* Similar Movies Section */}
-          {isSimilarLoading ? (
-            <MovieRowSkeleton />
-          ) : similarMovies?.results && similarMovies.results.length > 0 ? (
-            <section style={{ margin: '10px 0' }}>
-              <MovieCarousel 
-                title="More Like This" 
-                subtitle="Titles with similar themes, tone, and storytelling"
-                movies={similarMovies.results} 
-              />
-            </section>
-          ) : null}
         </div>
 
         {/* Right Column / Facts Sidebar */}
         {movie && (
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {/* Quick Movie Information Card */}
+          <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* 1. Community Reception Card */}
             <div className="movie-facts-card">
               <h3 className="facts-card-title">
-                <Info size={18} color="#c084fc" />
+                <TrendingUp size={17} color="#a78bfa" />
+                <span>Audience Reception</span>
+              </h3>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                    <span style={{ fontSize: '28px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                      {movie.voteAverage > 0 ? movie.voteAverage.toFixed(1) : 'NR'}
+                    </span>
+                    <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.45)', fontWeight: 500 }}>/ 10</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12.5px', color: '#fbbf24', fontWeight: 600 }}>
+                    <Star size={13} fill="currentColor" />
+                    <span>{movie.voteAverage > 0 ? `${Math.round(movie.voteAverage * 10)}% Approval` : 'No reviews'}</span>
+                  </div>
+                </div>
+
+                {/* Visual score bar */}
+                <div style={{ width: '100%', height: '5px', borderRadius: '999px', backgroundColor: 'rgba(255, 255, 255, 0.08)', overflow: 'hidden' }}>
+                  <div 
+                    style={{ 
+                      width: `${Math.min(100, Math.round(movie.voteAverage * 10))}%`, 
+                      height: '100%', 
+                      borderRadius: '999px', 
+                      background: 'linear-gradient(90deg, #7c3aed, #a855f7)' 
+                    }} 
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', paddingTop: '2px' }}>
+                  <span>{movie.voteCount > 0 ? `${movie.voteCount.toLocaleString()} Verified Votes` : 'Unrated'}</span>
+                  {movie.popularity > 0 && (
+                    <span>Popularity {Math.round(movie.popularity)}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Quick Movie Information Card */}
+            <div className="movie-facts-card">
+              <h3 className="facts-card-title">
+                <Info size={17} color="#a78bfa" />
                 <span>Movie Information</span>
               </h3>
 
@@ -268,7 +294,7 @@ export const MovieDetailsPage: FC = () => {
               {crewInfo.director && (
                 <div className="fact-row">
                   <span className="fact-label">Director</span>
-                  <span className="fact-value" style={{ color: '#c084fc' }}>{crewInfo.director}</span>
+                  <span className="fact-value">{crewInfo.director}</span>
                 </div>
               )}
 
@@ -299,8 +325,8 @@ export const MovieDetailsPage: FC = () => {
               {/* Status */}
               <div className="fact-row">
                 <span className="fact-label">Status</span>
-                <span className="fact-value" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#34d399' }}>
-                  <CheckCircle2 size={14} />
+                <span className="fact-value" style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
                   <span>{movie.status || 'Released'}</span>
                 </span>
               </div>
@@ -334,7 +360,7 @@ export const MovieDetailsPage: FC = () => {
               {/* Revenue */}
               <div className="fact-row">
                 <span className="fact-label">Box Office Revenue</span>
-                <span className="fact-value" style={{ color: movie.revenue > 0 ? '#fbbf24' : '#f1f5f9' }}>
+                <span className="fact-value">
                   {formatCurrency(movie.revenue)}
                 </span>
               </div>
@@ -348,11 +374,11 @@ export const MovieDetailsPage: FC = () => {
               )}
             </div>
 
-            {/* Production Studios Card */}
+            {/* 3. Production Studios Card */}
             {movie.productionCompanies && movie.productionCompanies.length > 0 && (
               <div className="movie-facts-card">
                 <h3 className="facts-card-title">
-                  <Building2 size={18} color="#c084fc" />
+                  <Building2 size={17} color="#a78bfa" />
                   <span>Production Studios</span>
                 </h3>
                 <div className="fact-pill-container">
@@ -367,6 +393,21 @@ export const MovieDetailsPage: FC = () => {
           </aside>
         )}
       </div>
+
+      {/* 3. Full-Width Similar Movies Section */}
+      {isSimilarLoading ? (
+        <div className="movie-details-shelf-full">
+          <MovieRowSkeleton />
+        </div>
+      ) : similarMovies?.results && similarMovies.results.length > 0 ? (
+        <section className="movie-details-shelf-full">
+          <MovieCarousel 
+            title="More Like This" 
+            subtitle="Titles with similar themes, tone, and storytelling"
+            movies={similarMovies.results} 
+          />
+        </section>
+      ) : null}
 
       {/* Video Preview Modal */}
       {selectedVideoKey && movie && (

@@ -85,9 +85,9 @@ export const MovieHero: FC<MovieHeroProps> = ({ movie, videos, directorName }) =
 
             {/* Director Credit if available */}
             {directorName && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#c084fc', fontSize: '14.5px', fontWeight: 600 }}>
-                <Film size={16} />
-                <span>Directed by {directorName}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '14.5px', fontWeight: 500 }}>
+                <Film size={15} color="#94a3b8" />
+                <span>Directed by <strong style={{ color: '#ffffff', fontWeight: 600 }}>{directorName}</strong></span>
               </div>
             )}
 
@@ -95,10 +95,10 @@ export const MovieHero: FC<MovieHeroProps> = ({ movie, videos, directorName }) =
             <div className="movie-meta-row">
               {/* TMDB Rating */}
               <div className="meta-badge meta-badge-rating">
-                <Star size={15} fill="currentColor" />
+                <Star size={14} fill="#fbbf24" color="#fbbf24" />
                 <span>{movie.voteAverage > 0 ? movie.voteAverage.toFixed(1) : 'NR'}</span>
                 {movie.voteCount > 0 && (
-                  <span style={{ fontSize: '11.5px', opacity: 0.85, fontWeight: 500 }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.45)', fontWeight: 500 }}>
                     {formatVoteCount(movie.voteCount)}
                   </span>
                 )}
@@ -106,21 +106,15 @@ export const MovieHero: FC<MovieHeroProps> = ({ movie, videos, directorName }) =
               
               {/* Year */}
               <div className="meta-badge">
-                <Calendar size={14} color="#94a3b8" />
+                <Calendar size={13} color="#94a3b8" />
                 <span>{movie.releaseYear || 'N/A'}</span>
               </div>
               
               {/* Runtime */}
-              <div className="meta-badge">
-                <Clock size={14} color="#94a3b8" />
-                <span>{formatRuntime(movie.runtime)}</span>
-              </div>
-
-              {/* Status */}
-              {movie.status && (
-                <div className="meta-badge" style={{ color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.3)' }}>
-                  <CheckCircle2 size={13} />
-                  <span>{movie.status}</span>
+              {movie.runtime && (
+                <div className="meta-badge">
+                  <Clock size={13} color="#94a3b8" />
+                  <span>{formatRuntime(movie.runtime)}</span>
                 </div>
               )}
 
@@ -151,27 +145,17 @@ export const MovieHero: FC<MovieHeroProps> = ({ movie, videos, directorName }) =
                 disabled={!trailer}
                 title={trailer ? 'Watch official trailer' : 'No trailer available'}
               >
-                <div style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Play size={13} fill="#ffffff" style={{ marginLeft: '2px' }} />
-                </div>
+                <Play size={15} fill="#ffffff" />
                 <span>{trailer ? 'Watch Trailer' : 'No Trailer Available'}</span>
               </button>
 
               {/* Rate Movie */}
               <button 
-                className="btn-rate-premium"
+                className={`btn-rate-premium ${existingRating ? 'btn-rate-active' : ''}`}
                 onClick={() => setIsRatingOpen(true)}
                 title="Rate this movie"
               >
-                <Star size={16} fill="currentColor" />
+                <Star size={16} fill={existingRating ? "#fbbf24" : "none"} color={existingRating ? "#fbbf24" : "#e2e8f0"} />
                 <span>
                   {existingRating ? `Rated ${existingRating.rating}/10` : 'Rate Movie'}
                 </span>

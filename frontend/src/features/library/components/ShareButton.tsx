@@ -24,8 +24,8 @@ export const ShareButton: FC<ShareButtonProps> = ({ movieId, size = 'medium' }) 
   };
 
   const isLarge = size === 'large';
-  const dimension = isLarge ? '48px' : size === 'small' ? '36px' : '40px';
-  const iconSize = isLarge ? 20 : 18;
+  const dimension = isLarge ? '46px' : size === 'small' ? '36px' : '40px';
+  const iconSize = isLarge ? 19 : 17;
 
   return (
     <motion.button
@@ -35,12 +35,12 @@ export const ShareButton: FC<ShareButtonProps> = ({ movieId, size = 'medium' }) 
       style={{
         width: dimension,
         height: dimension,
-        borderRadius: isLarge ? '14px' : '50%',
-        backgroundColor: copied ? 'rgba(16, 185, 129, 0.22)' : 'rgba(255, 255, 255, 0.08)',
+        borderRadius: isLarge ? '12px' : '50%',
+        backgroundColor: copied ? 'rgba(16, 185, 129, 0.18)' : 'rgba(255, 255, 255, 0.06)',
         backdropFilter: 'blur(12px)',
-        color: copied ? '#34d399' : '#fff',
-        border: copied ? '1.5px solid rgba(16, 185, 129, 0.65)' : '1px solid rgba(255, 255, 255, 0.16)',
-        boxShadow: copied ? '0 0 20px rgba(16, 185, 129, 0.35)' : 'none',
+        color: copied ? '#6ee7b7' : '#e2e8f0',
+        border: copied ? '1px solid rgba(16, 185, 129, 0.45)' : '1px solid rgba(255, 255, 255, 0.12)',
+        boxShadow: 'none',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -48,13 +48,13 @@ export const ShareButton: FC<ShareButtonProps> = ({ movieId, size = 'medium' }) 
         transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
       whileHover={{ 
-        scale: 1.05, 
-        backgroundColor: copied ? 'rgba(16, 185, 129, 0.32)' : 'rgba(255, 255, 255, 0.15)',
-        borderColor: copied ? '#10b981' : 'rgba(255, 255, 255, 0.35)'
+        scale: 1.04, 
+        backgroundColor: copied ? 'rgba(16, 185, 129, 0.26)' : 'rgba(255, 255, 255, 0.12)',
+        borderColor: copied ? 'rgba(16, 185, 129, 0.6)' : 'rgba(255, 255, 255, 0.25)'
       }}
-      whileTap={{ scale: 0.92 }}
+      whileTap={{ scale: 0.94 }}
     >
-      {copied ? <Check size={iconSize} strokeWidth={2.5} /> : <Share2 size={iconSize} strokeWidth={2} />}
+      {copied ? <Check size={iconSize} strokeWidth={2.4} /> : <Share2 size={iconSize} strokeWidth={2} />}
     </motion.button>
   );
 };

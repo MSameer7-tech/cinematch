@@ -13,7 +13,7 @@ interface MovieActionsProps {
 
 export const MovieActions: FC<MovieActionsProps> = ({ movieId, showInfo = true, size = 'medium' }) => {
   const isLarge = size === 'large';
-  const dimension = isLarge ? '48px' : size === 'small' ? '36px' : '40px';
+  const dimension = isLarge ? '46px' : size === 'small' ? '36px' : '40px';
 
   return (
     <div style={{ display: 'flex', gap: isLarge ? '10px' : '8px', alignItems: 'center' }}>
@@ -31,11 +31,11 @@ export const MovieActions: FC<MovieActionsProps> = ({ movieId, showInfo = true, 
           style={{
             width: dimension,
             height: dimension,
-            borderRadius: isLarge ? '14px' : '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            borderRadius: isLarge ? '12px' : '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.06)',
             backdropFilter: 'blur(12px)',
-            color: '#fff',
-            border: '1px solid rgba(255, 255, 255, 0.16)',
+            color: '#e2e8f0',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -43,13 +43,13 @@ export const MovieActions: FC<MovieActionsProps> = ({ movieId, showInfo = true, 
             transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
           whileHover={{ 
-            scale: 1.05, 
-            backgroundColor: 'rgba(255, 255, 255, 0.16)',
-            borderColor: 'rgba(255, 255, 255, 0.35)'
+            scale: 1.04, 
+            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+            borderColor: 'rgba(255, 255, 255, 0.25)'
           }}
-          whileTap={{ scale: 0.92 }}
+          whileTap={{ scale: 0.94 }}
         >
-          <Info size={isLarge ? 20 : 18} />
+          <Info size={isLarge ? 19 : 17} />
         </motion.button>
       )}
     </div>
