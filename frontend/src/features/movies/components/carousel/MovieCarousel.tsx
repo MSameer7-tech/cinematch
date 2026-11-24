@@ -1,4 +1,4 @@
-import { type FC, useRef, useState, useEffect, useCallback } from 'react';
+import { type FC, useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { MovieCard } from '../card/MovieCard';
