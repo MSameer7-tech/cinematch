@@ -572,3 +572,127 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
 }
+
+/* ==========================================================================
+   Mobile Library Navigation Dropdown Styles
+   Hidden on desktop; visible only on mobile screens (<= 768px)
+   ========================================================================== */
+.mobile-library-dropdown-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-library-dropdown-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 14px;
+    z-index: 40;
+  }
+
+  .mobile-library-dropdown-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 16px;
+    background: rgba(25, 26, 40, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .mobile-library-dropdown-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mobile-library-dropdown-icon {
+    color: #a855f7;
+  }
+
+  .mobile-library-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: rgba(18, 19, 30, 0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 100;
+  }
+
+  .mobile-library-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #cbd5e1;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+
+  .mobile-library-dropdown-item.active {
+    background: rgba(168, 85, 247, 0.2);
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  /* Issue 5: Hide horizontal filter tabs on mobile */
+  .watchlist-tabs {
+    display: none !important;
+  }
+
+  /* Issue 5: Remove "Load Sample Library" on mobile */
+  .watchlist-load-sample-btn,
+  .watchlist-secondary-cta-btn {
+    display: none !important;
+  }
+
+  /* Refined Mobile Layout for Library Empty State */
+  .watchlist-empty-container {
+    padding: 36px 16px;
+    margin: 20px 0;
+    border-radius: 18px;
+  }
+
+  .watchlist-empty-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+
+  .watchlist-empty-title {
+    font-size: 19px;
+  }
+
+  .watchlist-empty-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .watchlist-page-container {
+    padding: 6px 14px 80px 14px !important;
+  }
+}

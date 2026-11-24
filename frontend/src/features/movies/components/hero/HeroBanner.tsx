@@ -101,6 +101,35 @@ export const HeroBanner: FC<HeroBannerProps> = ({
     });
   };
 
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  // Touch Swipe Handlers for mobile (Issue 1)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchEndX(null);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return;
+    const distance = touchStartX - touchEndX;
+    const minSwipeDistance = 45; // px
+
+    if (distance > minSwipeDistance) {
+      // Swiped Left -> Next Movie
+      handleNext();
+    } else if (distance < -minSwipeDistance) {
+      // Swiped Right -> Prev Movie
+      handlePrev();
+    }
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
+
   if (!currentMovie) return null;
 
   // Derive genres display string
@@ -118,6 +147,9 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       className="hero-banner-root"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Background Backdrop Image with Crossfade */}
       <AnimatePresence mode="wait">
@@ -135,6 +167,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
         >
           {/* Unified High-Resolution Full-Bleed Backdrop */}
           <div
+            className="hero-banner-backdrop-img"
             style={{
               position: 'absolute',
               inset: 0,

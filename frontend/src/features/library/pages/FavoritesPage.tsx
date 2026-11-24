@@ -26,6 +26,7 @@ import { IMAGE_SIZES } from '../../movies/constants/images';
 import { TrailerModal } from '../../movies/components/details/TrailerModal';
 import { HeroSkeleton } from '../../../components/loading/HeroSkeleton';
 import type { Movie } from '../../movies/types/movie.types';
+import { MobileLibraryDropdown } from '../components/MobileLibraryDropdown';
 
 import './WatchlistPage.css';
 
@@ -220,6 +221,9 @@ export const FavoritesPage: FC = () => {
 
   return (
     <div className="watchlist-page-container">
+      {/* Mobile Library Section Dropdown (Issue 5: select Watchlist, Favorites, Ratings) */}
+      <MobileLibraryDropdown currentSection="favorites" />
+
       {/* Top Filter and Controls Bar */}
       <div className="watchlist-header">
         <div className="watchlist-filters-group">

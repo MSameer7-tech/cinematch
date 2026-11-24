@@ -24,6 +24,7 @@ import { TrailerModal } from '../../movies/components/details/TrailerModal';
 import { RatingDialog } from '../components/RatingDialog';
 import { HeroSkeleton } from '../../../components/loading/HeroSkeleton';
 import type { Movie } from '../../movies/types/movie.types';
+import { MobileLibraryDropdown } from '../components/MobileLibraryDropdown';
 
 import './WatchlistPage.css';
 
@@ -166,6 +167,9 @@ export const RatingsPage: FC = () => {
 
   return (
     <div className="watchlist-page-container">
+      {/* Mobile Library Section Dropdown (Issue 5: select Watchlist, Favorites, Ratings) */}
+      <MobileLibraryDropdown currentSection="ratings" />
+
       {/* Header with Controls & Filter Tabs */}
       <div className="watchlist-header">
         <div className="watchlist-filters-group">

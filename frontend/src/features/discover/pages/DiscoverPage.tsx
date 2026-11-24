@@ -103,9 +103,17 @@ function FilterDropdown<T extends string | number>({
   }, [isOpen]);
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
+    <div
+      ref={dropdownRef}
+      className="discover-filter-dropdown-container"
+      style={{
+        position: 'relative',
+        zIndex: isOpen ? 70 : 1,
+      }}
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
+        className="discover-filter-btn"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -762,6 +770,8 @@ const MovieInspector: FC<MovieInspectorProps> = ({ movie, onPlayTrailer, onSelec
 };
 
 export const DiscoverPage: FC = () => {
+  const navigate = useNavigate();
+
   // Filter States
   const [mediaType, setMediaType] = useState<'movie' | 'bollywood' | 'all'>('movie');
   const [category, setCategory] = useState<'popular' | 'trending' | 'topRated' | 'upcoming'>('popular');
@@ -848,6 +858,14 @@ export const DiscoverPage: FC = () => {
     setIsTrailerOpen(true);
   };
 
+  const handleMovieClick = (movieId: number) => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      navigate(`/movie/${movieId}`);
+    } else {
+      setSelectedMovieId(movieId);
+    }
+  };
+
   // Automatically backfill if the initial batch has fewer than 20 items (to ensure all 5 columns in every row are filled)
   useEffect(() => {
     if (!isLoading && allMovies.length > 0 && allMovies.length < 20 && hasMore && !isLoadingMore) {
@@ -899,14 +917,16 @@ export const DiscoverPage: FC = () => {
         <div className="discover-main-content">
           {/* Top Filter Bar: Format, Category, Genre */}
           <div
+            className="discover-filter-bar"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '14px',
               minHeight: '44px',
-              height: '44px',
               marginBottom: '20px',
               flexWrap: 'wrap',
+              position: 'relative',
+              zIndex: 50,
             }}
           >
             {/* Dropdown 1: Type */}
@@ -1009,7 +1029,7 @@ export const DiscoverPage: FC = () => {
                   return (
                     <div
                       key={movie.id}
-                      onClick={() => setSelectedMovieId(movie.id)}
+                      onClick={() => handleMovieClick(movie.id)}
                       style={{
                         display: 'flex',
                         flexDirection: 'column',

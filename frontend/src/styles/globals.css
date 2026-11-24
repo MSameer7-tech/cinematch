@@ -877,6 +877,22 @@ body {
     gap: 10px !important;
   }
 
+  .discover-filter-bar {
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .discover-filter-btn {
+    padding: 7px 12px !important;
+    font-size: 13px !important;
+    border-radius: 18px !important;
+    gap: 6px !important;
+  }
+
+  .discover-inspector-wrapper {
+    display: none !important;
+  }
+
   .watchlist-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 10px !important;

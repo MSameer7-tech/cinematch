@@ -122,32 +122,38 @@
    ========================================================================== */
 @media (max-width: 768px) {
   .hero-banner-root {
-    height: 72vh;
-    min-height: 520px;
-    max-height: 600px;
+    height: 62vh;
+    min-height: 440px;
+    max-height: 520px;
+    touch-action: pan-y;
+  }
+
+  .hero-banner-backdrop-img {
+    background-position: center top !important;
+    background-size: cover !important;
   }
 
   .hero-banner-content {
     left: 16px;
     right: 16px;
-    bottom: 24px;
+    bottom: 20px;
     width: calc(100% - 32px);
     min-width: 0;
     max-width: 100%;
-    gap: 12px;
+    gap: 10px;
   }
 
   .hero-banner-logo-wrapper {
-    max-height: 65px;
-    max-width: min(280px, 80vw);
+    max-height: 58px;
+    max-width: min(260px, 80vw);
   }
 
   .hero-banner-logo-img {
-    max-height: 60px;
+    max-height: 54px;
   }
 
   .hero-banner-title {
-    font-size: 26px;
+    font-size: 24px;
     line-height: 1.15;
   }
 
@@ -172,26 +178,22 @@
   }
 
   .hero-banner-btn-trailer {
-    padding: 9px 18px !important;
-    font-size: 13px !important;
-  }
-
-  .hero-banner-btn-circle {
-    width: 38px !important;
-    height: 38px !important;
-  }
-
-  .hero-banner-btn-more {
-    padding: 9px 14px !important;
+    padding: 8px 16px !important;
     font-size: 12.5px !important;
   }
 
+  .hero-banner-btn-circle {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .hero-banner-btn-more {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+
+  /* Issue 1: Remove play/pause/arrow slider buttons for mobile mode */
   .hero-banner-slider-strip {
-    bottom: auto;
-    top: calc(var(--navbar-height, 60px) + 12px);
-    right: 16px;
-    padding: 4px 10px;
-    gap: 8px;
-    background-color: rgba(15, 15, 25, 0.85);
+    display: none !important;
   }
 }
