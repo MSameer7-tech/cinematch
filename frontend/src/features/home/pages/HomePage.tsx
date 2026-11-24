@@ -95,7 +95,7 @@ export const HomePage: FC = () => {
 
   if (isLoading) {
     return (
-      <div className="home-page" style={{ paddingBottom: '60px' }}>
+      <div className="home-page" style={{ paddingBottom: '60px', overflowX: 'hidden', maxWidth: '100vw' }}>
         <HeroSkeleton />
         <MovieRowSkeleton />
         <MovieRowSkeleton />
@@ -112,7 +112,7 @@ export const HomePage: FC = () => {
   }
 
   return (
-    <div className="home-page" style={{ paddingBottom: '60px' }}>
+    <div className="home-page" style={{ paddingBottom: '60px', overflowX: 'hidden', maxWidth: '100vw' }}>
       {/* 1. Dynamic Rotating Hero Banner */}
       {heroMovies.length > 0 && (
         <HeroBanner movies={heroMovies} intervalMs={6000} />

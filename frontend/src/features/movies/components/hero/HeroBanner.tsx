@@ -117,9 +117,10 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       style={{
         position: 'relative',
         width: '100%',
-        height: '68vh',
-        minHeight: '500px',
-        maxHeight: '660px',
+        maxWidth: '100vw',
+        height: '82vh',
+        minHeight: '640px',
+        maxHeight: '840px',
         overflow: 'hidden',
         backgroundColor: '#07070D',
       }}
@@ -147,19 +148,11 @@ export const HeroBanner: FC<HeroBannerProps> = ({
               inset: 0,
               backgroundImage: `url(${getBackdropUrl(currentMovie.backdropPath || (currentMovie as any).backdrop_path, 'original')})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center 20%',
+              backgroundPosition: 'center 10%',
             }}
           />
 
-          {/* 1. Left-to-Right Horizontal Vignette: protects text legibility, leaves characters clear on right */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to right, rgba(7, 7, 13, 0.98) 0%, rgba(7, 7, 13, 0.8) 35%, rgba(7, 7, 13, 0.25) 65%, transparent 100%)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* 2. Top-to-Bottom Subtle Shade: under transparent top navbar */}
+          {/* 1. Top-to-Bottom Subtle Shade: under transparent top navbar */}
           <div style={{
             position: 'absolute',
             top: 0,
@@ -183,7 +176,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       {/* Main Content Hero Box */}
       <div style={{
         position: 'absolute',
-        bottom: '36px',
+        bottom: '48px',
         left: 'calc(var(--sidebar-width, 76px) + 36px)',
         width: '46%',
         minWidth: '380px',
@@ -261,7 +254,8 @@ export const HeroBanner: FC<HeroBannerProps> = ({
               gap: '12px', 
               fontSize: '13.5px', 
               fontWeight: 500,
-              color: 'rgba(255, 255, 255, 0.85)'
+              color: 'rgba(255, 255, 255, 0.95)',
+              textShadow: '0 2px 10px rgba(0, 0, 0, 0.9)',
             }}>
               <span style={{ fontWeight: 600 }}>{currentMovie.releaseYear}</span>
               <span style={{ opacity: 0.4 }}>•</span>
@@ -458,92 +452,11 @@ export const HeroBanner: FC<HeroBannerProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Floating Left / Right Navigation Arrows */}
-      {items.length > 1 && (
-        <>
-          <button
-            onClick={handlePrev}
-            aria-label="Previous slide"
-            style={{
-              position: 'absolute',
-              left: 'calc(var(--sidebar-width, 76px) + 16px)',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '42px',
-              height: '42px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(7, 7, 13, 0.55)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.14)',
-              color: 'rgba(255, 255, 255, 0.85)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 30,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(124, 58, 237, 0.5)';
-              e.currentTarget.style.color = '#fff';
-              e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(7, 7, 13, 0.55)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
-              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-            }}
-          >
-            <ChevronLeft size={22} />
-          </button>
-
-          <button
-            onClick={handleNext}
-            aria-label="Next slide"
-            style={{
-              position: 'absolute',
-              right: '24px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '42px',
-              height: '42px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(7, 7, 13, 0.55)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.14)',
-              color: 'rgba(255, 255, 255, 0.85)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 30,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(124, 58, 237, 0.5)';
-              e.currentTarget.style.color = '#fff';
-              e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(7, 7, 13, 0.55)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.85)';
-              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-            }}
-          >
-            <ChevronRight size={22} />
-          </button>
-        </>
-      )}
-
       {/* Segmented Slider Strip (Bottom-Right Capsule) */}
       {items.length > 1 && (
         <div style={{
           position: 'absolute',
-          bottom: '32px',
+          bottom: '44px',
           right: '48px',
           display: 'flex',
           alignItems: 'center',

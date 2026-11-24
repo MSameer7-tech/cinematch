@@ -195,7 +195,7 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
   if (!deduplicatedMovies?.length) return null;
 
   return (
-    <section style={{ margin: '40px 0', padding: '0 48px', position: 'relative' }} className="movie-carousel-section">
+    <section style={{ margin: '32px 0', padding: '0 48px', position: 'relative', overflow: 'hidden', maxWidth: '100vw', boxSizing: 'border-box' }} className="movie-carousel-section">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <h2 style={{ 
           fontSize: '18px', 
@@ -290,7 +290,7 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
         className="hide-scrollbar"
         style={{ 
           display: 'flex', 
-          gap: '20px', 
+          gap: '16px', 
           overflowX: 'auto',
           scrollBehavior: 'smooth',
           paddingBottom: '20px',
@@ -298,7 +298,7 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
         }}
       >
         {deduplicatedMovies.map((movie, index) => (
-          <div key={movie.id} style={{ flex: '0 0 200px', width: '200px', minWidth: 0 }}>
+          <div key={movie.id} style={{ flex: '0 0 160px', width: '160px', minWidth: 0 }}>
             <TrackableMovieCard 
               movie={movie}
               position={index + 1}
@@ -327,9 +327,9 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
         {/* Skeletons loader */}
         {isFetchingNextPage && (
           <>
-            <div style={{ flex: '0 0 200px', width: '200px', minWidth: 0 }}><MovieCardSkeleton /></div>
-            <div style={{ flex: '0 0 200px', width: '200px', minWidth: 0 }}><MovieCardSkeleton /></div>
-            <div style={{ flex: '0 0 200px', width: '200px', minWidth: 0 }}><MovieCardSkeleton /></div>
+            <div style={{ flex: '0 0 160px', width: '160px', minWidth: 0 }}><MovieCardSkeleton /></div>
+            <div style={{ flex: '0 0 160px', width: '160px', minWidth: 0 }}><MovieCardSkeleton /></div>
+            <div style={{ flex: '0 0 160px', width: '160px', minWidth: 0 }}><MovieCardSkeleton /></div>
           </>
         )}
 
@@ -337,8 +337,8 @@ export const MovieCarousel: FC<MovieCarouselProps> = ({
         {isError && (
           <div 
             style={{ 
-              flex: '0 0 200px', 
-              width: '200px', 
+              flex: '0 0 160px', 
+              width: '160px', 
               aspectRatio: '2/3',
               borderRadius: 'var(--radius-md)',
               border: '1px dashed rgba(239, 68, 68, 0.3)',
