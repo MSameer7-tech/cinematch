@@ -1,0 +1,84 @@
+/* ==========================================================================
+   Mobile Bottom Navigation Bar
+   Visible strictly on mobile screens (max-width: 768px).
+   Completely hidden on desktop screens.
+   ========================================================================== */
+
+.mobile-navbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-navbar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(7, 7, 13, 0.94);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 1000;
+    align-items: center;
+    justify-content: space-around;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
+    user-select: none;
+    box-sizing: border-box;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 10px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.45);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 12px;
+    min-width: 54px;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-nav-item.active {
+    color: #ffffff;
+  }
+
+  .mobile-nav-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-nav-item.active .mobile-nav-icon-container {
+    background: rgba(139, 92, 246, 0.18);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+  }
+
+  .mobile-nav-label {
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    line-height: 1;
+    color: inherit;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-nav-item.active .mobile-nav-label {
+    color: #ffffff;
+    font-weight: 600;
+  }
+}

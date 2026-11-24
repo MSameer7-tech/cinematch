@@ -17,6 +17,7 @@ import { useMovieVideos, useMovieLogo } from '../../hooks/useMovies';
 import { TrailerModal } from '../details/TrailerModal';
 import { RatingDialog } from '../../../library/components/RatingDialog';
 import { toast } from 'sonner';
+import './HeroBanner.css';
 
 interface HeroBannerProps {
   movie?: Movie;
@@ -114,16 +115,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
 
   return (
     <div 
-      style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: '100vw',
-        height: '82vh',
-        minHeight: '640px',
-        maxHeight: '840px',
-        overflow: 'hidden',
-        backgroundColor: '#07070D',
-      }}
+      className="hero-banner-root"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -174,18 +166,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       </AnimatePresence>
 
       {/* Main Content Hero Box */}
-      <div style={{
-        position: 'absolute',
-        bottom: '48px',
-        left: 'calc(var(--sidebar-width, 76px) + 36px)',
-        width: '46%',
-        minWidth: '380px',
-        maxWidth: '640px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '18px',
-        zIndex: 20,
-      }}>
+      <div className="hero-banner-content">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentMovie.id}
@@ -197,66 +178,23 @@ export const HeroBanner: FC<HeroBannerProps> = ({
           >
             {/* Formatted TMDB Movie Title Logo or Clamped Fallback Text */}
             {logoPath && !logoError ? (
-              <div 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'flex-start',
-                  maxHeight: '95px', 
-                  maxWidth: 'min(380px, 75vw)', 
-                  marginBottom: '2px' 
-                }}
-              >
+              <div className="hero-banner-logo-wrapper">
                 <img
                   key={currentMovie.id}
                   src={getLogoUrl(logoPath, 'w500') || ''}
                   alt={currentMovie.title}
                   onError={() => setLogoError(true)}
-                  style={{
-                    maxHeight: '90px',
-                    maxWidth: '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    objectFit: 'contain',
-                    objectPosition: 'left center',
-                    filter: 'drop-shadow(0 4px 18px rgba(0, 0, 0, 0.95)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8))',
-                    userSelect: 'none',
-                    pointerEvents: 'none',
-                    display: 'block',
-                  }}
+                  className="hero-banner-logo-img"
                 />
               </div>
             ) : (
-              <h1 
-                style={{ 
-                  fontSize: 'clamp(28px, 3.4vw, 46px)', 
-                  fontWeight: 900, 
-                  margin: 0,
-                  lineHeight: 1.1,
-                  letterSpacing: '-1px',
-                  color: '#ffffff',
-                  textTransform: 'uppercase',
-                  fontFamily: 'var(--font-heading)',
-                  textShadow: '0 4px 24px rgba(0, 0, 0, 0.8)',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
+              <h1 className="hero-banner-title">
                 {currentMovie.title}
               </h1>
             )}
             
             {/* Metadata Line: Year • Runtime • TMDB Rating • Genres */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px', 
-              fontSize: '13.5px', 
-              fontWeight: 500,
-              color: 'rgba(255, 255, 255, 0.95)',
-              textShadow: '0 2px 10px rgba(0, 0, 0, 0.9)',
-            }}>
+            <div className="hero-banner-meta">
               <span style={{ fontWeight: 600 }}>{currentMovie.releaseYear}</span>
               <span style={{ opacity: 0.4 }}>•</span>
               <span>{runtimeDisplay}</span>
@@ -296,26 +234,15 @@ export const HeroBanner: FC<HeroBannerProps> = ({
             </div>
             
             {/* 3-line Overview */}
-            <p 
-              style={{ 
-                fontSize: '14px', 
-                lineHeight: 1.6, 
-                color: 'rgba(255, 255, 255, 0.75)',
-                margin: 0,
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textShadow: '0 2px 8px rgba(0, 0, 0, 0.7)'
-              }}
-            >
+            <p className="hero-banner-overview">
               {currentMovie.overview}
             </p>
             
             {/* Action Buttons: 1. Watch Trailer • 2. Add to Watchlist • 3. Rate the Movie • 4. More Info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '4px' }}>
+            <div className="hero-banner-actions">
               {/* 1. Watch Trailer Primary Pill Button */}
               <button
+                className="hero-banner-btn-trailer"
                 onClick={() => {
                   if (onPlayTrailer && currentMovie) onPlayTrailer(currentMovie.id);
                   setIsTrailerOpen(true);
@@ -350,6 +277,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
 
               {/* 2. Add to Watchlist Frosted Glass Button */}
               <button
+                className="hero-banner-btn-circle"
                 onClick={handleToggleWatchlist}
                 title={inWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
                 aria-label="Add to Watchlist"
@@ -383,6 +311,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
 
               {/* 3. Rate the Movie Frosted Glass Button */}
               <button
+                className="hero-banner-btn-circle"
                 onClick={() => setIsRatingOpen(true)}
                 title={currentRating ? `Your Rating: ${currentRating}/10 (Click to edit)` : "Rate this Movie"}
                 aria-label="Rate this Movie"
@@ -416,6 +345,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
 
               {/* 4. More Info Frosted Glass Pill Button */}
               <button
+                className="hero-banner-btn-more"
                 onClick={() => {
                   if (currentMovie) window.location.href = `/movie/${currentMovie.id}`;
                 }}
@@ -454,22 +384,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
 
       {/* Segmented Slider Strip (Bottom-Right Capsule) */}
       {items.length > 1 && (
-        <div style={{
-          position: 'absolute',
-          bottom: '44px',
-          right: '48px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          backgroundColor: 'rgba(15, 15, 25, 0.75)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.16)',
-          borderRadius: '99px',
-          padding: '6px 14px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
-          zIndex: 35,
-        }}>
+        <div className="hero-banner-slider-strip">
           {/* Prev Arrow Button */}
           <button
             onClick={handlePrev}

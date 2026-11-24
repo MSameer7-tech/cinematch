@@ -57,7 +57,7 @@ export const TopNavbar: FC = () => {
       </div>
 
       {/* Centered Search Bar */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+      <div className="top-navbar-search" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <SearchBar />
       </div>
     </header>

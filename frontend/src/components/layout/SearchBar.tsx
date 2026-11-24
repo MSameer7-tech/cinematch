@@ -158,6 +158,7 @@ export const SearchBar: FC = () => {
         ) : (
           /* Subtle Keyboard Shortcut Badge when empty */
           <div
+            className="search-shortcut-badge"
             style={{
               position: 'absolute',
               right: '14px',

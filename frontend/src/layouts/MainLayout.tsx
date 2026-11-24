@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppShell } from '../components/layout/AppShell';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopNavbar } from '../components/layout/TopNavbar';
+import { MobileNavbar } from '../components/layout/MobileNavbar';
 
 export const MainLayout: FC = () => {
   const location = useLocation();
@@ -50,6 +51,7 @@ export const MainLayout: FC = () => {
             </AnimatePresence>
           </main>
         </div>
+        <MobileNavbar />
       </div>
     </AppShell>
   );
