@@ -43,26 +43,6 @@ const FAVORITES_TABS: { id: FavTab; label: string }[] = [
   { id: 'not-watched', label: 'Not Watched' },
 ];
 
-// Popular classic movies for 1-click sample favorites preloading
-const SAMPLE_FAVORITE_IDS = [
-  155,    // The Dark Knight
-  27205,  // Inception
-  157336, // Interstellar
-  550,    // Fight Club
-  680,    // Pulp Fiction
-  13,     // Forrest Gump
-  24,     // Kill Bill: Vol. 1
-  299534, // Avengers: Endgame
-  120,    // The Lord of the Rings: Fellowship of the Ring
-  8363,   // Superbad
-  522627, // The Gentlemen
-  64688,  // 21 Jump Street
-  18785,  // The Hangover
-  2105,   // American Pie
-  57800,  // Project X
-  263115  // The Hangover Part II
-];
-
 export const FavoritesPage: FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -162,25 +142,6 @@ export const FavoritesPage: FC = () => {
   const watchedCount = useMemo(() => {
     return movies.filter(m => isWatched(m.id)).length;
   }, [movies, isWatched]);
-
-  // Quick Action: Preload sample favorites for instant preview
-  const handlePreloadSampleFavorites = async () => {
-    toast.promise(
-      (async () => {
-        for (const id of SAMPLE_FAVORITE_IDS) {
-          if (!movieIds.includes(id)) {
-            await toggleFavoriteMutation.mutateAsync({ movieId: id, isFavorited: false });
-          }
-        }
-        await queryClient.invalidateQueries({ queryKey: libraryKeys.favorites });
-      })(),
-      {
-        loading: 'Populating favorite classics...',
-        success: 'Sample favorites loaded!',
-        error: 'Failed to load sample favorites',
-      }
-    );
-  };
 
   const handleToggleWatchedMovie = (e: React.MouseEvent, movieId: number, movieTitle: string) => {
     e.stopPropagation();

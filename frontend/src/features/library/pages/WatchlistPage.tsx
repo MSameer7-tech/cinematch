@@ -43,26 +43,6 @@ const WATCHLIST_TABS: { id: SortFilterTab; label: string }[] = [
   { id: 'not-watched', label: 'Not Watched' },
 ];
 
-// Popular classic starter IDs if user wishes to test with 1-click sample
-const SAMPLE_STARTER_IDS = [
-  24,     // Kill Bill: Vol. 1
-  2105,   // American Pie
-  57800,  // Project X
-  13,     // Forrest Gump
-  522627, // The Gentlemen
-  18785,  // The Hangover
-  263115, // The Hangover Part II
-  8363,   // Superbad
-  64688,  // 21 Jump Street
-  27205,  // Inception
-  155,    // The Dark Knight
-  550,    // Fight Club
-  680,    // Pulp Fiction
-  157336, // Interstellar
-  299534, // Avengers: Endgame
-  120     // The Lord of the Rings: Fellowship of the Ring
-];
-
 export const WatchlistPage: FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -168,36 +148,6 @@ export const WatchlistPage: FC = () => {
   const watchedCount = useMemo(() => {
     return movies.filter(m => isWatched(m.id)).length;
   }, [movies, isWatched]);
-
-  // Quick Action: Preload sample movies for testing
-  const handlePreloadSampleWatchlist = async () => {
-    toast.promise(
-      (async () => {
-        for (const id of SAMPLE_STARTER_IDS) {
-          if (!movieIds.includes(id)) {
-            await toggleWatchlistMutation.mutateAsync({ movieId: id, isWatchlisted: false });
-          }
-        }
-        // Mark first 8 as watched with realistic progress
-        const starterWatchedMap: Record<number, any> = {};
-        SAMPLE_STARTER_IDS.slice(0, 8).forEach((id, idx) => {
-          starterWatchedMap[id] = {
-            watched: true,
-            progress: idx === 0 ? 95 : idx === 1 ? 100 : idx === 2 ? 80 : 100,
-            watchedAt: Date.now() - idx * 3600000,
-          };
-        });
-        localStorage.setItem('cinematch_watched_movies_meta', JSON.stringify(starterWatchedMap));
-        window.dispatchEvent(new CustomEvent('cinematch_watched_updated'));
-        await queryClient.invalidateQueries({ queryKey: libraryKeys.watchlist });
-      })(),
-      {
-        loading: 'Populating curated movie library...',
-        success: 'Sample movie library loaded!',
-        error: 'Failed to load sample library',
-      }
-    );
-  };
 
   const handleToggleWatchedMovie = (e: React.MouseEvent, movieId: number, movieTitle: string) => {
     e.stopPropagation();
@@ -339,14 +289,6 @@ export const WatchlistPage: FC = () => {
             >
               <Compass size={16} />
               Explore Movies
-            </button>
-            <button
-              type="button"
-              className="watchlist-secondary-cta-btn"
-              onClick={handlePreloadSampleWatchlist}
-            >
-              <Sparkles size={16} />
-              Load Sample Library
             </button>
           </div>
         </div>
