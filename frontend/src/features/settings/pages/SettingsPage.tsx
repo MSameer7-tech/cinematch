@@ -20,11 +20,15 @@ import {
   ShieldCheck,
   Globe,
   Tv,
-  FileText
+  FileText,
+  Mail,
+  Calendar,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../../../lib/supabase';
 import { aiApi } from '../../ai/api/ai.api';
 import type { TasteProfile } from '../../ai/types/ai.types';
 import {
@@ -43,9 +47,25 @@ export const SettingsPage: FC = () => {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('preferences');
-  const userEmail = (user as any)?.email || user?.displayName || (guest ? 'Guest Session' : 'user@example.com');
+  const [accountMeta, setAccountMeta] = useState<{ email: string | null; provider: string | null }>({
+    email: null,
+    provider: null,
+  });
   const userId = user?.id || (guest as any)?.sessionId || (guest as any)?.guestId || (guest as any)?.id || 'guest-user';
   const isGuest = Boolean(!user && guest);
+  const userEmail = accountMeta.email || (user as any)?.email || (isGuest ? 'Guest Session' : '');
+
+  useEffect(() => {
+    if (isGuest || !user) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setAccountMeta({
+          email: data.user.email || null,
+          provider: (data.user.app_metadata?.provider as string) || null,
+        });
+      }
+    }).catch(() => {});
+  }, [isGuest, user]);
 
   // Preference States (Persisted via central preferences utility)
   const {
@@ -640,49 +660,64 @@ export const SettingsPage: FC = () => {
                 {activeTab === 'account-data' && (
                   <div>
                     <div className="settings-section-header">
-                      <h2 className="settings-section-title">Account & Local Storage</h2>
+                      <h2 className="settings-section-title">Account & Storage</h2>
                       <p className="settings-section-desc">
-                        Review account session identity, export data, and manage browser storage.
+                        Manage your account details and local app data.
                       </p>
                     </div>
 
-                    {/* Account Identity Card */}
+                    {/* Account Details Card */}
                     <div
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '24px',
+                        padding: '22px 24px',
                         borderRadius: '18px',
                         background: 'rgba(255, 255, 255, 0.03)',
                         border: '1px solid rgba(255, 255, 255, 0.08)',
-                        marginBottom: '24px',
+                        marginBottom: '22px',
                         flexWrap: 'wrap',
                         gap: '16px',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div
-                          style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #7C3AED 0%, #a855f7 100%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#fff',
-                            fontSize: '20px',
-                            fontWeight: 700,
-                            boxShadow: 'none',
-                          }}
-                        >
-                          {userEmail.charAt(0).toUpperCase()}
-                        </div>
+                        {user?.avatarUrl ? (
+                          <img
+                            src={user.avatarUrl}
+                            alt={user.displayName || 'Profile'}
+                            style={{
+                              width: '52px',
+                              height: '52px',
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1px solid rgba(255, 255, 255, 0.16)',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: '52px',
+                              height: '52px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #7C3AED 0%, #a855f7 100%)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#fff',
+                              fontSize: '20px',
+                              fontWeight: 700,
+                              boxShadow: 'none',
+                            }}
+                          >
+                            {(user?.displayName || userEmail || 'U').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc' }}>
-                              {user?.displayName || userEmail}
+                              {user?.displayName || (isGuest ? 'Guest User' : userEmail)}
                             </span>
                             <span
                               style={{
@@ -695,11 +730,39 @@ export const SettingsPage: FC = () => {
                                 border: isGuest ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(34, 197, 94, 0.3)',
                               }}
                             >
-                              {isGuest ? 'Guest Session' : 'Verified Member'}
+                              {isGuest ? 'Guest' : 'Verified'}
                             </span>
                           </div>
-                          <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
-                            {isGuest ? 'Preferences and ratings saved in local session.' : 'Preferences synchronized with Supabase.'}
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              flexWrap: 'wrap',
+                              gap: '14px',
+                              fontSize: '12.5px',
+                              color: 'rgba(255, 255, 255, 0.58)',
+                              marginTop: '6px',
+                            }}
+                          >
+                            {userEmail && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <Mail size={13} />
+                                {userEmail}
+                              </span>
+                            )}
+                            {!isGuest && accountMeta.provider && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', textTransform: 'capitalize' }}>
+                                <ShieldCheck size={13} />
+                                {accountMeta.provider} Sign-In
+                              </span>
+                            )}
+                            {user?.createdAt && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                <Calendar size={13} />
+                                Joined {new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -718,7 +781,8 @@ export const SettingsPage: FC = () => {
                           onClick={handleLogout}
                           className="settings-btn-secondary"
                         >
-                          Sign Out
+                          <LogOut size={14} />
+                          <span>Sign Out</span>
                         </button>
                       )}
                     </div>
@@ -727,10 +791,8 @@ export const SettingsPage: FC = () => {
                     <div className="settings-group">
                       <div className="settings-row">
                         <div>
-                          <div className="settings-row-label">Clear Search History</div>
-                          <div className="settings-row-desc">
-                            Remove cached queries and previous search terms from the dropdown.
-                          </div>
+                          <div className="settings-row-label">Search History</div>
+                          <div className="settings-row-desc">Clear recent search queries.</div>
                         </div>
                         <button
                           type="button"
@@ -738,16 +800,14 @@ export const SettingsPage: FC = () => {
                           className="settings-btn-secondary"
                         >
                           <Trash2 size={14} />
-                          <span>Clear Searches</span>
+                          <span>Clear</span>
                         </button>
                       </div>
 
                       <div className="settings-row">
                         <div>
-                          <div className="settings-row-label">Refresh Application Cache</div>
-                          <div className="settings-row-desc">
-                            Invalidate in-memory React Query cache and re-fetch freshest movie data.
-                          </div>
+                          <div className="settings-row-label">App Cache</div>
+                          <div className="settings-row-desc">Refresh cached movie data.</div>
                         </div>
                         <button
                           type="button"
@@ -755,16 +815,14 @@ export const SettingsPage: FC = () => {
                           className="settings-btn-secondary"
                         >
                           <RefreshCw size={14} />
-                          <span>Clear Cache</span>
+                          <span>Refresh</span>
                         </button>
                       </div>
 
                       <div className="settings-row">
                         <div>
-                          <div className="settings-row-label">Export CineMatch Profile (JSON)</div>
-                          <div className="settings-row-desc">
-                            Download a portable JSON archive of your taste profile, preferences, and ratings.
-                          </div>
+                          <div className="settings-row-label">Export Profile</div>
+                          <div className="settings-row-desc">Download your data as JSON.</div>
                         </div>
                         <button
                           type="button"
@@ -772,7 +830,7 @@ export const SettingsPage: FC = () => {
                           className="settings-btn-secondary"
                         >
                           <Download size={14} />
-                          <span>Export JSON</span>
+                          <span>Export</span>
                         </button>
                       </div>
                     </div>
@@ -782,11 +840,9 @@ export const SettingsPage: FC = () => {
                       <div className="settings-row">
                         <div>
                           <div className="settings-row-label" style={{ color: '#f87171' }}>
-                            Reset All Preferences
+                            Reset Preferences
                           </div>
-                          <div className="settings-row-desc">
-                            Restore default resolution, region, audio, and content settings.
-                          </div>
+                          <div className="settings-row-desc">Restore all default settings.</div>
                         </div>
                         <button
                           type="button"
@@ -794,7 +850,7 @@ export const SettingsPage: FC = () => {
                           className="settings-btn-danger"
                         >
                           <RotateCcw size={14} />
-                          <span>Reset to Default</span>
+                          <span>Reset</span>
                         </button>
                       </div>
                     </div>
