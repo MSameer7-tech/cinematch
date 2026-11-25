@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Header, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 import uvicorn
 import os
@@ -14,6 +14,7 @@ from app.services.event_service import event_service
 from app.cache.recommendation_cache import recommendation_cache
 from app.ai.services.conversation_service import conversation_service
 from app.core.errors import register_error_handlers
+from app.core.security import verify_admin, verify_user_ownership, SecurityHeadersMiddleware
 
 # Content Orchestrator Imports (Sprint 9)
 from app.content.models.homepage_models import HomepageContext
@@ -26,30 +27,40 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
 
 app = FastAPI(title="CineMatch Recommendation Engine")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 register_error_handlers(app)
 
-# Allow Frontend access
+# Explicit CORS origins (avoid wildcard '*' with allow_credentials=True)
+_allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+]
+if os.environ.get("FRONTEND_URL"):
+    _allowed_origins.append(os.environ["FRONTEND_URL"].rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Admin-Key"],
 )
 
 print("Initializing Recommendation Service Models...")
 recommender = RecommendationService()
 
 class APIRecommendationRequest(BaseModel):
-    user_id: str
-    limit: int = 20
+    user_id: str = Field(..., min_length=1, max_length=128)
+    limit: int = Field(default=20, ge=1, le=50)
     exclude_seen: bool = True
 
 @app.post("/api/recommendations")
@@ -60,10 +71,10 @@ async def get_recommendations(req: APIRecommendationRequest, request: Request):
         rec_request = RecReq(user_id=req.user_id, limit=req.limit, exclude_seen=req.exclude_seen)
         results = recommender.get_recommendations(rec_request)
         return {"recommendations": results}
-    except Exception as e:
+    except Exception:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class FeedbackRequest(BaseModel):
     user_id: str
@@ -141,14 +152,9 @@ async def submit_event(req: EventRequest, request: Request):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-def verify_admin(x_admin_key: str = Header(None)):
-    expected_key = os.environ.get("ADMIN_SECRET_KEY")
-    if not expected_key or x_admin_key != expected_key:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return True
-
 @app.get("/api/recommendations/analytics")
-async def get_analytics(authorized: bool = Depends(verify_admin)):
+@limiter.limit("30/minute")
+async def get_analytics(request: Request, authorized: bool = Depends(verify_admin)):
     try:
         # In a real scenario, this would query Supabase for aggregates.
         # For Phase 6, we're scaffolding the endpoint and returning dummy data or cache stats
@@ -171,11 +177,17 @@ async def get_analytics(authorized: bool = Depends(verify_admin)):
             "top_genres": ["Sci-Fi", "Drama", "Crime"],
             "worst_genres": ["Horror", "Documentary"]
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.delete("/api/recommendations/cache/{user_id}")
-async def delete_user_cache(user_id: str):
+@limiter.limit("20/minute")
+async def delete_user_cache(
+    user_id: str,
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     recommendation_cache.invalidate(user_id)
     return {"status": "success"}
 
@@ -297,8 +309,8 @@ async def get_homepage(
 async def get_homepage_section(
     section_id: str,
     user_id: Optional[str] = "anonymous",
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1),
+    page: int = Query(1, ge=1, le=500),
+    page_size: int = Query(20, ge=1, le=50),
     timezone: Optional[str] = "UTC",
     locale: Optional[str] = "en-US",
     experiment_group: Optional[str] = None
@@ -367,33 +379,39 @@ async def get_search_bootstrap():
 from app.search.models.search_models import AISearchRequest
 
 @app.post("/api/search/ai")
-async def post_search_ai(req: AISearchRequest):
+@limiter.limit("15/minute")
+async def post_search_ai(req: AISearchRequest, request: Request):
     try:
         from app.search.services.search_service import search_service
-        return await search_service.parse_ai_search(req.query)
-    except Exception as e:
+        return await search_service.parse_ai_search(req.query[:300])
+    except Exception:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class AIChatRequest(BaseModel):
-    conversation_id: str
-    user_id: str
-    message: str
+    conversation_id: str = Field(..., min_length=1, max_length=128)
+    user_id: str = Field(..., min_length=1, max_length=128)
+    message: str = Field(..., min_length=1, max_length=1000)
 
 class SaveConversationRequest(BaseModel):
-    user_id: str
-    id: str
-    title: Optional[str] = None
-    messages: list = []
+    user_id: str = Field(..., min_length=1, max_length=128)
+    id: str = Field(..., min_length=1, max_length=128)
+    title: Optional[str] = Field(default=None, max_length=100)
+    messages: list = Field(default_factory=list, max_length=200)
 
 class RenameConversationRequest(BaseModel):
-    user_id: str
-    title: str
+    user_id: str = Field(..., min_length=1, max_length=128)
+    title: str = Field(..., min_length=1, max_length=100)
 
 @app.post("/api/ai/chat")
 @limiter.limit("20/minute")
-async def chat_with_ai(req: AIChatRequest, request: Request):
+async def chat_with_ai(
+    req: AIChatRequest,
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(req.user_id, authorization)
     try:
         response = conversation_service.chat(
             conversation_id=req.conversation_id,
@@ -401,21 +419,38 @@ async def chat_with_ai(req: AIChatRequest, request: Request):
             message=req.message
         )
         return response
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/ai/conversations")
-async def list_ai_conversations(user_id: str = "guest"):
+@limiter.limit("60/minute")
+async def list_ai_conversations(
+    request: Request,
+    user_id: str = Query(..., min_length=1, max_length=128),
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     try:
         from app.ai.services.conversation_store import conversation_store
         return conversation_store.list_conversations(user_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/ai/conversations/{conversation_id}")
-async def get_ai_conversation(conversation_id: str, user_id: str = "guest"):
+@limiter.limit("60/minute")
+async def get_ai_conversation(
+    conversation_id: str,
+    request: Request,
+    user_id: str = Query(..., min_length=1, max_length=128),
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     try:
         from app.ai.services.conversation_store import conversation_store
         conv = conversation_store.get_conversation(user_id, conversation_id)
@@ -424,11 +459,17 @@ async def get_ai_conversation(conversation_id: str, user_id: str = "guest"):
         return conv
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.post("/api/ai/conversations")
-async def save_ai_conversation(req: SaveConversationRequest):
+@limiter.limit("60/minute")
+async def save_ai_conversation(
+    req: SaveConversationRequest,
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(req.user_id, authorization)
     try:
         from app.ai.services.conversation_store import conversation_store
         conv_data = {
@@ -437,11 +478,20 @@ async def save_ai_conversation(req: SaveConversationRequest):
             "messages": req.messages
         }
         return conversation_store.save_conversation(req.user_id, conv_data)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.patch("/api/ai/conversations/{conversation_id}")
-async def rename_ai_conversation(conversation_id: str, req: RenameConversationRequest):
+@limiter.limit("30/minute")
+async def rename_ai_conversation(
+    conversation_id: str,
+    req: RenameConversationRequest,
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(req.user_id, authorization)
     try:
         from app.ai.services.conversation_store import conversation_store
         updated = conversation_store.rename_conversation(req.user_id, conversation_id, req.title)
@@ -450,11 +500,18 @@ async def rename_ai_conversation(conversation_id: str, req: RenameConversationRe
         return updated
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.delete("/api/ai/conversations/{conversation_id}")
-async def delete_ai_conversation(conversation_id: str, user_id: str = "guest"):
+@limiter.limit("30/minute")
+async def delete_ai_conversation(
+    conversation_id: str,
+    request: Request,
+    user_id: str = Query(..., min_length=1, max_length=128),
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     try:
         from app.ai.services.conversation_store import conversation_store
         deleted = conversation_store.delete_conversation(user_id, conversation_id)
@@ -463,66 +520,67 @@ async def delete_ai_conversation(conversation_id: str, user_id: str = "guest"):
         return {"status": "success", "id": conversation_id}
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.delete("/api/ai/conversations")
-async def clear_ai_conversations(user_id: str = "guest"):
+@limiter.limit("10/minute")
+async def clear_ai_conversations(
+    request: Request,
+    user_id: str = Query(..., min_length=1, max_length=128),
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     try:
         from app.ai.services.conversation_store import conversation_store
         conversation_store.clear_all(user_id)
         return {"status": "success"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/users/{user_id}/taste-profile")
-async def get_user_taste_profile(user_id: str, refresh: bool = False):
+@limiter.limit("30/minute")
+async def get_user_taste_profile(
+    user_id: str,
+    request: Request,
+    refresh: bool = False,
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     try:
         from app.services.detail_engine import detail_engine
         doc = detail_engine.get_taste_document(user_id, force_refresh=refresh)
         return doc.model_dump()
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.post("/api/users/{user_id}/taste-profile/refresh")
-async def refresh_user_taste_profile(user_id: str):
+@limiter.limit("10/minute")
+async def refresh_user_taste_profile(
+    user_id: str,
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    verify_user_ownership(user_id, authorization)
     try:
         from app.services.detail_engine import detail_engine
         doc = detail_engine.get_taste_document(user_id, force_refresh=True)
         return doc.model_dump()
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class MovieBatchRequest(BaseModel):
-    movie_ids: list[int]
-
-@app.post("/api/auth/guest")
-async def create_guest_session(request: Request):
-    from supabase import create_client
-    from app.config import SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-    import uuid
-    token_hash = str(uuid.uuid4())
-    now = datetime.utcnow().isoformat()
-    try:
-        if SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY:
-            sb = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-            res = sb.table("guest_sessions").insert({"guest_token_hash": token_hash}).execute()
-            if res.data:
-                return res.data[0]
-    except Exception as e:
-        print(f"Guest session DB insert note: {e}")
-    return {
-        "id": str(uuid.uuid4()),
-        "guest_token_hash": token_hash,
-        "created_at": now,
-        "last_activity_at": now,
-        "migrated_to_user_id": None,
-        "migrated_at": None
-    }
+    movie_ids: list[int] = Field(..., max_length=50)
 
 # -------------------------------------------------------------
 # TMDB Clearlogo / Formatted Movie Title Fetcher & Cache
@@ -563,7 +621,9 @@ def fetch_tmdb_logo(movie_id: int) -> dict:
     if str_id in logo_cache:
         return logo_cache[str_id]
     
-    api_key = os.getenv("TMDB_API_KEY", "37823decae1bace15d14103ded55d953")
+    api_key = os.getenv("TMDB_API_KEY", "")
+    if not api_key:
+        return {"logo_path": None}
     url = f"https://api.themoviedb.org/3/movie/{movie_id}/images?api_key={api_key}&include_image_language=en,null"
     try:
         resp = requests.get(url, timeout=3.5)
@@ -601,8 +661,10 @@ def get_movies_new_releases(page: int = Query(1, ge=1)):
     return tmdb_live_service.get_new_releases(page=page)
 
 @app.get("/api/movies/discover")
+@limiter.limit("60/minute")
 def discover_movies_endpoint(
-    page: int = Query(1, ge=1),
+    request: Request,
+    page: int = Query(1, ge=1, le=500),
     genre_id: Optional[int] = Query(None),
     category: str = Query("popular"),
     media_type: str = Query("movie"),
@@ -620,17 +682,22 @@ def discover_movies_endpoint(
     )
 
 @app.get("/api/movies/popular")
-def get_movies_popular(page: int = Query(1, ge=1)):
+def get_movies_popular(page: int = Query(1, ge=1, le=500)):
     from app.content.services.tmdb_live_service import tmdb_live_service
     return tmdb_live_service.get_popular(page=page)
 
 @app.get("/api/movies/top_rated")
-def get_movies_top_rated(page: int = Query(1, ge=1)):
+def get_movies_top_rated(page: int = Query(1, ge=1, le=500)):
     from app.content.services.tmdb_live_service import tmdb_live_service
     return tmdb_live_service.get_top_rated(page=page)
 
 @app.get("/api/movies/search")
-def search_movies(query: str, page: int = Query(1, ge=1)):
+@limiter.limit("60/minute")
+def search_movies(
+    request: Request,
+    query: str = Query(..., min_length=1, max_length=200),
+    page: int = Query(1, ge=1, le=500)
+):
     from app.content.services.tmdb_live_service import tmdb_live_service
     data = tmdb_live_service._fetch_endpoint("search/movie", {"query": query, "page": page})
     if data and "results" in data:

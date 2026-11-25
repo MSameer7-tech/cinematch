@@ -225,3 +225,8 @@ __marimo__/
 *.npy
 *.npz
 ai-engine/artifacts/matrices/
+
+# Environment files
+.env
+.env.*
+!.env.example

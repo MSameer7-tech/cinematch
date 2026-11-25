@@ -11,6 +11,7 @@ from app.ai.schemas.intent_schema import IntentSchema
 from app.ai.utils.request_builder import RecommendationRequestBuilder
 from app.recommender.recommendation_service import RecommendationService
 from app.services.detail_engine import detail_engine
+from app.core.security import sanitize_prompt_input
 
 # Memory Cache (conversation_id -> list of messages)
 conversation_memory: Dict[str, list] = {}
@@ -37,6 +38,9 @@ class ConversationService:
         return conversation_memory[conversation_id]
 
     def chat(self, conversation_id: str, user_id: str, message: str) -> Dict[str, Any]:
+        # Sanitize and bound untrusted user message to mitigate prompt injection
+        message = sanitize_prompt_input(message, max_len=1000)
+
         # 0. Fetch or compute User Taste Profile Document via DetailEngine
         taste_doc = None
         taste_doc_text = ""
@@ -53,7 +57,7 @@ class ConversationService:
         # 1. Intent Parsing
         intent_messages = [
             {"role": "system", "content": INTENT_PROMPT},
-            {"role": "user", "content": message}
+            {"role": "user", "content": f"<user_query>{message}</user_query>"}
         ]
         
         raw_intent = llm_client.chat(messages=intent_messages, json_mode=True, temperature=0.1)

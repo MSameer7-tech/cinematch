@@ -31,14 +31,7 @@ export const RecommendationAnalyticsPage: FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check if we have a key in env
-  useEffect(() => {
-    const key = import.meta.env.VITE_ADMIN_KEY;
-    if (key) {
-      setAdminKey(key);
-      handleLogin(key);
-    }
-  }, []);
+  // Require manual admin key entry (never embed admin secrets in VITE_* env vars)
 
   const handleLogin = async (key: string = adminKey) => {
     setLoading(true);

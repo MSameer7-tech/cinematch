@@ -8,6 +8,25 @@ import type {
   RegisterCredentials 
 } from '../types/auth.types';
 
+const sanitizeDisplayName = (raw: string | null | undefined): string => {
+  if (!raw || typeof raw !== 'string') return 'User';
+  const cleaned = raw
+    .replace(/[<>]/g, '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, 60);
+  return cleaned || 'User';
+};
+
+const sanitizeAvatarUrl = (raw: string | null | undefined): string | null => {
+  if (!raw || typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
+    return trimmed;
+  }
+  return null;
+};
+
 const mapAuthError = (error: any): Error => {
   const message = error?.message || '';
   if (message.toLowerCase().includes('invalid login credentials')) {
@@ -65,12 +84,13 @@ export const authService = {
    */
   async register(credentials: RegisterCredentials): Promise<ServiceResult<{ user: AppUser; requiresVerification: boolean }>> {
     try {
+      const safeName = sanitizeDisplayName(credentials.displayName);
       const { data, error } = await supabase.auth.signUp({
         email: credentials.email,
         password: credentials.password,
         options: {
           data: {
-            display_name: credentials.displayName
+            display_name: safeName
           }
         }
       });
@@ -87,7 +107,7 @@ export const authService = {
 
       const appUser: AppUser = {
         id: data.user.id,
-        displayName: credentials.displayName,
+        displayName: safeName,
         avatarUrl: null,
         onboardingCompleted: false,
         accountStatus: 'ACTIVE',
@@ -330,11 +350,13 @@ export const authService = {
         return { success: false, error: 'No active session found.' };
       }
 
-      const displayName = supabaseUser.user_metadata?.display_name || 
-                          supabaseUser.user_metadata?.full_name || 
-                          supabaseUser.email?.split('@')[0] || 
-                          'User';
-      const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
+      const displayName = sanitizeDisplayName(
+        supabaseUser.user_metadata?.display_name || 
+        supabaseUser.user_metadata?.full_name || 
+        supabaseUser.email?.split('@')[0] || 
+        'User'
+      );
+      const avatarUrl = sanitizeAvatarUrl(supabaseUser.user_metadata?.avatar_url);
 
       try {
         const profilePromise = supabase
@@ -351,8 +373,8 @@ export const authService = {
         if (!profileError && profile) {
           const appUser: AppUser = {
             id: profile.id,
-            displayName: profile.display_name || displayName,
-            avatarUrl: profile.avatar_url || avatarUrl,
+            displayName: sanitizeDisplayName(profile.display_name || displayName),
+            avatarUrl: sanitizeAvatarUrl(profile.avatar_url || avatarUrl),
             onboardingCompleted: profile.onboarding_completed ?? false,
             accountStatus: profile.account_status || 'ACTIVE',
             createdAt: profile.created_at || supabaseUser.created_at,

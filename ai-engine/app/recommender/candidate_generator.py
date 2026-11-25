@@ -39,7 +39,7 @@ def get_language_filter_mask(df, language_str: str):
     elif "english" in lang_lower:
         return df['spoken_languages'].astype(str).str.contains('English', case=False, na=False)
     else:
-        return df['spoken_languages'].astype(str).str.contains(lang_lower, case=False, na=False)
+        return df['spoken_languages'].astype(str).str.contains(lang_lower, case=False, regex=False, na=False)
 
 class CandidateGenerator:
     def __init__(self):
@@ -96,7 +96,7 @@ class CandidateGenerator:
             if lang_mask is not None and lang_mask.any():
                 if getattr(request, 'preferred_genres', None) and request.preferred_genres:
                     for g in request.preferred_genres:
-                        g_mask = lang_mask & self.df['genre_names'].str.contains(g, case=False, na=False)
+                        g_mask = lang_mask & self.df['genre_names'].str.contains(g, case=False, regex=False, na=False)
                         if g_mask.any():
                             matches = self.df[g_mask].sort_values(by=['vote_average', 'vote_count'], ascending=[False, False]).head(5)
                             seeds.update(matches['movie_id'].tolist())
@@ -107,7 +107,7 @@ class CandidateGenerator:
             # Seed with top-rated, proven films from the user's requested genres
             for g in request.preferred_genres:
                 genre_matches = self.df[
-                    self.df['genre_names'].str.contains(g, case=False, na=False) &
+                    self.df['genre_names'].str.contains(g, case=False, regex=False, na=False) &
                     (self.df['vote_count'] >= 500) &
                     (self.df['vote_average'] >= 7.2)
                 ].sort_values(by=['vote_average', 'vote_count'], ascending=[False, False]).head(3)
