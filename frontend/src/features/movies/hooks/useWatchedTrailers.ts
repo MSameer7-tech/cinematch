@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { movieService } from '../services/movie.service';
 import type { MovieDetails } from '../types/movie.types';
 
@@ -63,6 +63,7 @@ export const useWatchedTrailers = () => {
       return await movieService.getMoviesByIds(watchedIds);
     },
     enabled: watchedIds.length > 0,
+    placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
   });
 

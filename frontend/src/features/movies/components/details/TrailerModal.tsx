@@ -20,12 +20,12 @@ export const TrailerModal: FC<TrailerModalProps> = ({ isOpen, onClose, videoKey,
   const [activeKey, setActiveKey] = useState<string | null>(videoKey || null);
   const [isLoading, setIsLoading] = useState<boolean>(!videoKey && !!movieId);
 
-  // Automatically record this movie in watched trailers history when trailer is opened
-  useEffect(() => {
-    if (isOpen && movieId) {
+  const handleClose = () => {
+    if (movieId) {
       recordWatchedTrailer(movieId);
     }
-  }, [isOpen, movieId]);
+    onClose();
+  };
 
   // Fetch trailer if videoKey is not provided
   useEffect(() => {
@@ -93,7 +93,7 @@ export const TrailerModal: FC<TrailerModalProps> = ({ isOpen, onClose, videoKey,
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     };
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown);
@@ -103,11 +103,11 @@ export const TrailerModal: FC<TrailerModalProps> = ({ isOpen, onClose, videoKey,
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, movieId, onClose]);
 
   // Close when clicking outside the modal content
   const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current) onClose();
+    if (e.target === overlayRef.current) handleClose();
   };
 
   if (!isOpen) return null;
@@ -178,7 +178,7 @@ export const TrailerModal: FC<TrailerModalProps> = ({ isOpen, onClose, videoKey,
             </div>
 
             <button
-              onClick={onClose}
+              onClick={handleClose}
               title="Close Trailer"
               style={{
                 background: 'rgba(255, 255, 255, 0.06)',
