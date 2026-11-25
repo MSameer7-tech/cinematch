@@ -190,7 +190,8 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
   const personaDossier = useMemo(() => {
     const hasSciFi = selectedGenreIds.includes(878);
     const hasThriller = selectedGenreIds.includes(53) || selectedGenreIds.includes(9648);
-    const hasAction = selectedGenreIds.includes(28) || selectedGenreIds.includes(12);
+    const hasAction = selectedGenreIds.includes(28);
+    const hasAdventure = selectedGenreIds.includes(12);
     const hasDrama = selectedGenreIds.includes(18);
     const hasAnimation = selectedGenreIds.includes(16);
 
@@ -730,7 +731,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
               </p>
 
               {/* 12 Anchor Films Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '14px' }}>
                 {FOUNDATION_MOVIES.map((movie) => {
                   const isFavorited = favoriteMovieIds.includes(movie.id);
 
@@ -743,13 +744,16 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                         flexDirection: 'column',
                         cursor: 'pointer',
                         userSelect: 'none',
-                        position: 'relative'
+                        position: 'relative',
+                        minWidth: 0,
+                        width: '100%'
                       }}
                     >
                       {/* Poster Container */}
                       <div
                         style={{
                           position: 'relative',
+                          width: '100%',
                           aspectRatio: '2/3',
                           borderRadius: '12px',
                           overflow: 'hidden',
@@ -833,7 +837,9 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                         textAlign: 'center',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        width: '100%',
+                        display: 'block'
                       }}>
                         {movie.title}
                       </span>

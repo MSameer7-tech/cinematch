@@ -11,6 +11,8 @@ class RecommendationRequest(BaseModel):
     # Temporary Filters (Overrides user taste profile temporarily)
     preferred_genres: List[str] = []
     excluded_genres: List[str] = []
+    language: Optional[str] = None
+    exclude_movie_ids: List[int] = []
     runtime_max: Optional[int] = None
     year_min: Optional[int] = None
     year_max: Optional[int] = None

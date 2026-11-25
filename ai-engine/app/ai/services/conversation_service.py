@@ -14,6 +14,8 @@ from app.services.detail_engine import detail_engine
 
 # Memory Cache (conversation_id -> list of messages)
 conversation_memory: Dict[str, list] = {}
+# Session recommended movies cache (conversation_id -> set of movie_ids)
+session_recommended_movies: Dict[str, set] = {}
 
 class ConversationService:
     def __init__(self):
@@ -70,10 +72,24 @@ class ConversationService:
             }
             
         # 2. Translate to RecommendationRequest using taste profile signals
+        if conversation_id not in session_recommended_movies:
+            session_recommended_movies[conversation_id] = set()
+
         req = RecommendationRequestBuilder.build(user_id, intent_data, taste_doc=taste_doc)
+        if session_recommended_movies[conversation_id]:
+            req.exclude_movie_ids = list(session_recommended_movies[conversation_id])
         
         # 3. Call Recommendation Engine
         recommendations = self.recommendation_service.get_recommendations(req)
+        
+        # If no recommendations with exclusions, retry without exclusions as fallback
+        if not recommendations and req.exclude_movie_ids:
+            req.exclude_movie_ids = []
+            recommendations = self.recommendation_service.get_recommendations(req)
+
+        # Track recommended movie IDs in this conversation session
+        for r in recommendations:
+            session_recommended_movies[conversation_id].add(r["movie_id"])
         
         # If no recommendations found
         if not recommendations:
@@ -146,6 +162,27 @@ class ConversationService:
         if reply:
             reply = reply.replace("—", ": ").replace(" -- ", ". ").replace("--", ", ")
             reply = reply.replace(": :", ":")
+
+        # Robust fallback so reply is never empty
+        if not reply or not reply.strip():
+            sample_titles = []
+            for r in recommendations[:2]:
+                m = movie_repo.get_movie_by_id(r["movie_id"])
+                if m and m.get("title"):
+                    sample_titles.append(f"**{m['title']}**")
+            if sample_titles:
+                reply = f"Here are top-tier recommendations matching your taste, including {' and '.join(sample_titles)}:"
+            else:
+                reply = "Here are curated recommendations matching your preferences:"
+
+        # If the LLM indicates it cannot find matching titles, never attach mismatched movie cards
+        apology_phrases = [
+            "don't have any", "do not have any", "unable to find any", 
+            "couldn't find any", "could not find any", "no titles in the current list",
+            "no matching titles", "unfortunately, i don't have"
+        ]
+        if reply and any(phrase in reply.lower() for phrase in apology_phrases):
+            recommendations = []
         
         # 5. Update Memory
         memory.append({"role": "user", "content": message})

@@ -26,7 +26,7 @@ class RecommendationService:
     def get_recommendations(self, request: RecommendationRequest) -> list:
         # For standard requests, check cache first.
         # If there are temporary AI filters, skip caching to avoid polluting normal recommendations.
-        is_standard_request = request.intent == "recommend" and not request.preferred_genres and not request.seed_movies
+        is_standard_request = request.intent == "recommend" and not request.preferred_genres and not request.seed_movies and not request.language
         
         if is_standard_request:
             cached_recommendations = recommendation_cache.get(request.user_id)
@@ -37,7 +37,7 @@ class RecommendationService:
         profile = self.profile_builder.build_profile(request.user_id)
         
         # 2. Init Context
-        context = RecommendationContext(profile=profile)
+        context = RecommendationContext(profile=profile, request=request)
         
         # 3. Candidate Generation
         self.candidate_generator.generate_candidates(context, request=request)
@@ -50,8 +50,8 @@ class RecommendationService:
                 genres = [g.lower() for g in c.genres]
                 if any(pref in genres for pref in prefs_lower):
                     filtered_candidates.append(c)
-            if filtered_candidates:
-                context.candidates = filtered_candidates
+            # Only retain matches if genre filter was explicitly requested
+            context.candidates = filtered_candidates
 
         if request.excluded_genres:
             excl_lower = [g.lower() for g in request.excluded_genres]

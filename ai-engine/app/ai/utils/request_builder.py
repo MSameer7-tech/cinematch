@@ -70,6 +70,7 @@ class RecommendationRequestBuilder:
             seed_movies=seed_movie_ids,
             preferred_genres=preferred_genres,
             excluded_genres=excluded_genres,
+            language=intent_data.language.strip() if intent_data.language else None,
         )
         
         if intent_data.runtime and intent_data.runtime.max:

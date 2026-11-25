@@ -324,9 +324,11 @@ export const AIChat: React.FC<AIChatProps> = ({ userId }) => {
 
                       <div className="ai-assistant-content">
                         {/* Response Text inside Frosted Chat Card / Bubble */}
-                        <div className="ai-assistant-bubble">
-                          <FormattedMessageContent content={msg.content} />
-                        </div>
+                        {msg.content && msg.content.trim().length > 0 && (
+                          <div className="ai-assistant-bubble">
+                            <FormattedMessageContent content={msg.content} />
+                          </div>
+                        )}
 
                         {/* Movie Recommendation Cards Grid */}
                         {msg.movies && msg.movies.length > 0 && (

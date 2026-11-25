@@ -22,8 +22,14 @@ class GroqProvider(BaseProvider):
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
             
-        chat_completion = self.client.chat.completions.create(**kwargs)
-        return chat_completion.choices[0].message.content
+        try:
+            chat_completion = self.client.chat.completions.create(**kwargs)
+            return chat_completion.choices[0].message.content or ""
+        except Exception as e:
+            print(f"[GroqProvider] Error during chat completion: {e}")
+            if json_mode:
+                return "{}"
+            return ""
 
     def health_check(self) -> bool:
         try:

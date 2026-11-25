@@ -21,6 +21,7 @@ class CandidateMovie(BaseModel):
     metadata_score: int = 0
     adult: bool = False
     spoken_languages: List[str] = Field(default_factory=list)
+    production_countries: List[str] = Field(default_factory=list)
 
 class RecommendationResult(BaseModel):
     movie_id: int
