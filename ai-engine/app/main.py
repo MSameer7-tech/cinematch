@@ -45,7 +45,10 @@ _allowed_origins = [
     "http://127.0.0.1:4173",
 ]
 if os.environ.get("FRONTEND_URL"):
-    _allowed_origins.append(os.environ["FRONTEND_URL"].rstrip("/"))
+    for origin in os.environ["FRONTEND_URL"].split(","):
+        cleaned = origin.strip().rstrip("/")
+        if cleaned:
+            _allowed_origins.append(cleaned)
 
 app.add_middleware(
     CORSMiddleware,
@@ -54,6 +57,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Admin-Key"],
 )
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 print("Initializing Recommendation Service Models...")
 recommender = RecommendationService()

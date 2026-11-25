@@ -37,21 +37,22 @@ TMDB_GENRE_MAP = {
     37: "Western",
 }
 
-# Ensure DNS-blocked TMDB domains route correctly via known direct CloudFront IP
-TMDB_DIRECT_IP = "3.175.86.37"
-_orig_create_conn = urllib_conn.create_connection
+# Optional direct IP override for environments where api.themoviedb.org is DNS-blocked
+TMDB_DIRECT_IP = os.getenv("TMDB_DIRECT_IP", "")
+if TMDB_DIRECT_IP:
+    _orig_create_conn = urllib_conn.create_connection
 
-def _tmdb_patched_conn(address, *args, **kwargs):
-    host, port = address
-    if host == "api.themoviedb.org":
-        host = TMDB_DIRECT_IP
-    return _orig_create_conn((host, port), *args, **kwargs)
+    def _tmdb_patched_conn(address, *args, **kwargs):
+        host, port = address
+        if host == "api.themoviedb.org":
+            host = TMDB_DIRECT_IP
+        return _orig_create_conn((host, port), *args, **kwargs)
 
-urllib_conn.create_connection = _tmdb_patched_conn
+    urllib_conn.create_connection = _tmdb_patched_conn
 
 class TMDBLiveService:
     def __init__(self):
-        self.api_key = os.getenv("TMDB_API_KEY", "37823decae1bace15d14103ded55d953")
+        self.api_key = os.getenv("TMDB_API_KEY", "")
         self.base_url = "https://api.themoviedb.org/3"
         self.raw_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),

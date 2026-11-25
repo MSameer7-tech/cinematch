@@ -7,7 +7,7 @@ import type {
   ConversationDetail
 } from '../types/ai.types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const getAuthHeaders = async (includeJson = false): Promise<Record<string, string>> => {
   const headers: Record<string, string> = {};
