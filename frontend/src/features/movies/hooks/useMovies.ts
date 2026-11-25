@@ -111,7 +111,8 @@ export const useMovieLogo = (id: number | undefined) => {
     queryFn: async (): Promise<string | null> => {
       if (!id) return null;
       try {
-        const res = await fetch(`/api/movies/${id}/logo`);
+        const baseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
+        const res = await fetch(`${baseUrl}/movies/${id}/logo`);
         if (res.ok) {
           const data = await res.json();
           return data?.logo_path || null;
