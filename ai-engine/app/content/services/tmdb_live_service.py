@@ -274,6 +274,43 @@ class TMDBLiveService:
                 except Exception:
                     pass
 
+        # Fallback to live TMDB Indian cinema discovery when local raw_dir is empty (e.g., Render/Docker)
+        if len(pool) < 20 and self.api_key:
+            for p_num in (1, 2, 3):
+                data = self._fetch_endpoint("/discover/movie", {
+                    "with_origin_country": "IN",
+                    "sort_by": "popularity.desc",
+                    "release_date.lte": today,
+                    "include_adult": "false",
+                    "page": p_num,
+                })
+                if not data or not data.get("results"):
+                    break
+                for m in data["results"]:
+                    mid = m.get("id")
+                    if not mid or mid in seen_ids or mid in exclude_ids:
+                        continue
+                    rdate = m.get("release_date", "")
+                    poster = m.get("poster_path")
+                    if not rdate or rdate > today or not poster:
+                        continue
+                    seen_ids.add(mid)
+                    self._save_raw_movie_stub(m)
+                    pool.append({
+                        "id": mid,
+                        "title": m.get("title", ""),
+                        "original_title": m.get("original_title", m.get("title", "")),
+                        "overview": m.get("overview", ""),
+                        "poster_path": poster,
+                        "backdrop_path": m.get("backdrop_path"),
+                        "release_date": rdate,
+                        "vote_average": float(m.get("vote_average") or 0.0),
+                        "vote_count": int(m.get("vote_count") or 0),
+                        "popularity": float(m.get("popularity") or 0.0),
+                        "genre_ids": m.get("genre_ids", []),
+                        "status": "Released",
+                    })
+
         self._bollywood_pool = pool
         return pool
 
