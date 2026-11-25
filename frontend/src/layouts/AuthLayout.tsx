@@ -8,13 +8,14 @@ export const AuthLayout: React.FC = () => {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#07060d',
+        backgroundColor: '#06050b',
         backgroundImage: `
-          radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.16) 0%, rgba(7, 6, 13, 0.88) 55%, rgba(5, 5, 10, 0.96) 100%),
-          url('/cinematic-purple-filmstrip.png')
+          linear-gradient(90deg, rgba(6, 5, 11, 0.58) 0%, rgba(6, 5, 11, 0.35) 50%, rgba(6, 5, 11, 0.55) 100%),
+          url('/midnight-cinema-bg.png')
         `,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         position: 'relative',
         overflow: 'hidden',
       }}
