@@ -780,7 +780,7 @@ def get_movies_batch(req: MovieBatchRequest):
         def _fetch_one(mid: int):
             return mid, tmdb_live_service.get_movie_detail(mid)
 
-        with ThreadPoolExecutor(max_workers=16) as pool:
+        with ThreadPoolExecutor(max_workers=10) as pool:
             for mid, data in pool.map(_fetch_one, missing_ids):
                 if data:
                     results[mid] = data

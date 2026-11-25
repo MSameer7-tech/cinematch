@@ -66,6 +66,11 @@ class TMDBLiveService:
         self.cache: Dict[str, Dict[str, Any]] = {}
         self.cache_ttl = 900  # 15 minutes TTL
         self._bollywood_pool = None
+        from requests.adapters import HTTPAdapter
+        self.session = requests.Session()
+        adapter = HTTPAdapter(pool_connections=16, pool_maxsize=16)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
 
     def _get_cache(self, key: str) -> Optional[Any]:
         if key in self.cache:
@@ -124,9 +129,9 @@ class TMDBLiveService:
         if cached is not None:
             return cached
 
-        url = f"{self.base_url}/{endpoint}"
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
         try:
-            resp = requests.get(url, params=query_params, timeout=3.5)
+            resp = self.session.get(url, params=query_params, timeout=4.0)
             if resp.status_code == 200:
                 data = resp.json()
                 self._set_cache(cache_key, data)
@@ -277,7 +282,7 @@ class TMDBLiveService:
         # Fallback to live TMDB Indian cinema discovery when local raw_dir is empty (e.g., Render/Docker)
         if len(pool) < 20 and self.api_key:
             for p_num in (1, 2, 3):
-                data = self._fetch_endpoint("/discover/movie", {
+                data = self._fetch_endpoint("discover/movie", {
                     "with_origin_country": "IN",
                     "sort_by": "popularity.desc",
                     "release_date.lte": today,
