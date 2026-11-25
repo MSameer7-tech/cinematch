@@ -25,6 +25,12 @@ export const useHomepage = (userId: string, enabled: boolean = true) => {
         includeMature
       );
       const hydrated = await processHomepageResponse(raw);
+      const hasAnyMovies =
+        (hydrated.hero_movies && hydrated.hero_movies.length > 0) ||
+        hydrated.sections.some((s) => s.movies.length > 0);
+      if (!hasAnyMovies) {
+        throw new Error('Homepage returned no hydrated movies');
+      }
       
       // Seed other caches to split keys (Phase 9)
       queryClient.setQueryData(['homepage-static', effectiveUserId], {

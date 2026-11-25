@@ -15,7 +15,7 @@ import { useUserPreferences } from '../../settings/utils/preferences';
 export const HomePage: FC = () => {
   const { user, guest } = useAuth();
   const userId = user?.id || guest?.id || 'anonymous';
-  const { sections, hero, heroMovies: backendHeroMovies, isLoading, isError } = useHomepage(userId);
+  const { sections, hero, heroMovies: backendHeroMovies, isLoading, isError, refetch } = useHomepage(userId);
   const { trackEvent } = useRecommendationTracking();
   const { watchedMovies: rawWatchedMovies } = useWatchedTrailers();
   const { includeMature } = useUserPreferences();
@@ -112,8 +112,22 @@ export const HomePage: FC = () => {
 
   if (isError) {
     return (
-      <div style={{ padding: '60px 40px', minHeight: '60vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
+      <div style={{ padding: '60px 40px', minHeight: '60vh', display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
         <h3>Error loading homepage contents. Please try again.</h3>
+        <button
+          onClick={() => refetch()}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            background: '#8B5CF6',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }
