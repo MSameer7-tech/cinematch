@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from dotenv import load_dotenv
 
 # Load env variables from the parent or current directory .env
@@ -37,3 +38,22 @@ DEFAULT_RANKING_WEIGHTS = RankingWeights(
     freshness_bonus_max=0.05,
     popularity_bonus_max=0.05
 )
+
+
+@lru_cache(maxsize=1)
+def get_movie_features_df():
+    """Load and cache the shared movie features DataFrame once per process."""
+    import pandas as pd
+    data_path = os.path.join(PROCESSED_DATA_DIR, f"movie_features_{DATA_VERSION}.parquet")
+    return pd.read_parquet(data_path)
+
+
+@lru_cache(maxsize=1)
+def get_tfidf_matrix():
+    """Load and cache the shared sparse TF-IDF matrix once per process."""
+    import numpy as np
+    import scipy.sparse as sp
+    tfidf_path = os.path.join(MATRICES_DIR, f"tfidf_matrix_{DATA_VERSION}.npz")
+    if not os.path.exists(tfidf_path):
+        return None
+    return sp.load_npz(tfidf_path).astype(np.float32)

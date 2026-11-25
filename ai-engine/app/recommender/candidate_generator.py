@@ -43,24 +43,16 @@ def get_language_filter_mask(df, language_str: str):
 
 class CandidateGenerator:
     def __init__(self):
-        # Load dataset
-        data_path = os.path.join(PROCESSED_DATA_DIR, f"movie_features_{DATA_VERSION}.parquet")
-        self.df = pd.read_parquet(data_path)
+        from app.config import get_movie_features_df, get_tfidf_matrix
+        self.df = get_movie_features_df()
         
         # Build mapping from movie_id to index and vice-versa
         # Note: the dataframe index matches the similarity matrix row index
         self.movie_id_to_idx = {row['movie_id']: idx for idx, row in self.df.iterrows()}
         self.idx_to_movie_id = {idx: row['movie_id'] for idx, row in self.df.iterrows()}
         
-        # Load similarity matrix (or compute from TF-IDF matrix if prebuilt .npy is absent)
-        sim_path = os.path.join(MATRICES_DIR, f"cosine_similarity_{DATA_VERSION}.npy")
-        if os.path.exists(sim_path):
-            self.similarity_matrix = np.load(sim_path)
-        else:
-            import scipy.sparse as sp
-            tfidf_path = os.path.join(MATRICES_DIR, f"tfidf_matrix_{DATA_VERSION}.npz")
-            tfidf_matrix = sp.load_npz(tfidf_path)
-            self.similarity_matrix = (tfidf_matrix @ tfidf_matrix.T).toarray().astype(np.float32)
+        # Shared sparse TF-IDF matrix (~1.7 MB) for low-memory on-demand similarity lookup
+        self.tfidf_matrix = get_tfidf_matrix()
         
     def build_seed_movies(self, context: RecommendationContext) -> set:
         """
@@ -180,7 +172,7 @@ class CandidateGenerator:
                 continue
                 
             seed_idx = self.movie_id_to_idx[seed_id]
-            sim_scores = self.similarity_matrix[seed_idx]
+            sim_scores = (self.tfidf_matrix @ self.tfidf_matrix[seed_idx].T).toarray().ravel()
             
             # Get top K indices
             top_indices = np.argsort(sim_scores)[-(top_k_per_seed + 1):][::-1]

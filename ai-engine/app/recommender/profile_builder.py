@@ -21,9 +21,8 @@ class ProfileBuilder:
         self.base_url = SUPABASE_URL
         
         # Load movie features to resolve genres/directors/cast
-        data_path = os.path.join(PROCESSED_DATA_DIR, f"movie_features_{DATA_VERSION}.parquet")
-        self.movies_df = pd.read_parquet(data_path)
-        self.movies_df.set_index('movie_id', inplace=True)
+        from app.config import get_movie_features_df
+        self.movies_df = get_movie_features_df().set_index('movie_id', inplace=False)
         
     def _fetch_table(self, table_name: str, select="*", user_id: str = None):
         try:

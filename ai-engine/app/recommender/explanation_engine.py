@@ -10,8 +10,8 @@ from app.config import PROCESSED_DATA_DIR, DATA_VERSION
 
 class ExplanationEngine:
     def __init__(self):
-        data_path = os.path.join(PROCESSED_DATA_DIR, f"movie_features_{DATA_VERSION}.parquet")
-        df = pd.read_parquet(data_path)
+        from app.config import get_movie_features_df
+        df = get_movie_features_df()
         self.movie_titles = {row['movie_id']: row['title'] for idx, row in df.iterrows()}
         
     def generate_explanations(self, context: RecommendationContext) -> None:

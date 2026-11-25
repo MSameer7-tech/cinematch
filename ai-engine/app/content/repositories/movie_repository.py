@@ -4,20 +4,27 @@ import numpy as np
 from app.config import PROCESSED_DATA_DIR, DATA_VERSION, MATRICES_DIR
 
 class MovieRepository:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
-        data_path = os.path.join(PROCESSED_DATA_DIR, f"movie_features_{DATA_VERSION}.parquet")
-        self.df = pd.read_parquet(data_path)
+        if self._initialized:
+            return
+        self._initialized = True
+        from app.config import get_movie_features_df, get_tfidf_matrix
+        self.df = get_movie_features_df()
         
         # Mapping from movie_id to index and vice-versa
         self.movie_id_to_idx = {row['movie_id']: idx for idx, row in self.df.iterrows()}
         self.idx_to_movie_id = {idx: row['movie_id'] for idx, row in self.df.iterrows()}
         
-        # Load similarity matrix
-        sim_path = os.path.join(MATRICES_DIR, f"cosine_similarity_{DATA_VERSION}.npy")
-        if os.path.exists(sim_path):
-            self.similarity_matrix = np.load(sim_path)
-        else:
-            self.similarity_matrix = None
+        # Shared sparse TF-IDF matrix (~1.7 MB) for low-memory on-demand similarity lookup
+        self.tfidf_matrix = get_tfidf_matrix()
 
         # ----------------------------------------------------
         # Server Startup Precomputations (Optimization Phase)
@@ -125,11 +132,11 @@ class MovieRepository:
         return matching_movies
 
     def get_similar_movies(self, movie_id: int, limit: int = 100) -> list:
-        if self.similarity_matrix is None or movie_id not in self.movie_id_to_idx:
+        if self.tfidf_matrix is None or movie_id not in self.movie_id_to_idx:
             return []
             
         seed_idx = self.movie_id_to_idx[movie_id]
-        sim_scores = self.similarity_matrix[seed_idx]
+        sim_scores = (self.tfidf_matrix @ self.tfidf_matrix[seed_idx].T).toarray().ravel()
         
         # Get top indices (excluding self)
         top_indices = np.argsort(sim_scores)[::-1]
