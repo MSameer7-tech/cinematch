@@ -1,15 +1,17 @@
 /* CineMatch Search Results Page - Premium Stremio-Inspired Full-Width UI */
 
 .search-page-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 36px 36px 80px;
-  min-height: calc(100vh - 80px);
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 16px 80px 16px;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--navbar-height));
 }
 
 @media (max-width: 768px) {
   .search-page-container {
-    padding: 20px 16px 80px;
+    padding: 12px 14px 80px 14px;
   }
 }
 
@@ -407,25 +409,53 @@
   font-weight: 500;
 }
 
-/* Full-Width Search Results Grid (7-8 Cards Per Row on Desktop) */
+/* Full-Width Search Results Grid (Responsive 2 to 8 Columns) */
 .search-results-full-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 18px;
   width: 100%;
+  box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1750px) {
   .search-results-full-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1480px) {
+  .search-results-full-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 16px;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1220px) {
   .search-results-full-grid {
-    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 960px) {
+  .search-results-full-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .search-results-full-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-results-full-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 }
 

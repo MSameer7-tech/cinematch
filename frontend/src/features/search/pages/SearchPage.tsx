@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useSearch } from '../hooks/useSearch';
 import { useSearchStore } from '../stores/search.store';
 import { MovieCard } from '../../movies/components/card/MovieCard';
@@ -41,6 +41,7 @@ const SentinelCard: React.FC<{ onVisible: () => void }> = ({ onVisible }) => {
 export const SearchPage: React.FC = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const queryParam = searchParams.get('q') || '';
   
   const { 
@@ -127,6 +128,7 @@ export const SearchPage: React.FC = () => {
     if (user?.id) {
       analyticsService.logMovieClicked(user.id, movieId, index + 1);
     }
+    navigate(`/movie/${movieId}`);
   };
 
   const handleGenreToggle = (genreName: string) => {
@@ -351,8 +353,12 @@ export const SearchPage: React.FC = () => {
               <div 
                 key={`${movie.id}_${index}`} 
                 onClick={() => handleMovieClick(movie.id, index)}
+                style={{ cursor: 'pointer', minWidth: 0, width: '100%' }}
               >
-                <MovieCard movie={movie} />
+                <MovieCard 
+                  movie={movie} 
+                  onClick={(id) => handleMovieClick(id, index)} 
+                />
               </div>
             ))}
 
