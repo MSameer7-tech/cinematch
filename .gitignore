@@ -224,7 +224,8 @@ __marimo__/
 # Large AI/ML matrix artifacts
 *.npy
 *.npz
-ai-engine/artifacts/matrices/
+ai-engine/artifacts/matrices/*
+!ai-engine/artifacts/matrices/tfidf_matrix_v1.npz
 
 # Environment files
 .env

@@ -52,9 +52,15 @@ class CandidateGenerator:
         self.movie_id_to_idx = {row['movie_id']: idx for idx, row in self.df.iterrows()}
         self.idx_to_movie_id = {idx: row['movie_id'] for idx, row in self.df.iterrows()}
         
-        # Load similarity matrix
+        # Load similarity matrix (or compute from TF-IDF matrix if prebuilt .npy is absent)
         sim_path = os.path.join(MATRICES_DIR, f"cosine_similarity_{DATA_VERSION}.npy")
-        self.similarity_matrix = np.load(sim_path)
+        if os.path.exists(sim_path):
+            self.similarity_matrix = np.load(sim_path)
+        else:
+            import scipy.sparse as sp
+            tfidf_path = os.path.join(MATRICES_DIR, f"tfidf_matrix_{DATA_VERSION}.npz")
+            tfidf_matrix = sp.load_npz(tfidf_path)
+            self.similarity_matrix = (tfidf_matrix @ tfidf_matrix.T).toarray().astype(np.float32)
         
     def build_seed_movies(self, context: RecommendationContext) -> set:
         """
