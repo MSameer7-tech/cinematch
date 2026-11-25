@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FC, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Mail, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { PasswordInput } from './PasswordInput';
@@ -72,20 +73,34 @@ export const LoginForm: FC = () => {
 
       <div className="form-group">
         <label htmlFor="email" className="form-label">EMAIL ADDRESS</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          disabled={isSubmitting}
-          required
-          className="auth-input"
-        />
+        <div className="input-container" style={{ position: 'relative' }}>
+          <Mail
+            size={15}
+            style={{
+              position: 'absolute',
+              left: '14px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'rgba(255, 255, 255, 0.4)',
+              pointerEvents: 'none',
+            }}
+          />
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            disabled={isSubmitting}
+            required
+            className="auth-input"
+            style={{ paddingLeft: '40px' }}
+          />
+        </div>
       </div>
 
-      <div className="form-group" style={{ marginBottom: '28px' }}>
+      <div className="form-group" style={{ marginBottom: '22px' }}>
         <label htmlFor="password" className="form-label">PASSWORD</label>
         <PasswordInput
           value={password}
@@ -94,8 +109,8 @@ export const LoginForm: FC = () => {
           disabled={isSubmitting}
           required
         />
-        <div style={{ textAlign: 'right', marginTop: '10px' }}>
-          <a href="/forgot-password" className="text-link" style={{ fontSize: '13px', fontWeight: 500 }}>
+        <div style={{ textAlign: 'right', marginTop: '8px' }}>
+          <a href="/forgot-password" className="text-link" style={{ fontSize: '12.5px', fontWeight: 500 }}>
             Forgot password?
           </a>
         </div>
@@ -106,12 +121,13 @@ export const LoginForm: FC = () => {
         disabled={isSubmitting}
         className="btn-auth btn-primary"
       >
-        {isSubmitting ? 'Signing in...' : 'Sign In'}
+        <span>{isSubmitting ? 'Signing in...' : 'Sign In'}</span>
+        {!isSubmitting && <ArrowRight size={16} />}
       </button>
 
       <Divider />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <GoogleButton onClick={handleGoogleLogin} disabled={isSubmitting} />
         <GuestButton onClick={handleGuestLogin} disabled={isSubmitting} />
       </div>

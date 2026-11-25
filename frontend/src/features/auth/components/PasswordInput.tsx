@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FC, ChangeEvent } from 'react';
+import { Lock } from 'lucide-react';
 
 interface PasswordInputProps {
   value: string;
@@ -27,7 +28,18 @@ export const PasswordInput: FC<PasswordInputProps> = ({
   };
 
   return (
-    <div className="input-container">
+    <div className="input-container" style={{ position: 'relative' }}>
+      <Lock
+        size={15}
+        style={{
+          position: 'absolute',
+          left: '14px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          color: 'rgba(255, 255, 255, 0.4)',
+          pointerEvents: 'none',
+        }}
+      />
       <input
         type={showPassword ? 'text' : 'password'}
         value={value}
@@ -38,7 +50,7 @@ export const PasswordInput: FC<PasswordInputProps> = ({
         id={id}
         required={required}
         className="auth-input"
-        style={{ paddingRight: '48px' }}
+        style={{ paddingLeft: '40px', paddingRight: '46px' }}
       />
       <button
         type="button"
