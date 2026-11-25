@@ -38,8 +38,10 @@ export const useHomepage = (userId: string, enabled: boolean = true) => {
       return hydrated;
     },
     enabled: enabled,
-    staleTime: 15 * 60 * 1000, // 15 minutes
+    staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime: 60 * 60 * 1000,    // 1 hour
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
   });
 

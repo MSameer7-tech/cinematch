@@ -1,4 +1,5 @@
 import { type FC, useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, 
@@ -77,16 +78,19 @@ export const HeroBanner: FC<HeroBannerProps> = ({
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
   }, [items.length]);
 
-  // Auto-rotation timer
+  const location = useLocation();
+  const isRouteActive = location.pathname === '/';
+
+  // Auto-rotation timer (paused when navigated away from Home)
   useEffect(() => {
-    if (items.length <= 1 || isPaused || isTrailerOpen || isRatingOpen) return;
+    if (!isRouteActive || items.length <= 1 || isPaused || isTrailerOpen || isRatingOpen) return;
 
     const timer = setInterval(() => {
       handleNext();
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [items.length, isPaused, intervalMs, handleNext, isTrailerOpen, isRatingOpen]);
+  }, [isRouteActive, items.length, isPaused, intervalMs, handleNext, isTrailerOpen, isRatingOpen]);
 
   const handleToggleWatchlist = () => {
     if (!currentMovie) return;

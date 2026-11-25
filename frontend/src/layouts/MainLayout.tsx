@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { AppShell } from '../components/layout/AppShell';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopNavbar } from '../components/layout/TopNavbar';
@@ -31,24 +30,17 @@ export const MainLayout: FC = () => {
             ref={mainRef}
             className={`content-container ${isHome ? 'home-immersive' : isAIPage ? 'ai-immersive' : ''}`}
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: 'easeOut' }}
-                style={{ 
-                  width: '100%', 
-                  minHeight: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  flex: 1 
-                }}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+            <div
+              style={{ 
+                width: '100%', 
+                minHeight: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                flex: 1 
+              }}
+            >
+              <Outlet />
+            </div>
           </main>
         </div>
         <MobileNavbar />
