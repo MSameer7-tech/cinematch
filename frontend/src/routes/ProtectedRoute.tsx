@@ -8,13 +8,15 @@ export const ProtectedRoute: FC = () => {
   const { authState, isInitializing } = useAuth();
   const location = useLocation();
   const isHome = location.pathname === '/';
-  const [hasVisitedHome, setHasVisitedHome] = useState(isHome);
+  const isOnboarding = location.pathname === '/onboarding';
+  const needsOnboarding = Boolean(authState.status === 'AUTHENTICATED' && authState.user && !authState.user.onboardingCompleted);
+  const [hasVisitedHome, setHasVisitedHome] = useState(isHome && !needsOnboarding);
 
   useEffect(() => {
-    if (isHome) {
+    if (isHome && !needsOnboarding) {
       setHasVisitedHome(true);
     }
-  }, [isHome]);
+  }, [isHome, needsOnboarding]);
 
   if (isInitializing) {
     return (
@@ -39,6 +41,10 @@ export const ProtectedRoute: FC = () => {
 
   if (authState.status !== 'AUTHENTICATED') {
     return <Navigate to="/login" replace />;
+  }
+
+  if (needsOnboarding && !isOnboarding) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return (
