@@ -15,9 +15,9 @@ export const AuthCard: React.FC<AuthCardProps> = ({ children, title, subtitle, f
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
       style={{
-        padding: '34px 32px',
+        padding: '38px 36px',
         width: '100%',
-        maxWidth: '400px',
+        maxWidth: '445px',
         margin: '0 auto',
         borderRadius: '14px',
         background: 'rgba(16, 15, 25, 0.86)',

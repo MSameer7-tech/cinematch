@@ -217,6 +217,16 @@ body {
   box-shadow: 0 0 0 2px rgba(145, 71, 245, 0.18);
 }
 
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 100px #191722 inset !important;
+  -webkit-text-fill-color: #F5F3FA !important;
+  caret-color: #F5F3FA;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 .input-toggle-btn {
   position: absolute;
   right: 12px;

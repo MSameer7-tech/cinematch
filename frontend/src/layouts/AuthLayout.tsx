@@ -23,51 +23,57 @@ export const AuthLayout: React.FC = () => {
       }}
       className="auth-page-root"
     >
+      {/* Top-Left Brand Header (Anchored to Top-Left) */}
+      <header
+        style={{
+          width: '100%',
+          padding: '28px 44px 0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          boxSizing: 'border-box',
+          position: 'relative',
+          zIndex: 2,
+        }}
+        className="auth-top-header"
+      >
+        <img
+          src="/logo.png"
+          alt="CineMatch"
+          style={{
+            width: '40px',
+            height: '40px',
+            objectFit: 'contain',
+          }}
+        />
+        <span
+          style={{
+            fontSize: '24px',
+            fontWeight: 800,
+            letterSpacing: '-0.025em',
+            color: '#F5F3FA',
+            fontFamily: 'var(--font-heading, inherit)',
+          }}
+        >
+          Cine<span style={{ color: '#B36BFF' }}>Match</span>
+        </span>
+      </header>
+
       {/* Consistent Max-Width Content Container */}
       <div
         style={{
           flex: 1,
           width: '100%',
-          maxWidth: '1180px',
+          maxWidth: '1200px',
           margin: '0 auto',
-          padding: '28px 40px 44px',
+          padding: '12px 40px 48px',
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: 'center',
           boxSizing: 'border-box',
         }}
         className="auth-outer-container"
       >
-        {/* Top-Left Brand Header */}
-        <header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            marginBottom: '24px',
-          }}
-          className="auth-top-header"
-        >
-          <img
-            src="/logo.png"
-            alt="CineMatch"
-            style={{
-              width: '28px',
-              height: '28px',
-              objectFit: 'contain',
-            }}
-          />
-          <span
-            style={{
-              fontSize: '18px',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              color: '#F5F3FA',
-              fontFamily: 'var(--font-heading, inherit)',
-            }}
-          >
-            Cine<span style={{ color: '#B36BFF' }}>Match</span>
-          </span>
-        </header>
 
         {/* Vertically Centered Two-Column Composition */}
         <div
@@ -90,8 +96,13 @@ export const AuthLayout: React.FC = () => {
             style={{
               flex: '1',
               textAlign: 'left',
-              maxWidth: '480px',
+              maxWidth: '500px',
               minWidth: 0,
+              position: 'relative',
+              padding: '24px 28px',
+              margin: '-24px -28px',
+              borderRadius: '24px',
+              background: 'radial-gradient(ellipse at 42% 50%, rgba(8, 7, 16, 0.65) 0%, rgba(8, 7, 16, 0.35) 50%, rgba(8, 7, 16, 0) 76%)',
             }}
             className="auth-branding-panel"
           >
@@ -104,6 +115,7 @@ export const AuthLayout: React.FC = () => {
                 letterSpacing: '-0.03em',
                 color: '#F5F3FA',
                 fontFamily: 'var(--font-heading, inherit)',
+                textShadow: '0 4px 24px rgba(0, 0, 0, 0.75)',
               }}
             >
               Discover your next
@@ -119,6 +131,7 @@ export const AuthLayout: React.FC = () => {
                 margin: '0 0 34px 0',
                 maxWidth: '420px',
                 fontWeight: 400,
+                textShadow: '0 2px 16px rgba(0, 0, 0, 0.85)',
               }}
             >
               Get personalized movie recommendations based on your taste, watchlist, and ratings.
@@ -167,7 +180,7 @@ export const AuthLayout: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               width: '100%',
-              maxWidth: '400px',
+              maxWidth: '445px',
             }}
             className="auth-card-column"
           >
@@ -179,13 +192,13 @@ export const AuthLayout: React.FC = () => {
       <style>{`
         @media (max-width: 900px) {
           .auth-outer-container {
-            padding: 20px 20px 36px !important;
+            padding: 16px 20px 36px !important;
           }
           .auth-page-root {
             background-image: linear-gradient(180deg, rgba(8, 7, 16, 0.78) 0%, rgba(8, 7, 16, 0.88) 100%), url('/midnight-cinema-bg.png') !important;
           }
           .auth-top-header {
-            margin-bottom: 20px !important;
+            padding: 20px 20px 8px !important;
           }
           .auth-layout-container {
             flex-direction: column-reverse !important;
@@ -193,11 +206,13 @@ export const AuthLayout: React.FC = () => {
             gap: 28px !important;
           }
           .auth-card-column {
-            max-width: 420px !important;
+            max-width: 445px !important;
           }
           .auth-branding-panel {
             text-align: center !important;
-            max-width: 420px !important;
+            max-width: 445px !important;
+            padding: 16px !important;
+            margin: 0 !important;
           }
           .auth-branding-panel h1 {
             font-size: 28px !important;
