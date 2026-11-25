@@ -12,7 +12,6 @@ import {
   ArrowRight, 
   Compass, 
   Clapperboard,
-  ShieldCheck,
   Cpu,
   RotateCcw
 } from 'lucide-react';
@@ -889,7 +888,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                <span>Synthesize Persona Dossier</span>
+                <span>Continue to Profile</span>
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -902,29 +901,12 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
         {currentStep === 4 && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', flex: 1 }}>
             <div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '4px 12px',
-                borderRadius: '16px',
-                backgroundColor: 'rgba(34, 197, 94, 0.12)',
-                border: '1px solid rgba(34, 197, 94, 0.3)',
-                color: '#4ade80',
-                fontSize: '12px',
-                fontWeight: 600,
-                marginBottom: '14px'
-              }}>
-                <ShieldCheck size={14} />
-                <span>Taste Profile Synthesized</span>
-              </div>
-
               <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#ffffff', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
-                Your CineMatch Cinematic Persona
+                Your Film Taste Profile
               </h2>
 
               <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.65)', margin: '0 0 28px 0', lineHeight: 1.5 }}>
-                The Detail Engine has synthesized your baseline taste vectors. Your recommendations and AI companion will calibrate to this identity.
+                We've crafted your personalized movie profile. Your recommendations and AI companion are now tuned to your taste.
               </p>
 
               {/* Persona Dossier Card */}
@@ -941,7 +923,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
               }}>
                 <div>
                   <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1.2px', color: '#c084fc', fontWeight: 700 }}>
-                    Identified Archetype
+                    Your Film Archetype
                   </span>
                   <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#f8fafc', margin: '4px 0 8px 0' }}>
                     {personaDossier.title}
@@ -961,7 +943,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                 }}>
                   <div>
                     <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.45)', textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: '4px' }}>
-                      Primary Sensibility
+                      Top Genre
                     </span>
                     <strong style={{ fontSize: '14px', color: '#f8fafc' }}>
                       {ONBOARDING_GENRES.find(g => selectedGenreIds.includes(g.id))?.name || 'Sci-Fi'}
@@ -970,19 +952,19 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
 
                   <div>
                     <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.45)', textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: '4px' }}>
-                      Anchor Films Stored
+                      Favorite Movies
                     </span>
                     <strong style={{ fontSize: '14px', color: '#f8fafc' }}>
-                      {favoriteMovieIds.length} Initial Anchors
+                      {favoriteMovieIds.length} Selected
                     </strong>
                   </div>
 
                   <div>
                     <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.45)', textTransform: 'uppercase', letterSpacing: '0.8px', display: 'block', marginBottom: '4px' }}>
-                      CineMatch AI Assistant
+                      CineMatch AI
                     </span>
                     <strong style={{ fontSize: '14px', color: '#a855f7' }}>
-                      Profile Injected
+                      Ready & Personalized
                     </strong>
                   </div>
                 </div>
@@ -1043,12 +1025,9 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                 }}
               >
                 {isFinishing ? (
-                  <span>Calibrating CineMatch...</span>
+                  <span>Entering CineMatch...</span>
                 ) : (
-                  <>
-                    <span>Enter CineMatch</span>
-                    <Sparkles size={16} />
-                  </>
+                  <span>Enter CineMatch</span>
                 )}
               </button>
             </div>
