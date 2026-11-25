@@ -296,9 +296,13 @@ export const authService = {
   /**
    * Fetch the active registered user's profile metadata.
    */
-  async getCurrentUser(): Promise<ServiceResult<AppUser>> {
+  async getCurrentUser(providedUser?: any): Promise<ServiceResult<AppUser>> {
     try {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      let supabaseUser = providedUser;
+      if (!supabaseUser) {
+        const { data: { user } } = await supabase.auth.getUser();
+        supabaseUser = user;
+      }
       if (!supabaseUser) {
         return { success: false, error: 'No active session found.' };
       }
@@ -310,11 +314,16 @@ export const authService = {
       const avatarUrl = supabaseUser.user_metadata?.avatar_url || null;
 
       try {
-        const { data: profile, error: profileError } = await supabase
+        const profilePromise = supabase
           .from('users')
           .select('*')
           .eq('id', supabaseUser.id)
           .single();
+
+        const { data: profile, error: profileError } = await Promise.race([
+          profilePromise,
+          new Promise<any>((resolve) => setTimeout(() => resolve({ data: null, error: { message: 'Profile fetch timeout' } }), 2500))
+        ]);
 
         if (!profileError && profile) {
           const appUser: AppUser = {
@@ -443,7 +452,7 @@ export const authService = {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const result = await this.getCurrentUser();
+        const result = await this.getCurrentUser(session.user);
         if (result.success) {
           return { status: 'AUTHENTICATED', user: result.data, guest: null };
         }

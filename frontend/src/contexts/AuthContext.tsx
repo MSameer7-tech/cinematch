@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useRef } from 'react';
 import type { FC, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { authService } from '../features/auth/services/auth.service';
@@ -49,10 +49,20 @@ const getInitialAuthState = (): AuthState => {
 
 export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [authState, setAuthStateInternal] = useState<AuthState>(getInitialAuthState);
-  const [isInitializing, setIsInitializing] = useState(() => authState.status === 'LOADING');
+  const authStateRef = useRef<AuthState>(authState);
+  const isOAuthCallback =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('code=') ||
+      window.location.hash.includes('access_token=') ||
+      window.location.hash.includes('refresh_token='));
+
+  const [isInitializing, setIsInitializing] = useState(
+    () => authState.status === 'LOADING' || isOAuthCallback
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setAuthState = (state: AuthState) => {
+    authStateRef.current = state;
     setAuthStateInternal(state);
     try {
       if (state.status === 'AUTHENTICATED' || state.status === 'GUEST') {
@@ -68,21 +78,41 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const user = authState.user;
   const guest = authState.guest;
 
+  const syncUserFromSession = async (sessionUser: any) => {
+    try {
+      const result = await authService.getCurrentUser(sessionUser);
+      if (result.success) {
+        setAuthState({ status: 'AUTHENTICATED', user: result.data, guest: null });
+      }
+    } catch (err) {
+      console.error('Failed to sync user from session:', err);
+    } finally {
+      setIsInitializing(false);
+    }
+  };
+
   const initializeAuth = async () => {
     try {
-      // 1.2-second safety timeout race so slow network checks never block the UI
-      const timeoutPromise = new Promise<AuthState>((resolve) => 
-        setTimeout(() => resolve(
-          authState.user || authState.guest
-            ? authState
-            : { status: 'UNAUTHENTICATED', user: null, guest: null }
-        ), 1200)
+      const timeoutMs = isOAuthCallback ? 10000 : 3000;
+      const timeoutPromise = new Promise<AuthState>((resolve) =>
+        setTimeout(() => {
+          const current = authStateRef.current;
+          resolve(
+            current.user || current.guest
+              ? current
+              : { status: 'UNAUTHENTICATED', user: null, guest: null }
+          );
+        }, timeoutMs)
       );
       const state = await Promise.race([authService.initializeSession(), timeoutPromise]);
-      setAuthState(state);
+      // Only apply if we didn't already authenticate via onAuthStateChange
+      if (state.status === 'AUTHENTICATED' || authStateRef.current.status !== 'AUTHENTICATED') {
+        setAuthState(state);
+      }
     } catch (error) {
       console.error('Failed to initialize auth:', error);
-      if (!authState.user && !authState.guest) {
+      const current = authStateRef.current;
+      if (!current.user && !current.guest) {
         setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
       }
     } finally {
@@ -95,7 +125,6 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
     // Listen for real-time auth changes from Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'INITIAL_SESSION') return;
       if (event === 'SIGNED_OUT') {
         try {
           localStorage.removeItem(AUTH_CACHE_KEY);
@@ -105,10 +134,13 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         setIsInitializing(false);
         return;
       }
-      if (event === 'SIGNED_IN' && session?.user) {
-        initializeAuth();
+
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session?.user) {
+        syncUserFromSession(session.user);
         return;
       }
+
+      if (event === 'INITIAL_SESSION') return;
       initializeAuth();
     });
 
