@@ -51,8 +51,22 @@ jobs:
     - name: Type Check (TSC)
       run: npx tsc --noEmit
     - name: Test (Vitest)
+      env:
+        VITE_SUPABASE_URL: https://test-project.supabase.co
+        VITE_SUPABASE_ANON_KEY: test-anon-key
+        VITE_TMDB_TOKEN: test-tmdb-token
+        VITE_TMDB_BASE_URL: https://api.themoviedb.org/3
+        VITE_TMDB_IMAGE_URL: https://image.tmdb.org/t/p
+        VITE_TMDB_API: test-tmdb-api-key
       run: npx vitest run
     - name: Build
+      env:
+        VITE_SUPABASE_URL: https://test-project.supabase.co
+        VITE_SUPABASE_ANON_KEY: test-anon-key
+        VITE_TMDB_TOKEN: test-tmdb-token
+        VITE_TMDB_BASE_URL: https://api.themoviedb.org/3
+        VITE_TMDB_IMAGE_URL: https://image.tmdb.org/t/p
+        VITE_TMDB_API: test-tmdb-api-key
       run: npm run build
 
   docker-validation:

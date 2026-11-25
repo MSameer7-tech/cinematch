@@ -109,7 +109,7 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
             </h3>
             
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              {movie.genres.map(g => g.name).join(', ')}
+              {(movie.genres ?? []).map(g => g.name).join(', ')}
             </div>
             
             <MovieRating rating={movie.voteAverage} showText={true} />
@@ -174,7 +174,7 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
         flexDirection: 'column',
         gap: '6px'
       }}>
-        {reasons.map((reason, idx) => (
+        {(reasons ?? []).map((reason, idx) => (
           <div key={idx} style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
             {formatReason(reason)}
           </div>
