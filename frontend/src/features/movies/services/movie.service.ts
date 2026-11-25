@@ -275,15 +275,26 @@ export const movieService = {
 
     if (missingIds.length > 0) {
       try {
-        const res = await fetch(`${API_BASE_URL}/movies/batch`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ movie_ids: missingIds }),
-        });
-        if (res.ok) {
-          const batchMap: Record<string, any> = await res.json();
-          for (const id of missingIds) {
-            const raw = batchMap[String(id)];
+        const CHUNK_SIZE = 100;
+        const chunks: number[][] = [];
+        for (let i = 0; i < missingIds.length; i += CHUNK_SIZE) {
+          chunks.push(missingIds.slice(i, i + CHUNK_SIZE));
+        }
+
+        const chunkResponses = await Promise.all(
+          chunks.map(async (chunk) => {
+            const res = await fetch(`${API_BASE_URL}/movies/batch`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ movie_ids: chunk }),
+            });
+            return res.ok ? (await res.json() as Record<string, any>) : {};
+          })
+        );
+
+        for (const batchMap of chunkResponses) {
+          for (const [idStr, raw] of Object.entries(batchMap)) {
+            const id = Number(idStr);
             if (raw) {
               try {
                 const details = mapTMDBToMovieDetails(raw);

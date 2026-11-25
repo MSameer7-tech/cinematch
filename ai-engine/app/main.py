@@ -587,7 +587,7 @@ async def refresh_user_taste_profile(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 class MovieBatchRequest(BaseModel):
-    movie_ids: list[int] = Field(..., max_length=50)
+    movie_ids: list[int] = Field(..., max_length=250)
 
 # -------------------------------------------------------------
 # TMDB Clearlogo / Formatted Movie Title Fetcher & Cache
