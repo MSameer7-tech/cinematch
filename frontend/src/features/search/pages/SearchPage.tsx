@@ -4,23 +4,13 @@ import { useSearch } from '../hooks/useSearch';
 import { useSearchStore } from '../stores/search.store';
 import { MovieCard } from '../../movies/components/card/MovieCard';
 import { MovieCardSkeleton } from '../../../components/loading/MovieCardSkeleton';
-import { searchApi } from '../api/search.api';
 import { analyticsService } from '../services/analytics.service';
 import { useAuth } from '../../auth/hooks/useAuth';
 import indexService from '../services/index.service';
 import type { SortOption } from '../types/search.types';
 import { 
   Search, 
-  Sparkles, 
-  AlertCircle, 
-  RefreshCw, 
-  SlidersHorizontal, 
-  Film, 
-  Tv, 
-  Layers, 
-  X,
-  Star,
-  Check
+  SlidersHorizontal
 } from 'lucide-react';
 import './SearchPage.css';
 
@@ -61,11 +51,6 @@ export const SearchPage: React.FC = () => {
   // Available metadata for filters
   const bootstrap = indexService.getIndex();
 
-  // AI Search input variables
-  const [aiQuery, setAiQuery] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-
   // Sync URL query param to search store
   useEffect(() => {
     if (queryParam) {
@@ -82,47 +67,6 @@ export const SearchPage: React.FC = () => {
     if (filters.language) count += 1;
     return count;
   }, [filters]);
-
-  const handleAISearchSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiQuery.trim()) return;
-
-    setAiLoading(true);
-    setAiError(null);
-
-    try {
-      const data = await searchApi.parseAISearch(aiQuery);
-      resetFilters();
-
-      const mappedFilters: any = {};
-      if (data.genres && data.genres.length > 0) mappedFilters.genres = data.genres;
-      if (data.runtimeMax) mappedFilters.runtimeMax = data.runtimeMax;
-      if (data.ratingMin) mappedFilters.ratingMin = data.ratingMin;
-      if (data.language) mappedFilters.language = data.language;
-      if (data.yearMin) mappedFilters.yearMin = data.yearMin;
-      if (data.yearMax) mappedFilters.yearMax = data.yearMax;
-
-      setFilters(mappedFilters);
-
-      if (data.type === 'recommendation' && data.seedMovies && data.seedMovies.length > 0) {
-        setQuery(data.seedMovies[0]);
-      } else if (data.keywords && data.keywords.length > 0) {
-        setQuery(data.keywords[0]);
-      } else {
-        setQuery(aiQuery);
-      }
-
-      if (user?.id) {
-        analyticsService.logEvent(user.id, `ai_search:${aiQuery.slice(0, 50)}`);
-      }
-
-      setAiQuery('');
-    } catch {
-      setAiError("Failed to parse AI filters. Try again with simpler terms.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const handleMovieClick = (movieId: number, index: number) => {
     if (user?.id) {
@@ -142,7 +86,7 @@ export const SearchPage: React.FC = () => {
   return (
     <div className="search-page-container">
       
-      {/* 1. Header Row & AI Search Assistant */}
+      {/* 1. Header Row */}
       <div className="search-header-row">
         <div className="search-title-block">
           <h1 className="search-title-heading">
@@ -154,41 +98,7 @@ export const SearchPage: React.FC = () => {
               : `${results.length} titles found`}
           </span>
         </div>
-        
-        {/* Sleek AI Search Capsule (No red) */}
-        <form onSubmit={handleAISearchSubmit} className="ai-search-capsule">
-          <Sparkles size={16} color="#c084fc" />
-          <input 
-            type="text"
-            placeholder='Ask AI: "mind-bending sci-fi like Interstellar"'
-            value={aiQuery}
-            onChange={(e) => setAiQuery(e.target.value)}
-            disabled={aiLoading}
-            className="ai-search-input"
-          />
-          <button
-            type="submit"
-            disabled={aiLoading}
-            className="btn-ai-submit"
-          >
-            {aiLoading ? (
-              <RefreshCw size={13} className="animate-spin" />
-            ) : (
-              <>
-                <Sparkles size={13} />
-                <span>Ask AI</span>
-              </>
-            )}
-          </button>
-        </form>
       </div>
-
-      {aiError && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fb7185', fontSize: '13px', marginBottom: '16px' }}>
-          <AlertCircle size={14} />
-          <span>{aiError}</span>
-        </div>
-      )}
 
       {/* 2. Top Control Bar (Content Type Tabs + Sort + Filter Toggle) */}
       <div className="search-control-bar">
