@@ -53,7 +53,7 @@ export const LoginForm: FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+    <form onSubmit={handleSubmit} autoComplete="off" style={{ width: '100%' }}>
       {error && (
         <div style={{
           backgroundColor: 'rgba(239, 68, 68, 0.12)',
@@ -92,6 +92,7 @@ export const LoginForm: FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
+            autoComplete="off"
             disabled={isSubmitting}
             required
             className="auth-input"

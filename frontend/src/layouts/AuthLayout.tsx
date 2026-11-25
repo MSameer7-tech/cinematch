@@ -64,9 +64,9 @@ export const AuthLayout: React.FC = () => {
         style={{
           flex: 1,
           width: '100%',
-          maxWidth: '1200px',
+          maxWidth: '1380px',
           margin: '0 auto',
-          padding: '12px 40px 48px',
+          padding: '12px 56px 48px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -96,7 +96,7 @@ export const AuthLayout: React.FC = () => {
             style={{
               flex: '1',
               textAlign: 'left',
-              maxWidth: '500px',
+              maxWidth: '640px',
               minWidth: 0,
               position: 'relative',
               padding: '24px 28px',
@@ -108,7 +108,7 @@ export const AuthLayout: React.FC = () => {
           >
             <h1
               style={{
-                fontSize: 'clamp(2.1rem, 4.1vw, 3.2rem)',
+                fontSize: 'clamp(2.2rem, 3.8vw, 3.25rem)',
                 fontWeight: 700,
                 lineHeight: 1.07,
                 margin: '0 0 18px 0',
@@ -129,7 +129,7 @@ export const AuthLayout: React.FC = () => {
                 color: '#A6A1B5',
                 lineHeight: 1.6,
                 margin: '0 0 34px 0',
-                maxWidth: '420px',
+                maxWidth: '520px',
                 fontWeight: 400,
                 textShadow: '0 2px 16px rgba(0, 0, 0, 0.85)',
               }}

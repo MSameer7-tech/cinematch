@@ -46,6 +46,7 @@ export const PasswordInput: FC<PasswordInputProps> = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        autoComplete="new-password"
         disabled={disabled}
         name={name}
         id={id}
