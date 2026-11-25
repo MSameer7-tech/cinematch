@@ -755,10 +755,13 @@ def get_movie_credits_endpoint(movie_id: int):
 
 @app.post("/api/movies/batch")
 def get_movies_batch(req: MovieBatchRequest):
-    results = {}
-    raw_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "raw")
+    from concurrent.futures import ThreadPoolExecutor
     from app.content.services.tmdb_live_service import tmdb_live_service
-    
+
+    raw_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "raw")
+    results = {}
+    missing_ids = []
+
     for mid in req.movie_ids:
         raw_path = os.path.join(raw_dir, f"movie_{mid}.json")
         data = None
@@ -768,21 +771,32 @@ def get_movies_batch(req: MovieBatchRequest):
                     data = json.load(f)
             except Exception:
                 pass
-        
-        # Fallback to live TMDB if not on disk
-        if not data:
-            data = tmdb_live_service.get_movie_detail(mid)
-            
         if data:
-            # Strip huge credits and keywords from batch responses for maximum speed
-            data.pop("credits", None)
-            data.pop("keywords", None)
-            cached_logo = logo_cache.get(str(mid))
-            if cached_logo and cached_logo.get("logo_path"):
-                data["logo_path"] = cached_logo["logo_path"]
-            results[str(mid)] = data
-            
-    return results
+            results[mid] = data
+        else:
+            missing_ids.append(mid)
+
+    if missing_ids:
+        def _fetch_one(mid: int):
+            return mid, tmdb_live_service.get_movie_detail(mid)
+
+        with ThreadPoolExecutor(max_workers=16) as pool:
+            for mid, data in pool.map(_fetch_one, missing_ids):
+                if data:
+                    results[mid] = data
+
+    formatted = {}
+    for mid, data in results.items():
+        # Copy before stripping huge credits/keywords from batch responses
+        item = dict(data)
+        item.pop("credits", None)
+        item.pop("keywords", None)
+        cached_logo = logo_cache.get(str(mid))
+        if cached_logo and cached_logo.get("logo_path"):
+            item["logo_path"] = cached_logo["logo_path"]
+        formatted[str(mid)] = item
+
+    return formatted
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
