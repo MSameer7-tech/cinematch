@@ -65,7 +65,7 @@ export const SearchDropdown: FC<SearchDropdownProps> = ({ onClose, userTasteProf
         maxHeight: '75vh',
         overflowY: 'auto',
         zIndex: 1000,
-        boxShadow: '0 24px 60px -10px rgba(0, 0, 0, 0.85), 0 0 25px rgba(168, 85, 247, 0.08)',
+        boxShadow: '0 24px 60px -10px rgba(0, 0, 0, 0.85)',
       }}
       className="custom-scrollbar"
     >

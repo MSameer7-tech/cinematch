@@ -457,7 +457,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
                     padding: 0,
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
-                    boxShadow: isActive ? '0 0 10px rgba(255, 255, 255, 0.7)' : 'none',
+                    boxShadow: 'none',
                   }}
                 />
               );

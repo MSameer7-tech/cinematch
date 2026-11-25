@@ -65,7 +65,7 @@
 
   .mobile-nav-item.active .mobile-nav-icon-container {
     background: rgba(139, 92, 246, 0.18);
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+    box-shadow: none;
   }
 
   .mobile-nav-label {

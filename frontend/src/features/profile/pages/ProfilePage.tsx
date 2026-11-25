@@ -53,7 +53,7 @@ export const ProfilePage: FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 24px rgba(168, 85, 247, 0.4)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
             flexShrink: 0
           }}>
             <User size={56} color="#fff" />

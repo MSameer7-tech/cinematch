@@ -613,7 +613,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                         position: 'relative',
                         transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
                         userSelect: 'none',
-                        boxShadow: isSelected ? '0 4px 16px rgba(139, 92, 246, 0.25)' : 'none'
+                        boxShadow: 'none'
                       }}
                       onMouseEnter={(e) => {
                         if (!isSelected) {
@@ -762,7 +762,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                             ? '2px solid #a855f7'
                             : '1px solid rgba(255, 255, 255, 0.1)',
                           boxShadow: isFavorited
-                            ? '0 0 0 2px rgba(168, 85, 247, 0.4), 0 10px 24px rgba(168, 85, 247, 0.35)'
+                            ? '0 0 0 2px #a855f7, 0 8px 24px rgba(0, 0, 0, 0.6)'
                             : '0 4px 12px rgba(0, 0, 0, 0.4)',
                           transform: isFavorited ? 'scale(1.03)' : 'scale(1)',
                           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -934,7 +934,7 @@ export const OnboardingCardsMenu: React.FC<OnboardingCardsMenuProps> = ({
                 borderRadius: '20px',
                 padding: '28px',
                 background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(12, 15, 23, 0.8) 100%)',
-                boxShadow: '0 16px 40px -10px rgba(139, 92, 246, 0.25)',
+                boxShadow: '0 16px 40px -10px rgba(0, 0, 0, 0.6)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '20px'

@@ -1050,7 +1050,7 @@ export const DiscoverPage: FC = () => {
                             ? '2.5px solid #ffffff'
                             : '1px solid rgba(255, 255, 255, 0.09)',
                           boxShadow: isSelected
-                            ? '0 0 0 1px rgba(255, 255, 255, 0.4), 0 16px 36px -6px rgba(168, 85, 247, 0.5)'
+                            ? '0 0 0 1px rgba(255, 255, 255, 0.4), 0 16px 36px -6px rgba(0, 0, 0, 0.65)'
                             : '0 6px 18px rgba(0, 0, 0, 0.45)',
                           transform: isSelected ? 'scale(1.025)' : 'scale(1)',
                           transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',

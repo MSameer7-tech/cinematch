@@ -157,7 +157,7 @@ export const HorizontalMovieCard: FC<HorizontalMovieCardProps> = ({
                 width: `${progress}%`,
                 height: '100%',
                 backgroundColor: 'var(--primary-color)',
-                boxShadow: '0 0 8px var(--primary-color)',
+                boxShadow: 'none',
               }}
             />
           </div>

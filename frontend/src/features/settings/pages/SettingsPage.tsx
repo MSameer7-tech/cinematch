@@ -306,7 +306,7 @@ export const SettingsPage: FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 0 16px rgba(168, 85, 247, 0.25)',
+                            boxShadow: 'none',
                           }}
                         >
                           <Sparkles size={20} color="#c084fc" />
@@ -467,7 +467,7 @@ export const SettingsPage: FC = () => {
                             border: '1px solid rgba(168, 85, 247, 0.28)',
                             borderRadius: '20px',
                             padding: '28px',
-                            boxShadow: '0 8px 32px rgba(168, 85, 247, 0.12)',
+                            boxShadow: 'none',
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -688,7 +688,7 @@ export const SettingsPage: FC = () => {
                             color: '#fff',
                             fontSize: '20px',
                             fontWeight: 700,
-                            boxShadow: '0 4px 16px rgba(124, 58, 237, 0.4)',
+                            boxShadow: 'none',
                           }}
                         >
                           {userEmail.charAt(0).toUpperCase()}

@@ -120,7 +120,7 @@ export const SearchBar: FC = () => {
             borderRadius: '22px',
             backgroundColor: isFocused ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
             border: isFocused ? '1px solid rgba(168, 85, 247, 0.65)' : '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: isFocused ? '0 0 24px rgba(168, 85, 247, 0.25), 0 4px 12px rgba(0,0,0,0.4)' : 'none',
+            boxShadow: isFocused ? '0 4px 16px rgba(0, 0, 0, 0.4)' : 'none',
             color: '#f8fafc',
             outline: 'none',
             transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
