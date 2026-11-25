@@ -349,14 +349,19 @@ class TMDBLiveService:
         page: int = 1,
         genre_id: Optional[int] = None,
         category: str = "popular",
-        media_type: str = "movie"
+        media_type: str = "movie",
+        region: str = "all",
+        include_mature: bool = True
     ) -> dict:
-        """Discover movies with server-side genre, category, sorting, and Bollywood support."""
-        if media_type == "bollywood":
-            return self.get_bollywood_movies(page=page, page_size=20, genre_id=genre_id, category=category)
+        """Discover movies with server-side genre, category, sorting, region focus, and mature content filtering."""
+        if media_type == "bollywood" or (region == "bollywood" and media_type == "movie"):
+            res = self.get_bollywood_movies(page=page, page_size=20, genre_id=genre_id, category=category)
+            if not include_mature and res and "results" in res:
+                res["results"] = [m for m in res["results"] if not m.get("adult")]
+            return res
 
-        if genre_id and int(genre_id) > 0:
-            gid = int(genre_id)
+        if (genre_id and int(genre_id) > 0) or not include_mature:
+            gid = int(genre_id) if genre_id else 0
             sort_map = {
                 "popular": "popularity.desc",
                 "trending": "popularity.desc",
@@ -365,9 +370,14 @@ class TMDBLiveService:
             }
             sort_by = sort_map.get(category, "popularity.desc")
             params = {
-                "with_genres": gid,
                 "sort_by": sort_by,
+                "include_adult": "false",
             }
+            if gid > 0:
+                params["with_genres"] = gid
+            if not include_mature:
+                params["certification_country"] = "US"
+                params["certification.lte"] = "PG-13"
             if category == "topRated":
                 params["vote_count.gte"] = 30
             res = self._fetch_paginated_released("discover/movie", page=page, target_count=20, params=params)
@@ -380,23 +390,27 @@ class TMDBLiveService:
         else:
             res = self.get_popular(page=page)
 
-        # Blend top Bollywood movies into general results stream (2-3 per page)
-        try:
-            b_data = self.get_bollywood_movies(page=page, page_size=10, genre_id=genre_id, category=category)
-            b_movies = b_data.get("results", [])
-            if b_movies and res and "results" in res and res["results"]:
-                existing_ids = {m.get("id") for m in res["results"]}
-                insert_indices = [3, 9, 15]
-                b_idx = 0
-                for idx in insert_indices:
-                    if idx < len(res["results"]) and b_idx < len(b_movies):
-                        cand = b_movies[b_idx]
-                        b_idx += 1
-                        if cand.get("id") not in existing_ids:
-                            res["results"].insert(idx, cand)
-                            existing_ids.add(cand.get("id"))
-        except Exception as e:
-            logger.warning(f"Failed to blend Bollywood movies: {e}")
+        # Blend top Bollywood movies into general results stream only when region is 'all'
+        if region == "all":
+            try:
+                b_data = self.get_bollywood_movies(page=page, page_size=10, genre_id=genre_id, category=category)
+                b_movies = b_data.get("results", [])
+                if b_movies and res and "results" in res and res["results"]:
+                    existing_ids = {m.get("id") for m in res["results"]}
+                    insert_indices = [3, 9, 15]
+                    b_idx = 0
+                    for idx in insert_indices:
+                        if idx < len(res["results"]) and b_idx < len(b_movies):
+                            cand = b_movies[b_idx]
+                            b_idx += 1
+                            if cand.get("id") not in existing_ids:
+                                res["results"].insert(idx, cand)
+                                existing_ids.add(cand.get("id"))
+            except Exception as e:
+                logger.warning(f"Failed to blend Bollywood movies: {e}")
+
+        if not include_mature and res and "results" in res:
+            res["results"] = [m for m in res["results"] if not m.get("adult")]
 
         return res
 

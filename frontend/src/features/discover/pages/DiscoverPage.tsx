@@ -30,6 +30,7 @@ import { useWatchlist, useToggleWatchlist } from '../../library/hooks/useWatchli
 import { useFavorites, useToggleFavorite } from '../../library/hooks/useFavorites';
 import { TrailerModal } from '../../movies/components/details/TrailerModal';
 import { movieService } from '../../movies/services/movie.service';
+import { useUserPreferences } from '../../settings/utils/preferences';
 
 // Category Definitions
 const CATEGORY_OPTIONS = [
@@ -792,23 +793,26 @@ export const DiscoverPage: FC = () => {
 
   // Library States for badges
   const { data: watchlist } = useWatchlist();
+  const { contentRegion, includeMature } = useUserPreferences();
 
-  // Reset pagination when category, genre, or mediaType changes
+  // Reset pagination when category, genre, mediaType, or preferences change
   useEffect(() => {
     setCurrentPage(1);
     setExtraMovies([]);
     setHasMore(true);
-  }, [category, selectedGenreId, mediaType]);
+  }, [category, selectedGenreId, mediaType, contentRegion, includeMature]);
 
-  // Server-side Discover query using category, selected genre, and media format
+  // Server-side Discover query using category, selected genre, media format, and user preferences
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['discover_movies', category, selectedGenreId, mediaType, 1],
+    queryKey: ['discover_movies', category, selectedGenreId, mediaType, 1, contentRegion, includeMature],
     queryFn: () =>
       movieService.discoverMovies({
         page: 1,
         genreId: selectedGenreId,
         category,
         mediaType,
+        region: contentRegion,
+        includeMature,
       }),
     staleTime: 60 * 1000,
   });
@@ -819,11 +823,12 @@ export const DiscoverPage: FC = () => {
     const combined = [...primary, ...extraMovies];
     const seen = new Set<number>();
     return combined.filter((m) => {
+      if (!includeMature && (m as any).adult) return false;
       if (seen.has(m.id)) return false;
       seen.add(m.id);
       return true;
     });
-  }, [data, extraMovies]);
+  }, [data, extraMovies, includeMature]);
 
   // Stable sort: prioritize movies with valid posters in front; push movies without posters to the bottom
   const filteredMovies = useMemo(() => {
@@ -884,6 +889,8 @@ export const DiscoverPage: FC = () => {
         genreId: selectedGenreId,
         category,
         mediaType,
+        region: contentRegion,
+        includeMature,
       });
       const newItems = (result.results || []).filter(isMovieReleased);
       if (newItems.length === 0) {

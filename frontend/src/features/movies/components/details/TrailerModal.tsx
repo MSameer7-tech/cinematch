@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { recordWatchedTrailer } from '../../hooks/useWatchedTrailers';
 import { movieService } from '../../services/movie.service';
+import { useUserPreferences } from '../../../settings/utils/preferences';
 
 interface TrailerModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface TrailerModalProps {
 }
 
 export const TrailerModal: FC<TrailerModalProps> = ({ isOpen, onClose, videoKey, movieTitle, movieId }) => {
+  const { autoPlayTrailers, trailerSound } = useUserPreferences();
   const overlayRef = useRef<HTMLDivElement>(null);
   const [activeKey, setActiveKey] = useState<string | null>(videoKey || null);
   const [isLoading, setIsLoading] = useState<boolean>(!videoKey && !!movieId);
@@ -228,7 +230,7 @@ export const TrailerModal: FC<TrailerModalProps> = ({ isOpen, onClose, videoKey,
               <iframe
                 width="100%"
                 height="100%"
-                src={`https://www.youtube-nocookie.com/embed/${activeKey}?autoplay=1&enablejsapi=1&rel=0`}
+                src={`https://www.youtube-nocookie.com/embed/${activeKey}?autoplay=${autoPlayTrailers ? 1 : 0}&mute=${trailerSound ? 0 : 1}&enablejsapi=1&rel=0`}
                 title={movieTitle ? `${movieTitle} Trailer` : 'Movie Trailer'}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

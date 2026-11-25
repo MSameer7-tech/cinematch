@@ -164,13 +164,24 @@ export const movieService = {
     genreId?: number;
     category?: string;
     mediaType?: string;
+    region?: string;
+    includeMature?: boolean;
   } = {}): Promise<PaginatedMovies> => {
-    const { page = 1, genreId = 0, category = 'popular', mediaType = 'movie' } = params;
+    const {
+      page = 1,
+      genreId = 0,
+      category = 'popular',
+      mediaType = 'movie',
+      region = 'all',
+      includeMature = true,
+    } = params;
     try {
       const queryParams = new URLSearchParams({
         page: String(page),
         category,
         media_type: mediaType,
+        region,
+        include_mature: String(includeMature),
       });
       if (genreId > 0) {
         queryParams.set('genre_id', String(genreId));

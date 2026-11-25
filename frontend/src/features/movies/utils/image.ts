@@ -1,8 +1,10 @@
 import { env } from '../../../config/env';
 import { IMAGE_SIZES, PLACEHOLDERS } from '../constants/images';
+import { getUserPreferences } from '../../settings/utils/preferences';
 
 /**
- * Image resolution utilities that safely generate fully qualified TMDB URLs.
+ * Image resolution utilities that safely generate fully qualified TMDB URLs
+ * while respecting the user's High-Resolution Artwork preference.
  */
 
 export const getPosterUrl = (
@@ -12,7 +14,11 @@ export const getPosterUrl = (
   if (!path) return PLACEHOLDERS.POSTER;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${env.TMDB_IMAGE_URL}/${size}${cleanPath}`;
+  const { hqPosters } = getUserPreferences();
+  const effectiveSize = hqPosters
+    ? (size === 'w500' || size === 'w780' ? 'original' : size)
+    : (size === 'original' || size === 'w780' || size === 'w500' ? 'w342' : size);
+  return `${env.TMDB_IMAGE_URL}/${effectiveSize}${cleanPath}`;
 };
 
 export const getBackdropUrl = (
@@ -22,7 +28,11 @@ export const getBackdropUrl = (
   if (!path) return PLACEHOLDERS.BACKDROP;
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${env.TMDB_IMAGE_URL}/${size}${cleanPath}`;
+  const { hqPosters } = getUserPreferences();
+  const effectiveSize = hqPosters
+    ? 'original'
+    : (size === 'original' || size === 'w1280' ? 'w780' : size);
+  return `${env.TMDB_IMAGE_URL}/${effectiveSize}${cleanPath}`;
 };
 
 export const getProfileUrl = (

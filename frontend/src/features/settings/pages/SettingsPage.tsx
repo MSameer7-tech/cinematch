@@ -27,6 +27,12 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { aiApi } from '../../ai/api/ai.api';
 import type { TasteProfile } from '../../ai/types/ai.types';
+import {
+  useUserPreferences,
+  setUserPreference,
+  resetUserPreferences,
+  type ContentRegion,
+} from '../utils/preferences';
 import './SettingsPage.css';
 
 type SettingsTab = 'preferences' | 'taste-profile' | 'account-data';
@@ -41,26 +47,14 @@ export const SettingsPage: FC = () => {
   const userId = user?.id || (guest as any)?.sessionId || (guest as any)?.guestId || (guest as any)?.id || 'guest-user';
   const isGuest = Boolean(!user && guest);
 
-  // Preference States (Persisted in localStorage)
-  const [highQualityPosters, setHighQualityPosters] = useState<boolean>(() => {
-    return localStorage.getItem('cinematch_hq_posters') !== 'false';
-  });
-
-  const [autoPlayTrailers, setAutoPlayTrailers] = useState<boolean>(() => {
-    return localStorage.getItem('cinematch_autoplay_trailers') !== 'false';
-  });
-
-  const [trailerSound, setTrailerSound] = useState<boolean>(() => {
-    return localStorage.getItem('cinematch_trailer_sound') === 'true';
-  });
-
-  const [contentRegion, setContentRegion] = useState<'all' | 'bollywood' | 'international'>(() => {
-    return (localStorage.getItem('cinematch_content_region') as any) || 'all';
-  });
-
-  const [includeMature, setIncludeMature] = useState<boolean>(() => {
-    return localStorage.getItem('cinematch_include_mature') !== 'false';
-  });
+  // Preference States (Persisted via central preferences utility)
+  const {
+    hqPosters: highQualityPosters,
+    autoPlayTrailers,
+    trailerSound,
+    contentRegion,
+    includeMature,
+  } = useUserPreferences();
 
   // Taste Profile State
   const [tasteProfile, setTasteProfile] = useState<TasteProfile | null>(null);
@@ -68,39 +62,38 @@ export const SettingsPage: FC = () => {
   const [isRefreshingTaste, setIsRefreshingTaste] = useState(false);
   const [copiedDossier, setCopiedDossier] = useState(false);
 
-  // Toggle Handlers with Toasts & Persistence
+  // Toggle Handlers with Toasts, Persistence & Query Cache Invalidation
   const handleToggleHqPosters = () => {
     const nextVal = !highQualityPosters;
-    setHighQualityPosters(nextVal);
-    localStorage.setItem('cinematch_hq_posters', String(nextVal));
+    setUserPreference('hqPosters', nextVal);
     toast.success(nextVal ? 'High quality posters enabled (original assets)' : 'Standard posters enabled (bandwidth saver)');
   };
 
   const handleToggleAutoPlay = () => {
     const nextVal = !autoPlayTrailers;
-    setAutoPlayTrailers(nextVal);
-    localStorage.setItem('cinematch_autoplay_trailers', String(nextVal));
+    setUserPreference('autoPlayTrailers', nextVal);
     toast.success(nextVal ? 'Auto-play trailers enabled' : 'Auto-play trailers disabled');
   };
 
   const handleToggleTrailerSound = () => {
     const nextVal = !trailerSound;
-    setTrailerSound(nextVal);
-    localStorage.setItem('cinematch_trailer_sound', String(nextVal));
+    setUserPreference('trailerSound', nextVal);
     toast.success(nextVal ? 'Trailer sound unmuted by default' : 'Trailers muted by default');
   };
 
-  const handleChangeRegion = (val: 'all' | 'bollywood' | 'international') => {
-    setContentRegion(val);
-    localStorage.setItem('cinematch_content_region', val);
-    const label = val === 'bollywood' ? 'Bollywood & Indian Cinema' : val === 'international' ? 'Hollywood & International' : 'Global Cinema';
-    toast.success(`Content region set to ${label}`);
+  const handleChangeRegion = (val: ContentRegion) => {
+    setUserPreference('contentRegion', val);
+    queryClient.invalidateQueries({ queryKey: ['homepage-personal'] });
+    queryClient.invalidateQueries({ queryKey: ['discover_movies'] });
+    const label = val === 'bollywood' ? 'Bollywood & Indian Cinema' : val === 'international' ? 'Hollywood & Western' : 'All Global';
+    toast.success(`Primary cinema focus set to ${label}`);
   };
 
   const handleToggleMature = () => {
     const nextVal = !includeMature;
-    setIncludeMature(nextVal);
-    localStorage.setItem('cinematch_include_mature', String(nextVal));
+    setUserPreference('includeMature', nextVal);
+    queryClient.invalidateQueries({ queryKey: ['homepage-personal'] });
+    queryClient.invalidateQueries({ queryKey: ['discover_movies'] });
     toast.success(nextVal ? 'Mature / R-Rated content included' : 'Family-friendly filter enabled');
   };
 
@@ -182,16 +175,9 @@ export const SettingsPage: FC = () => {
   };
 
   const handleResetDefaults = () => {
-    setHighQualityPosters(true);
-    setAutoPlayTrailers(true);
-    setTrailerSound(false);
-    setContentRegion('all');
-    setIncludeMature(true);
-    localStorage.setItem('cinematch_hq_posters', 'true');
-    localStorage.setItem('cinematch_autoplay_trailers', 'true');
-    localStorage.setItem('cinematch_trailer_sound', 'false');
-    localStorage.setItem('cinematch_content_region', 'all');
-    localStorage.setItem('cinematch_include_mature', 'true');
+    resetUserPreferences();
+    queryClient.invalidateQueries({ queryKey: ['homepage-personal'] });
+    queryClient.invalidateQueries({ queryKey: ['discover_movies'] });
     toast.success('All settings reset to default');
   };
 

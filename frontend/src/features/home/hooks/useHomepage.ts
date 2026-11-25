@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { homepageApi } from '../api/homepage.api';
+import { useUserPreferences } from '../../settings/utils/preferences';
 import { 
   processHomepageResponse, 
   processSectionPageResponse, 
@@ -10,11 +11,19 @@ import {
 export const useHomepage = (userId: string, enabled: boolean = true) => {
   const queryClient = useQueryClient();
   const effectiveUserId = userId || 'anonymous';
+  const { contentRegion, includeMature } = useUserPreferences();
 
   const query = useQuery({
-    queryKey: ['homepage-personal', effectiveUserId],
+    queryKey: ['homepage-personal', effectiveUserId, contentRegion, includeMature],
     queryFn: async (): Promise<HydratedHomepageResponse> => {
-      const raw = await homepageApi.getHomepage(effectiveUserId);
+      const raw = await homepageApi.getHomepage(
+        effectiveUserId,
+        'UTC',
+        'en-US',
+        undefined,
+        contentRegion,
+        includeMature
+      );
       const hydrated = await processHomepageResponse(raw);
       
       // Seed other caches to split keys (Phase 9)

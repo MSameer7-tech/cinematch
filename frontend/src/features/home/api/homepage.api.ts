@@ -5,9 +5,11 @@ export const homepageApi = {
     userId: string,
     timezone = 'UTC',
     locale = 'en-US',
-    experimentGroup?: string
+    experimentGroup?: string,
+    region: string = 'all',
+    includeMature: boolean = true
   ): Promise<any> => {
-    let url = `${API_BASE_URL}/homepage?user_id=${encodeURIComponent(userId)}&timezone=${encodeURIComponent(timezone)}&locale=${encodeURIComponent(locale)}`;
+    let url = `${API_BASE_URL}/homepage?user_id=${encodeURIComponent(userId)}&timezone=${encodeURIComponent(timezone)}&locale=${encodeURIComponent(locale)}&region=${encodeURIComponent(region)}&include_mature=${includeMature}`;
     if (experimentGroup) {
       url += `&experiment_group=${encodeURIComponent(experimentGroup)}`;
     }

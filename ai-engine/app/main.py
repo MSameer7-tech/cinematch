@@ -185,7 +185,14 @@ hist_repo = HistoryRepository()
 orchestrator = HomepageOrchestrator()
 
 @app.get("/api/homepage")
-async def get_homepage(user_id: str, timezone: Optional[str] = "UTC", locale: Optional[str] = "en-US", experiment_group: Optional[str] = None):
+async def get_homepage(
+    user_id: str,
+    timezone: Optional[str] = "UTC",
+    locale: Optional[str] = "en-US",
+    experiment_group: Optional[str] = None,
+    region: str = "all",
+    include_mature: bool = True
+):
     try:
         # 1. Fetch user data from repositories
         favorites = user_repo.get_user_favorites(user_id)
@@ -238,6 +245,29 @@ async def get_homepage(user_id: str, timezone: Optional[str] = "UTC", locale: Op
         
         # 4. Generate homepage
         homepage_response = await orchestrator.build_homepage(context, experiment_group=experiment_group)
+
+        # Apply Mature Content filter if disabled
+        if not include_mature:
+            if getattr(homepage_response, "hero_movies", None):
+                homepage_response.hero_movies = [m for m in homepage_response.hero_movies if not getattr(m, "adult", False)]
+            for s in homepage_response.sections:
+                s.movies = [m for m in s.movies if not getattr(m, "adult", False)]
+            homepage_response.sections = [s for s in homepage_response.sections if s.movies]
+
+        # Apply Primary Cinema Focus region preference
+        if region == "bollywood":
+            bolly_sections = [s for s in homepage_response.sections if s.strategy == "bollywood" or "bollywood" in s.id.lower()]
+            other_sections = [s for s in homepage_response.sections if s not in bolly_sections]
+            homepage_response.sections = bolly_sections + other_sections
+            if bolly_sections and bolly_sections[0].movies:
+                homepage_response.hero_movies = bolly_sections[0].movies[:8]
+                homepage_response.hero = bolly_sections[0].movies[0]
+        elif region == "international":
+            homepage_response.sections = [
+                s for s in homepage_response.sections
+                if s.strategy != "bollywood" and "bollywood" not in s.id.lower()
+            ]
+
         return homepage_response
     except Exception as e:
         import traceback
@@ -575,14 +605,18 @@ def discover_movies_endpoint(
     page: int = Query(1, ge=1),
     genre_id: Optional[int] = Query(None),
     category: str = Query("popular"),
-    media_type: str = Query("movie")
+    media_type: str = Query("movie"),
+    region: str = Query("all"),
+    include_mature: bool = Query(True)
 ):
     from app.content.services.tmdb_live_service import tmdb_live_service
     return tmdb_live_service.discover_movies(
         page=page,
         genre_id=genre_id,
         category=category,
-        media_type=media_type
+        media_type=media_type,
+        region=region,
+        include_mature=include_mature
     )
 
 @app.get("/api/movies/popular")

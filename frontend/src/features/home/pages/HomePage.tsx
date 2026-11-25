@@ -10,13 +10,20 @@ import { HeroSkeleton } from '../../../components/loading/HeroSkeleton';
 import { MovieRowSkeleton } from '../../../components/loading/MovieRowSkeleton';
 import { isMovieReleased } from '../../movies/utils/movie.mapper';
 import type { Movie } from '../../movies/types/movie.types';
+import { useUserPreferences } from '../../settings/utils/preferences';
 
 export const HomePage: FC = () => {
   const { user, guest } = useAuth();
   const userId = user?.id || guest?.id || 'anonymous';
   const { sections, hero, heroMovies: backendHeroMovies, isLoading, isError } = useHomepage(userId);
   const { trackEvent } = useRecommendationTracking();
-  const { watchedMovies } = useWatchedTrailers();
+  const { watchedMovies: rawWatchedMovies } = useWatchedTrailers();
+  const { includeMature } = useUserPreferences();
+
+  const watchedMovies = useMemo(() => {
+    if (includeMature) return rawWatchedMovies;
+    return rawWatchedMovies.filter((m) => !(m as any).adult);
+  }, [rawWatchedMovies, includeMature]);
 
   // Curate top featured movies with backdrop artwork for the rotating hero banner
   const heroMovies = useMemo(() => {
