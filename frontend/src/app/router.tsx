@@ -28,6 +28,7 @@ import { AIPicksPage } from '../features/ai/pages/AIPicksPage';
 import { MovieDetailsPage } from '../features/movies/pages/MovieDetailsPage';
 import { ProfilePage } from '../features/profile/pages/ProfilePage';
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
+import { HelpPage } from '../features/help/pages/HelpPage';
 import { RecommendationAnalyticsPage } from '../features/admin/pages/RecommendationAnalyticsPage';
 
 export const router = createBrowserRouter([
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
           {
             path: 'profile',
             element: <ProfilePage />,
+          },
+          {
+            path: 'help',
+            element: <HelpPage />,
           },
         ],
       },
