@@ -1,221 +1,165 @@
 import { Outlet } from 'react-router-dom';
-import { Sparkles, Play, BarChart2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Sparkles, Bookmark, Compass } from 'lucide-react';
 
 export const AuthLayout: React.FC = () => {
   return (
     <div
       style={{
         minHeight: '100vh',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#06050b',
+        backgroundColor: '#080710',
         backgroundImage: `
-          linear-gradient(90deg, rgba(6, 5, 11, 0.58) 0%, rgba(6, 5, 11, 0.35) 50%, rgba(6, 5, 11, 0.55) 100%),
+          linear-gradient(100deg, rgba(8, 7, 16, 0.72) 0%, rgba(8, 7, 16, 0.34) 48%, rgba(8, 7, 16, 0.68) 100%),
           url('/midnight-cinema-bg.png')
         `,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
       }}
+      className="auth-page-root"
     >
-      {/* Top-Left Brand Header */}
-      <header
-        style={{
-          width: '100%',
-          maxWidth: '1240px',
-          margin: '0 auto',
-          padding: '28px 36px 0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          position: 'relative',
-          zIndex: 2,
-          boxSizing: 'border-box',
-        }}
-        className="auth-top-header"
-      >
-        <img
-          src="/logo.png"
-          alt="CineMatch"
-          style={{
-            width: '30px',
-            height: '30px',
-            objectFit: 'contain',
-          }}
-        />
-        <span
-          style={{
-            fontSize: '18px',
-            fontWeight: 700,
-            letterSpacing: '-0.3px',
-            color: '#ffffff',
-            fontFamily: 'var(--font-heading, inherit)',
-          }}
-        >
-          Cine<span style={{ color: '#a855f7' }}>Match</span>
-        </span>
-      </header>
-
-      {/* Main Centered Split Container */}
+      {/* Consistent Max-Width Content Container */}
       <div
         style={{
           flex: 1,
+          width: '100%',
+          maxWidth: '1180px',
+          margin: '0 auto',
+          padding: '28px 40px 44px',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px 36px 48px',
-          position: 'relative',
-          zIndex: 1,
+          flexDirection: 'column',
+          boxSizing: 'border-box',
         }}
+        className="auth-outer-container"
       >
-        <div
+        {/* Top-Left Brand Header */}
+        <header
           style={{
             display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginBottom: '24px',
+          }}
+          className="auth-top-header"
+        >
+          <img
+            src="/logo.png"
+            alt="CineMatch"
+            style={{
+              width: '28px',
+              height: '28px',
+              objectFit: 'contain',
+            }}
+          />
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: '#F5F3FA',
+              fontFamily: 'var(--font-heading, inherit)',
+            }}
+          >
+            Cine<span style={{ color: '#B36BFF' }}>Match</span>
+          </span>
+        </header>
+
+        {/* Vertically Centered Two-Column Composition */}
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
             flexDirection: 'row',
-            width: '100%',
-            maxWidth: '1160px',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '56px',
+            gap: 'clamp(40px, 6vw, 96px)',
+            width: '100%',
           }}
           className="auth-layout-container"
         >
-          {/* Left Side Editorial Hero */}
-          <div
+          {/* Left Side: Editorial Hero */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             style={{
               flex: '1',
               textAlign: 'left',
-              maxWidth: '520px',
+              maxWidth: '480px',
+              minWidth: 0,
             }}
             className="auth-branding-panel"
           >
             <h1
               style={{
-                fontSize: 'clamp(2.25rem, 4.4vw, 3.35rem)',
-                fontWeight: 800,
-                lineHeight: 1.08,
+                fontSize: 'clamp(2.1rem, 4.1vw, 3.2rem)',
+                fontWeight: 700,
+                lineHeight: 1.07,
                 margin: '0 0 18px 0',
-                letterSpacing: '-1.5px',
-                color: '#e2e8f0',
+                letterSpacing: '-0.03em',
+                color: '#F5F3FA',
                 fontFamily: 'var(--font-heading, inherit)',
               }}
             >
               Discover your next
               <br />
-              <span
-                style={{
-                  background: 'linear-gradient(90deg, #a855f7 0%, #c084fc 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                favorite movie.
-              </span>
+              <span style={{ color: '#B36BFF' }}>favorite movie.</span>
             </h1>
 
             <p
               style={{
-                fontSize: '16px',
-                color: 'rgba(226, 232, 240, 0.7)',
-                lineHeight: 1.55,
-                margin: '0 0 36px 0',
-                maxWidth: '450px',
+                fontSize: '15.5px',
+                color: '#A6A1B5',
+                lineHeight: 1.6,
+                margin: '0 0 34px 0',
+                maxWidth: '420px',
+                fontWeight: 400,
               }}
             >
-              Get personalized, AI-powered recommendations based on your taste, watchlist, and ratings.
+              Get personalized movie recommendations based on your taste, watchlist, and ratings.
             </p>
 
-            {/* 3 Feature Highlights */}
+            {/* Three Compact Editorial Feature Highlights */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '20px',
+                gap: '24px',
                 flexWrap: 'wrap',
+                paddingTop: '22px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.09)',
               }}
               className="auth-feature-row"
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(139, 92, 246, 0.16)',
-                    border: '1px solid rgba(168, 85, 247, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#c084fc',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Sparkles size={14} />
-                </div>
-                <span style={{ fontSize: '12.5px', lineHeight: 1.3, color: 'rgba(226, 232, 240, 0.78)', fontWeight: 500 }}>
-                  Smart
-                  <br />
-                  Recommendations
+              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                <Sparkles size={15} strokeWidth={1.75} color="#B36BFF" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#F5F3FA', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                  Smart Recommendations
                 </span>
               </div>
 
-              <div style={{ width: '1px', height: '28px', backgroundColor: 'rgba(255, 255, 255, 0.12)' }} className="auth-feature-divider" />
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(139, 92, 246, 0.16)',
-                    border: '1px solid rgba(168, 85, 247, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#c084fc',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Play size={13} />
-                </div>
-                <span style={{ fontSize: '12.5px', lineHeight: 1.3, color: 'rgba(226, 232, 240, 0.78)', fontWeight: 500 }}>
-                  Track Your
-                  <br />
-                  Watchlist
+              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                <Bookmark size={15} strokeWidth={1.75} color="#B36BFF" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#F5F3FA', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                  Personal Watchlist
                 </span>
               </div>
 
-              <div style={{ width: '1px', height: '28px', backgroundColor: 'rgba(255, 255, 255, 0.12)' }} className="auth-feature-divider" />
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(139, 92, 246, 0.16)',
-                    border: '1px solid rgba(168, 85, 247, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#c084fc',
-                    flexShrink: 0,
-                  }}
-                >
-                  <BarChart2 size={14} />
-                </div>
-                <span style={{ fontSize: '12.5px', lineHeight: 1.3, color: 'rgba(226, 232, 240, 0.78)', fontWeight: 500 }}>
-                  Explore
-                  <br />
-                  Ratings
+              <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                <Compass size={15} strokeWidth={1.75} color="#B36BFF" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '13px', color: '#F5F3FA', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                  Discover Movies
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right Side AuthCard container */}
+          {/* Right Side: Authentication Form Card */}
           <div
             style={{
               flex: '0 0 auto',
@@ -223,8 +167,9 @@ export const AuthLayout: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               width: '100%',
-              maxWidth: '410px',
+              maxWidth: '400px',
             }}
+            className="auth-card-column"
           >
             <Outlet />
           </div>
@@ -232,31 +177,42 @@ export const AuthLayout: React.FC = () => {
       </div>
 
       <style>{`
-        @media (max-width: 860px) {
+        @media (max-width: 900px) {
+          .auth-outer-container {
+            padding: 20px 20px 36px !important;
+          }
+          .auth-page-root {
+            background-image: linear-gradient(180deg, rgba(8, 7, 16, 0.78) 0%, rgba(8, 7, 16, 0.88) 100%), url('/midnight-cinema-bg.png') !important;
+          }
           .auth-top-header {
-            padding: 20px 20px 0 !important;
+            margin-bottom: 20px !important;
           }
           .auth-layout-container {
-            flex-direction: column !important;
+            flex-direction: column-reverse !important;
             justify-content: center !important;
             gap: 28px !important;
           }
+          .auth-card-column {
+            max-width: 420px !important;
+          }
           .auth-branding-panel {
             text-align: center !important;
-            max-width: 100% !important;
+            max-width: 420px !important;
+          }
+          .auth-branding-panel h1 {
+            font-size: 28px !important;
+            margin-bottom: 10px !important;
           }
           .auth-branding-panel p {
+            font-size: 14px !important;
             margin-left: auto !important;
             margin-right: auto !important;
-            margin-bottom: 24px !important;
-            font-size: 14.5px !important;
+            margin-bottom: 20px !important;
           }
           .auth-feature-row {
             justify-content: center !important;
-            gap: 14px !important;
-          }
-          .auth-feature-divider {
-            display: none !important;
+            gap: 16px !important;
+            padding-top: 16px !important;
           }
         }
       `}</style>

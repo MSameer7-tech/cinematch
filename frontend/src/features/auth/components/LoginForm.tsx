@@ -73,15 +73,16 @@ export const LoginForm: FC = () => {
 
       <div className="form-group">
         <label htmlFor="email" className="form-label">EMAIL ADDRESS</label>
-        <div className="input-container" style={{ position: 'relative' }}>
+        <div className="input-container">
           <Mail
             size={15}
+            strokeWidth={1.75}
             style={{
               position: 'absolute',
               left: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: 'rgba(255, 255, 255, 0.4)',
+              color: '#A6A1B5',
               pointerEvents: 'none',
             }}
           />
@@ -101,7 +102,16 @@ export const LoginForm: FC = () => {
       </div>
 
       <div className="form-group" style={{ marginBottom: '22px' }}>
-        <label htmlFor="password" className="form-label">PASSWORD</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
+          <label htmlFor="password" className="form-label" style={{ marginBottom: 0 }}>PASSWORD</label>
+          <a
+            href="/forgot-password"
+            className="text-link"
+            style={{ fontSize: '12px', fontWeight: 500, color: '#B36BFF' }}
+          >
+            Forgot password?
+          </a>
+        </div>
         <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -109,11 +119,6 @@ export const LoginForm: FC = () => {
           disabled={isSubmitting}
           required
         />
-        <div style={{ textAlign: 'right', marginTop: '8px' }}>
-          <a href="/forgot-password" className="text-link" style={{ fontSize: '12.5px', fontWeight: 500 }}>
-            Forgot password?
-          </a>
-        </div>
       </div>
 
       <button

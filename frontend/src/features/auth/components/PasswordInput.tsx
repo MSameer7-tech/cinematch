@@ -31,12 +31,13 @@ export const PasswordInput: FC<PasswordInputProps> = ({
     <div className="input-container" style={{ position: 'relative' }}>
       <Lock
         size={15}
+        strokeWidth={1.75}
         style={{
           position: 'absolute',
           left: '14px',
           top: '50%',
           transform: 'translateY(-50%)',
-          color: 'rgba(255, 255, 255, 0.4)',
+          color: '#A6A1B5',
           pointerEvents: 'none',
         }}
       />
