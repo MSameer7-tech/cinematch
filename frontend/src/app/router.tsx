@@ -3,7 +3,6 @@ import { MainLayout } from '../layouts/MainLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { ProtectedRoute } from '../routes/ProtectedRoute';
 import { PublicRoute } from '../routes/PublicRoute';
-import { GuestRoute } from '../routes/GuestRoute';
 
 // Auth Pages
 import { LoginPage } from '../features/auth/pages/LoginPage';
@@ -36,9 +35,9 @@ export const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      // Guest Routes (accessible by both Guests and Authenticated users)
+      // Protected Routes (accessible ONLY by Authenticated users)
       {
-        element: <GuestRoute />,
+        element: <ProtectedRoute />,
         children: [
           {
             path: '',

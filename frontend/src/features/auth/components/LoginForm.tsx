@@ -6,11 +6,11 @@ import { toast } from 'sonner';
 import { useAuth } from '../hooks/useAuth';
 import { PasswordInput } from './PasswordInput';
 import { GoogleButton } from './GoogleButton';
-import { GuestButton } from './GuestButton';
+import { GithubButton } from './GithubButton';
 import { Divider } from './Divider';
 
 export const LoginForm: FC = () => {
-  const { login, loginWithGoogle, continueAsGuest, isSubmitting } = useAuth();
+  const { login, loginWithGoogle, loginWithGithub, isSubmitting } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +43,12 @@ export const LoginForm: FC = () => {
     }
   };
 
-  const handleGuestLogin = async () => {
+  const handleGithubLogin = async () => {
     setError(null);
     try {
-      await continueAsGuest();
-      navigate('/');
+      await loginWithGithub();
     } catch (err: any) {
-      setError(err?.message || 'Failed to access guest session.');
+      setError(err?.message || 'Failed to authenticate with GitHub.');
     }
   };
 
@@ -134,7 +133,7 @@ export const LoginForm: FC = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <GoogleButton onClick={handleGoogleLogin} disabled={isSubmitting} />
-        <GuestButton onClick={handleGuestLogin} disabled={isSubmitting} />
+        <GithubButton onClick={handleGithubLogin} disabled={isSubmitting} />
       </div>
     </form>
   );

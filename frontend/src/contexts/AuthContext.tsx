@@ -18,9 +18,9 @@ export interface AuthContextType {
   isSubmitting: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<{ requiresVerification: boolean }>;
   logout: () => Promise<void>;
-  continueAsGuest: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
 
@@ -33,7 +33,7 @@ const getInitialAuthState = (): AuthState => {
     const cached = localStorage.getItem(AUTH_CACHE_KEY);
     if (cached) {
       const parsed = JSON.parse(cached);
-      if (parsed && (parsed.user || parsed.guest)) {
+      if (parsed && parsed.user && parsed.status === 'AUTHENTICATED') {
         return parsed;
       }
     }
@@ -200,14 +200,11 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   };
 
-  const continueAsGuest = async () => {
+  const loginWithGoogle = async () => {
     setIsSubmitting(true);
     try {
-      const result = await authService.continueAsGuest();
-      if (result.success) {
-        setAuthState({ status: 'GUEST', user: null, guest: result.data });
-      } else {
-        setAuthState({ status: 'UNAUTHENTICATED', user: null, guest: null });
+      const result = await authService.loginWithGoogle();
+      if (!result.success) {
         throw new Error(result.error);
       }
     } finally {
@@ -215,10 +212,10 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGithub = async () => {
     setIsSubmitting(true);
     try {
-      const result = await authService.loginWithGoogle();
+      const result = await authService.loginWithGithub();
       if (!result.success) {
         throw new Error(result.error);
       }
@@ -240,9 +237,9 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       isSubmitting,
       login,
       loginWithGoogle,
+      loginWithGithub,
       register,
       logout,
-      continueAsGuest,
       refreshSession
     }}>
       {children}

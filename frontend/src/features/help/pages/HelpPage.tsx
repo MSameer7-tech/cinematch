@@ -86,11 +86,11 @@ const FAQ_ITEMS: FaqItem[] = [
       'Toggle off "Include Mature Content" in Settings → General & Playback. CineMatch will immediately filter out adult-flagged titles and restrict Discover queries to family-friendly ratings (PG-13 and below).',
   },
   {
-    id: 'google-signin-guest',
+    id: 'oauth-signin',
     category: 'Account & Settings',
-    question: 'Can I use CineMatch as a Guest or sign in with Google?',
+    question: 'Can I sign in with Google or GitHub?',
     answer:
-      'Yes! You can browse as a Guest or sign in with Google or email/password for persistent cloud sync across devices. Your Watchlist, Favorites, Ratings, and AI chat history are preserved when signed into your account.',
+      'Yes! You can sign in with Google, GitHub, or email and password for persistent cloud sync across devices. Your Watchlist, Favorites, Ratings, and AI chat history are preserved when signed into your account.',
   },
   {
     id: 'export-clear-data',

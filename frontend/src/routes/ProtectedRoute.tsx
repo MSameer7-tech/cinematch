@@ -1,10 +1,20 @@
-import type { FC } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { type FC, useState, useEffect } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { AuthCard } from '../features/auth/components/AuthCard';
+import { HomePage } from '../features/home/pages/HomePage';
 
 export const ProtectedRoute: FC = () => {
   const { authState, isInitializing } = useAuth();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const [hasVisitedHome, setHasVisitedHome] = useState(isHome);
+
+  useEffect(() => {
+    if (isHome) {
+      setHasVisitedHome(true);
+    }
+  }, [isHome]);
 
   if (isInitializing) {
     return (
@@ -31,5 +41,14 @@ export const ProtectedRoute: FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      {hasVisitedHome && (
+        <div style={{ display: isHome ? 'block' : 'none', width: '100%' }}>
+          <HomePage />
+        </div>
+      )}
+      {!isHome && <Outlet />}
+    </>
+  );
 };

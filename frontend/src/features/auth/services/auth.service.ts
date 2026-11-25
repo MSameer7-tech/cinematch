@@ -186,6 +186,29 @@ export const authService = {
   },
 
   /**
+   * Initiate GitHub OAuth sign-in flow.
+   */
+  async loginWithGithub(): Promise<ServiceResult<void>> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        }
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: undefined };
+    } catch (err: any) {
+      console.error('GitHub login service failure:', err);
+      return { success: false, error: err?.message || 'An unexpected error occurred.' };
+    }
+  },
+
+  /**
    * Create an anonymous guest session.
    */
   async continueAsGuest(): Promise<ServiceResult<GuestUser>> {
@@ -446,7 +469,7 @@ export const authService = {
   },
 
   /**
-   * Evaluates the current Supabase and guest sessions to determine the AuthState.
+   * Evaluates the current Supabase session to determine the AuthState.
    */
   async initializeSession(): Promise<AuthState> {
     try {
@@ -456,11 +479,6 @@ export const authService = {
         if (result.success) {
           return { status: 'AUTHENTICATED', user: result.data, guest: null };
         }
-      }
-
-      const guestResult = await this.getGuestSession();
-      if (guestResult.success && guestResult.data) {
-        return { status: 'GUEST', user: null, guest: guestResult.data };
       }
 
       return { status: 'UNAUTHENTICATED', user: null, guest: null };
